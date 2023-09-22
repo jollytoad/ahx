@@ -11,7 +11,7 @@
   },
   "exclude": [
     "lib/htmx.js",
-    "esm/"
+    "dist/"
   ],
   "imports": {
     "$std/": "https://deno.land/std@0.201.0/",

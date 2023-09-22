@@ -172,7 +172,10 @@ function triggerAfterEvent(target, name, detail) {
   triggerEvent(target, `${config.prefix}:${name}:done`, detail, false);
 }
 function triggerErrorEvent(target, name, detail) {
-  triggerEvent(target, `${config.prefix}:${name}:error`, { error: name, ...detail }, false);
+  triggerEvent(target, `${config.prefix}:${name}:error`, {
+    error: name,
+    ...detail
+  }, false);
 }
 
 // lib/parse_css_value.ts
@@ -189,7 +192,9 @@ function parseCssValue({ rule, style, prop, elt }) {
       spec.value = isAppend[2];
     }
     if (elt) {
-      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(spec.value);
+      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
+        spec.value
+      );
       if (isAttr) {
         spec.value = elt.getAttribute(isAttr[1]) ?? void 0;
         if (spec.value && isAttr[2] === "url") {
@@ -197,7 +202,9 @@ function parseCssValue({ rule, style, prop, elt }) {
         }
         return spec;
       } else {
-        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(spec.value);
+        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
+          spec.value
+        );
         if (isProp) {
           spec.value = void 0;
           const propValue = elt[isProp[1]];
@@ -234,7 +241,10 @@ function parseQuoted(value) {
 function getAhxValue(target, name) {
   if (target instanceof Element) {
     const attrValue = target.getAttribute(`${config.prefix}-${name}`);
-    const { value, important } = parseCssValue({ elt: target, prop: `--${config.prefix}-${name}` });
+    const { value, important } = parseCssValue({
+      elt: target,
+      prop: `--${config.prefix}-${name}`
+    });
     return important && value ? value : attrValue ?? value;
   } else {
     return parseCssValue({ rule: target, prop: `--${config.prefix}-${name}` }).value;
@@ -453,7 +463,9 @@ function eventListener(event) {
             triggerRules(targetRules, cssStyleRule, event.target);
           }
           if (recursive) {
-            for (const elt of event.target.querySelectorAll(cssStyleRule.selectorText)) {
+            for (const elt of event.target.querySelectorAll(
+              cssStyleRule.selectorText
+            )) {
               triggerRules(targetRules, cssStyleRule, elt);
             }
           }
@@ -998,28 +1010,37 @@ function initLoadTriggerHandling(document2) {
         if (event2.detail.trigger.eventType === "load") {
           const target = event2.detail.target.deref();
           if (target instanceof Element) {
-            target.dispatchEvent(new CustomEvent("load", {
-              bubbles: true
-            }));
+            target.dispatchEvent(
+              new CustomEvent("load", {
+                bubbles: true
+              })
+            );
           }
         }
       });
-      document2.addEventListener(`${config.prefix}:processTree:done`, (event2) => {
-        if (event2.target) {
-          const target = event2.target instanceof Document ? event2.target.documentElement : event2.target;
-          target.dispatchEvent(new CustomEvent("load", {
-            bubbles: true,
-            detail: {
-              recursive: true
-            }
-          }));
+      document2.addEventListener(
+        `${config.prefix}:processTree:done`,
+        (event2) => {
+          if (event2.target) {
+            const target = event2.target instanceof Document ? event2.target.documentElement : event2.target;
+            target.dispatchEvent(
+              new CustomEvent("load", {
+                bubbles: true,
+                detail: {
+                  recursive: true
+                }
+              })
+            );
+          }
         }
-      });
+      );
       document2.addEventListener(`${config.prefix}:mutations:done`, (event2) => {
         for (const elt of event2.detail.addedElements) {
-          elt.dispatchEvent(new CustomEvent("load", {
-            bubbles: true
-          }));
+          elt.dispatchEvent(
+            new CustomEvent("load", {
+              bubbles: true
+            })
+          );
         }
       });
     }

@@ -13,7 +13,7 @@ export async function build(opts?: { watch?: boolean }) {
       minify: false,
       sourcemap: false,
       // target: ['chrome58', 'firefox57', 'safari11', 'edge16'],
-      outdir: "esm",
+      outdir: "dist",
       format: "esm",
       logLevel: "debug",
     }),
