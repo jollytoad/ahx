@@ -1,7 +1,7 @@
 {
   "tasks": {
     "build": "deno run -A scripts/build.ts",
-    "start": "deno run --unstable --allow-all --watch scripts/dev.ts",
+    "start": "deno run --unstable --allow-all --watch demo/dev.ts",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
     "check": "deno fmt && deno lint && deno --unstable check **/*.ts",
     "lock": "rm -f deno.lock && deno --unstable check main.ts"

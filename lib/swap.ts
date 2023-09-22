@@ -22,6 +22,7 @@ export async function swap(target: Element, response: Response) {
       triggerAfterEvent(target, "swap", detail);
     }
   }
+  // TODO: trigger events for non-ok response and non-html content
 }
 
 type SwapHandler = (target: Element, content: string, spec: SwapSpec) => void;

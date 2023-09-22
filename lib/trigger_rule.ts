@@ -57,14 +57,6 @@ async function performAction(elt: Element, rule: AhxRule) {
         });
 
         swap(elt, response);
-
-        // if (
-        //   response.ok &&
-        //   response.headers.get("Content-Type")?.startsWith("text/html")
-        // ) {
-        //   console.log(response);
-        //   elt.outerHTML = await response.text();
-        // }
       }
     }
 
