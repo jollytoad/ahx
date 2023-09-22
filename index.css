@@ -1,0 +1,20 @@
+/* a.load-on-click {
+  --ahx-trigger: click;
+  --ahx-get: url('./loaded.html');
+}
+
+.load-on-load {
+  --ahx-trigger: load;
+  --ahx-get: url('./loaded.html');
+} */
+
+/* .numberwang tbody tr::after {
+  --ahx-trigger: load;
+  --ahx-get: url("./loaded.html");
+} */
+
+.numberwang tbody tr {
+  --ahx-trigger: load once;
+  --ahx-get: url("./loaded.html");
+  --ahx-swap: beforeend;
+}
