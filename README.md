@@ -1,5 +1,7 @@
 # ahx - Augmented Hypermedia Extensions
 
+**This is an experimental work in progress, do NOT use (yet)!**
+
 **ahx** is a set of HTML & CSS extensions to allow _augmentation_ of a web app,
 by an untrusted third party HTTP service. It forms part of a larger addon
 system.
