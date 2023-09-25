@@ -1,3 +1,5 @@
+// Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
+
 import { config } from "./config.ts";
 import { getAhxValue } from "./get_ahx_value.ts";
 import { parseInterval } from "./parse_interval.ts";

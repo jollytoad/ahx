@@ -1,3 +1,5 @@
+// Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
+
 import { parseInterval } from "./parse_interval.ts";
 import { triggerErrorEvent } from "./trigger_event.ts";
 import type { RuleTarget, TriggerSpec } from "./types.ts";

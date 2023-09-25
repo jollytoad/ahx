@@ -56,6 +56,7 @@ frameworks, relying heavily on observation of DOM mutations.
 No, the core of _ahx_ has been written from the ground up. It does attempt to
 follow _htmx_ concepts and conventions as closely as possible where appropriate.
 So some code, mainly attribute parsing, has been copied directly from _htmx_ and
-adapted to our codebase.
+adapted to our codebase. This has been noted in the modules concerned, and the
+[htmx license](./LICENSE_htmx) is included.
 
 _ahx_ is written in modular TypeScript, and uses Deno for tooling.
