@@ -15,9 +15,9 @@ ready((document) => {
 
   initLoadTriggerHandling(document);
 
-  processStyleSheets(document);
-
   startObserver(document);
+
+  processStyleSheets(document);
 
   processTree(document);
 });

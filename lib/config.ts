@@ -1,4 +1,4 @@
-import type { Prefix } from "./types.ts";
+import type { Prefix, SwapStyle } from "./types.ts";
 
 export const config = {
   prefix: "ahx" as Prefix,
@@ -26,6 +26,7 @@ export const config = {
   defaultDelay: 20,
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
+  defaultSwapStyle: "outerhtml" satisfies SwapStyle as SwapStyle,
 
   enableAhxCombinedEvent: false,
 

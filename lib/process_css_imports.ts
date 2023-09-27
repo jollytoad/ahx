@@ -8,14 +8,11 @@ const importLinks = new WeakMap<
   Map<CSSPropertyName, HTMLLinkElement>
 >();
 
-type Outcome = false | "created" | "enabled" | "disabled";
-
 export function processCssImports(
   rule: CSSStyleRule,
   props: Set<CSSPropertyName>,
-): Outcome {
-  let imported: Outcome = false;
-
+  onReady?: () => void,
+): void {
   const importProp = `--${config.prefix}-import`;
 
   for (const prop of props) {
@@ -38,7 +35,9 @@ export function processCssImports(
           if (link) {
             if (link.sheet && link.sheet.disabled) {
               link.sheet.disabled = false;
-              imported = "enabled";
+              setTimeout(() => {
+                onReady?.();
+              }, 0);
             }
             break;
           } else {
@@ -46,11 +45,11 @@ export function processCssImports(
               url,
               (rule.parentStyleSheet?.ownerNode as HTMLLinkElement)
                 ?.crossOrigin ?? undefined,
+              onReady,
             );
 
             if (link) {
               importLinks.get(rule)?.set(prop, link);
-              imported = "created";
               break;
             }
           }
@@ -59,16 +58,15 @@ export function processCssImports(
 
       if (!ruleApplies && link && link.sheet && !link.sheet.disabled) {
         link.sheet.disabled = true;
-        imported = "disabled";
       }
     }
   }
-  return imported;
 }
 
 function createStyleSheetLink(
   url: string,
   crossOrigin?: string,
+  onReady?: () => void,
 ): HTMLLinkElement | undefined {
   const detail: CssImportDetail = { url, crossOrigin, disabled: false };
 
@@ -85,7 +83,12 @@ function createStyleSheetLink(
       }
 
       link.addEventListener("load", (event) => {
-        triggerAfterEvent(event.target ?? document, "cssImport", detail);
+        // IMPORTANT: setTimeout is required to ensure the stylesheet has
+        // is exposed in the DOM before we trigger the done event.
+        setTimeout(() => {
+          triggerAfterEvent(event.target ?? document, "cssImport", detail);
+          onReady?.();
+        }, 0);
       }, { once: true, passive: true });
 
       document.head.appendChild(link);

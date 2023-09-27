@@ -6,13 +6,34 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 
-export type RuleTarget = Element | CSSStyleRule;
+export type AhxPropertyName =
+  | "deny-trigger"
+  | "trigger"
+  | "get"
+  | "post"
+  | "put"
+  | "patch"
+  | "delete";
 
-export interface AhxRule {
-  target: WeakRef<RuleTarget>;
+export type AhxCSSPropertyName = `--${Prefix}-${AhxPropertyName}`;
+export type AhxAttributeName = `${Prefix}-${AhxPropertyName}`;
+
+export type RuleOrigin = Element | CSSStyleRule;
+
+export interface AhxTriggerRule {
+  /** The Element or CSSStyleRule from where this rule originated */
+  origin: WeakRef<RuleOrigin>;
   trigger: TriggerSpec;
   action: ActionSpec;
 }
+
+export interface AhxGuardRule {
+  /** The CSSStyleRule that declared this rule */
+  origin: WeakRef<CSSStyleRule>;
+  denyTrigger?: boolean;
+}
+
+export type AhxRule = AhxTriggerRule | AhxGuardRule;
 
 export interface TriggerSpec {
   eventType: EventType;
@@ -32,7 +53,11 @@ export interface ActionSpec {
   url: string;
 }
 
-export type SwapStyle = "none" | "innerhtml" | "outerhtml" | InsertPosition;
+export type SwapStyle =
+  | "none"
+  | "innerhtml"
+  | "outerhtml"
+  | InsertPosition;
 
 export interface SwapSpec {
   swapStyle: SwapStyle;
@@ -64,10 +89,17 @@ export interface AhxEventMap {
   "triggerRule": [AhxRule, AhxRule];
   "performAction": [AhxRule, AhxRule];
   "swap": [SwapDetail, SwapDetail];
+}
 
-  // [error detail]
-  "triggerSyntax": [{ token: string | undefined }];
-  "pseudoElementNotPermitted": [{ parentTag: string }];
+export interface AhxErrorMap {
+  "triggerSyntax": { token: string | undefined };
+  "pseudoElementNotPermitted": { parentTag: string };
+  "invalidCssValue": {
+    prop: CSSPropertyName;
+    value?: string;
+    rule: CSSStyleRule;
+  };
+  "triggerDenied": { rule: AhxTriggerRule };
 }
 
 export interface MutationsDetail {
@@ -140,7 +172,13 @@ type AfterEventMap = {
   >;
 };
 
-type CustomEventMap = BeforeEventMap & AfterEventMap & {
+type ErrorEventMap = {
+  [E in keyof AhxErrorMap as `${Prefix}:${E}:error`]: CustomEvent<
+    AhxErrorMap[E]
+  >;
+};
+
+type CustomEventMap = BeforeEventMap & AfterEventMap & ErrorEventMap & {
   Prefix: CustomEvent<CustomEvent>;
 };
 

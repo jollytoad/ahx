@@ -42,6 +42,7 @@ var config = {
   defaultDelay: 20,
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
+  defaultSwapStyle: "outerhtml",
   enableAhxCombinedEvent: false,
   // parent tag -> default child pseudo tag (or null if a child is not permitted)
   pseudoChildTags: {
@@ -238,16 +239,16 @@ function parseQuoted(value) {
 }
 
 // lib/get_ahx_value.ts
-function getAhxValue(target, name) {
-  if (target instanceof Element) {
-    const attrValue = target.getAttribute(`${config.prefix}-${name}`);
+function getAhxValue(origin, name) {
+  if (origin instanceof Element) {
+    const attrValue = origin.getAttribute(`${config.prefix}-${name}`);
     const { value, important } = parseCssValue({
-      elt: target,
+      elt: origin,
       prop: `--${config.prefix}-${name}`
     });
     return important && value ? value : attrValue ?? value;
   } else {
-    return parseCssValue({ rule: target, prop: `--${config.prefix}-${name}` }).value;
+    return parseCssValue({ rule: origin, prop: `--${config.prefix}-${name}` }).value;
   }
 }
 
@@ -272,7 +273,7 @@ function parseInterval(str) {
 function parseSwap(elt, swapInfoOverride) {
   const swapInfo = swapInfoOverride || getAhxValue(elt, "swap");
   const swapSpec = {
-    swapStyle: "innerhtml",
+    swapStyle: config.defaultSwapStyle,
     swapDelay: config.defaultSwapDelay,
     settleDelay: config.defaultSettleDelay
   };
@@ -336,7 +337,11 @@ var swapHandlers = {
 var triggeredOnce = /* @__PURE__ */ new WeakSet();
 var delayed = /* @__PURE__ */ new WeakMap();
 function triggerRule(rule, elt) {
-  if (elt && triggerBeforeEvent(elt, "triggerRule", rule)) {
+  if (isDenied(elt)) {
+    triggerErrorEvent(elt, "triggerDenied", { rule });
+    return;
+  }
+  if (triggerBeforeEvent(elt, "triggerRule", rule)) {
     if (rule.trigger.target) {
       if (!elt.matches(rule.trigger.target)) {
         return;
@@ -363,6 +368,9 @@ function triggerRule(rule, elt) {
     triggerAfterEvent(elt, "triggerRule", rule);
   }
 }
+function isDenied(elt) {
+  return getAhxValue(elt, "deny-trigger") === "true";
+}
 async function performAction(elt, rule) {
   if (triggerBeforeEvent(elt, "performAction", rule)) {
     switch (rule.action.type) {
@@ -380,13 +388,14 @@ async function performAction(elt, rule) {
 // lib/rules.ts
 var allRules = /* @__PURE__ */ new Set();
 var eventRules = /* @__PURE__ */ new Map();
+var guardRules = /* @__PURE__ */ new Set();
 var cssStyleRules = /* @__PURE__ */ new Set();
 var eventTypes = /* @__PURE__ */ new Set();
-function addRules(target, triggers, actions) {
+function addTriggerRules(origin, triggers, actions) {
   const rules = [];
   for (const trigger of triggers) {
     for (const action of actions) {
-      const rule = addRule(target, trigger, action);
+      const rule = addTriggerRule(origin, trigger, action);
       if (rule) {
         rules.push(rule);
       }
@@ -394,28 +403,28 @@ function addRules(target, triggers, actions) {
   }
   return rules;
 }
-function addRule(target, trigger, action) {
+function addTriggerRule(origin, trigger, action) {
   const rule = {
-    target: new WeakRef(target),
+    origin: new WeakRef(origin),
     trigger,
     action
   };
   if (triggerBeforeEvent(document, "addRule", rule)) {
     const eventType = rule.trigger.eventType;
-    let targetRules = eventRules.get(eventType);
-    if (!targetRules) {
-      targetRules = /* @__PURE__ */ new WeakMap();
-      eventRules.set(eventType, targetRules);
+    let rulesPerOrigin = eventRules.get(eventType);
+    if (!rulesPerOrigin) {
+      rulesPerOrigin = /* @__PURE__ */ new WeakMap();
+      eventRules.set(eventType, rulesPerOrigin);
     }
-    let rules = targetRules.get(target);
+    let rules = rulesPerOrigin.get(origin);
     if (!rules) {
       rules = /* @__PURE__ */ new Set();
-      targetRules.set(target, rules);
+      rulesPerOrigin.set(origin, rules);
     }
     rules.add(rule);
     allRules.add(rule);
-    if (target instanceof CSSStyleRule) {
-      cssStyleRules.add(target);
+    if (origin instanceof CSSStyleRule) {
+      cssStyleRules.add(origin);
     }
     if (!eventTypes.has(eventType)) {
       const detail = { eventType };
@@ -429,44 +438,60 @@ function addRule(target, trigger, action) {
     return rule;
   }
 }
-function removeRules(target) {
-  const removedRules = [];
-  for (const targetRules of eventRules.values()) {
-    const rules = targetRules.get(target);
-    if (rules) {
-      for (const rule of rules) {
-        removedRules.push(rule);
+function addGuardRule(cssRule, options) {
+  const guardRule = {
+    origin: new WeakRef(cssRule),
+    ...options
+  };
+  allRules.add(guardRule);
+  guardRules.add(guardRule);
+  cssStyleRules.add(cssRule);
+  return guardRule;
+}
+function removeRules(origin) {
+  const removedRules = /* @__PURE__ */ new Set();
+  for (const rulesPerOrigin of eventRules.values()) {
+    const triggerRules = rulesPerOrigin.get(origin);
+    if (triggerRules) {
+      for (const rule of triggerRules) {
+        removedRules.add(rule);
         allRules.delete(rule);
       }
-      rules.clear();
-      targetRules.delete(target);
-      if (target instanceof CSSStyleRule) {
-        cssStyleRules.delete(target);
+      triggerRules.clear();
+      rulesPerOrigin.delete(origin);
+      if (origin instanceof CSSStyleRule) {
+        cssStyleRules.delete(origin);
       }
     }
   }
-  return removedRules;
+  for (const rule of guardRules) {
+    const ruleTarget = rule.origin.deref();
+    if (!ruleTarget || ruleTarget === origin) {
+      guardRules.delete(rule);
+      removedRules.add(rule);
+    }
+  }
+  return removedRules.values();
 }
 function getRules() {
   return allRules.values();
 }
-function eventListener(event) {
-  console.log("EVENT", event.type, event);
+function* getRulesForEvent(event) {
   if (event.target instanceof Element) {
-    const targetRules = eventRules.get(event.type);
+    const rulesPerOrigin = eventRules.get(event.type);
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    if (targetRules) {
-      triggerRules(targetRules, event.target, event.target);
+    if (rulesPerOrigin) {
+      yield* getTriggerRules(rulesPerOrigin, event.target, event.target);
       for (const cssStyleRule of cssStyleRules) {
         if (isEnabled(cssStyleRule)) {
           if (event.target.matches(cssStyleRule.selectorText)) {
-            triggerRules(targetRules, cssStyleRule, event.target);
+            yield* getTriggerRules(rulesPerOrigin, cssStyleRule, event.target);
           }
           if (recursive) {
             for (const elt of event.target.querySelectorAll(
               cssStyleRule.selectorText
             )) {
-              triggerRules(targetRules, cssStyleRule, elt);
+              yield* getTriggerRules(rulesPerOrigin, cssStyleRule, elt);
             }
           }
         }
@@ -474,18 +499,23 @@ function eventListener(event) {
     }
   }
 }
-function isEnabled(styleRule) {
-  return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
-}
-function triggerRules(targetRules, ruleTarget, eventTarget) {
+function* getTriggerRules(rulesPerOrigin, ruleOrigin, eventTarget) {
   if (eventTarget instanceof Element) {
-    const rules = targetRules.get(ruleTarget);
+    const rules = rulesPerOrigin.get(ruleOrigin);
     if (rules) {
       for (const rule of rules) {
-        triggerRule(rule, eventTarget);
+        yield [rule, eventTarget];
       }
     }
   }
+}
+function eventListener(event) {
+  for (const [rule, elt] of getRulesForEvent(event)) {
+    triggerRule(rule, elt);
+  }
+}
+function isEnabled(styleRule) {
+  return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
 }
 
 // lib/parse_triggers.ts
@@ -495,9 +525,9 @@ var SYMBOL_CONT = /[_$a-zA-Z0-9]/;
 var STRINGISH_START = ['"', "'", "/"];
 var NOT_WHITESPACE = /[^\s]/;
 var INPUT_SELECTOR = "input, textarea, select";
-function parseTriggers(target, triggerValue, defaultEventType = "click") {
+function parseTriggers(origin, triggerValue, defaultEventType = "click") {
   const triggerSpecs = [];
-  const elt = target instanceof Element ? target : target.parentStyleSheet?.ownerNode instanceof Element ? target.parentStyleSheet.ownerNode : void 0;
+  const elt = origin instanceof Element ? origin : origin.parentStyleSheet?.ownerNode instanceof Element ? origin.parentStyleSheet.ownerNode : void 0;
   if (triggerValue) {
     const tokens = tokenizeString(triggerValue);
     do {
@@ -625,7 +655,7 @@ function processElement(elt) {
         elt.getAttribute(`${config.prefix}-trigger`) ?? ""
       );
       const actions = parseActions(elt);
-      const addedRules = addRules(elt, triggers, actions);
+      const addedRules = addTriggerRules(elt, triggers, actions);
       triggerAfterEvent(elt, "processElement", {
         addedRules,
         removedRules: []
@@ -738,12 +768,12 @@ function isAhxProp(prop) {
   return prop.startsWith(`--${config.prefix}-`) || config.customProps.includes(prop);
 }
 
-// lib/process_style_rule.ts
-function processStyleRule(rule, props = getStyleProps(rule)) {
+// lib/process_trigger_rule.ts
+function processTriggerRule(rule, props = getStyleProps(rule)) {
   const value = getAhxValue(rule, "trigger");
   const triggers = parseTriggers(rule, value, "default");
   const actions = getActionSpecs(rule, props);
-  return addRules(rule, triggers, actions);
+  return addTriggerRules(rule, triggers, actions);
 }
 function getActionSpecs(rule, props) {
   const actionSpecs = [];
@@ -796,11 +826,28 @@ function findStyleRules(root) {
   }
   return cssRules;
 }
+function isInLayer(rule, layerName) {
+  if (rule instanceof CSSLayerBlockRule) {
+    if (rule.name === layerName) {
+      return true;
+    }
+  } else if (rule instanceof CSSImportRule) {
+    if (rule.layerName === layerName) {
+      return true;
+    }
+  }
+  if (rule.parentRule) {
+    return isInLayer(rule.parentRule, layerName);
+  }
+  if (rule.parentStyleSheet && rule.parentStyleSheet.ownerRule) {
+    return isInLayer(rule.parentStyleSheet.ownerRule, layerName);
+  }
+  return false;
+}
 
 // lib/process_css_imports.ts
 var importLinks = /* @__PURE__ */ new WeakMap();
-function processCssImports(rule, props) {
-  let imported = false;
+function processCssImports(rule, props, onReady) {
   const importProp = `--${config.prefix}-import`;
   for (const prop of props) {
     if (prop === importProp || prop.startsWith(`${importProp}-`)) {
@@ -816,17 +863,19 @@ function processCssImports(rule, props) {
           if (link) {
             if (link.sheet && link.sheet.disabled) {
               link.sheet.disabled = false;
-              imported = "enabled";
+              setTimeout(() => {
+                onReady?.();
+              }, 0);
             }
             break;
           } else {
             link = createStyleSheetLink(
               url,
-              rule.parentStyleSheet?.ownerNode?.crossOrigin ?? void 0
+              rule.parentStyleSheet?.ownerNode?.crossOrigin ?? void 0,
+              onReady
             );
             if (link) {
               importLinks.get(rule)?.set(prop, link);
-              imported = "created";
               break;
             }
           }
@@ -834,13 +883,11 @@ function processCssImports(rule, props) {
       }
       if (!ruleApplies && link && link.sheet && !link.sheet.disabled) {
         link.sheet.disabled = true;
-        imported = "disabled";
       }
     }
   }
-  return imported;
 }
-function createStyleSheetLink(url, crossOrigin) {
+function createStyleSheetLink(url, crossOrigin, onReady) {
   const detail = { url, crossOrigin, disabled: false };
   if (triggerBeforeEvent(document, "cssImport", detail)) {
     if (!document.querySelector(`link[rel="stylesheet"][href="${detail.url}"]`)) {
@@ -851,7 +898,10 @@ function createStyleSheetLink(url, crossOrigin) {
         link.setAttribute("crossorigin", detail.crossOrigin);
       }
       link.addEventListener("load", (event) => {
-        triggerAfterEvent(event.target ?? document, "cssImport", detail);
+        setTimeout(() => {
+          triggerAfterEvent(event.target ?? document, "cssImport", detail);
+          onReady?.();
+        }, 0);
       }, { once: true, passive: true });
       document.head.appendChild(link);
       return link;
@@ -938,7 +988,7 @@ function createPseudoRule(rule, pseudoId, place) {
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
         const pseudoRule2 = cssRules[styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)];
-        const addedRules = processStyleRule(pseudoRule2);
+        const addedRules = processTriggerRule(pseudoRule2);
         triggerAfterEvent(document, "pseudoRule", {
           ...detail,
           pseudoRule: pseudoRule2,
@@ -952,53 +1002,59 @@ function createPseudoRule(rule, pseudoId, place) {
   return false;
 }
 
+// lib/process_guard_rule.ts
+function processGuardRule(rule, props) {
+  const prop = `--${config.prefix}-deny-trigger`;
+  if (props.has(prop)) {
+    const { value } = parseCssValue({ rule, prop });
+    if (value === "true") {
+      return [addGuardRule(rule, { denyTrigger: true })];
+    } else {
+      rule.style.removeProperty(prop);
+      triggerErrorEvent(
+        rule.parentStyleSheet?.ownerNode ?? document,
+        "invalidCssValue",
+        {
+          prop,
+          value,
+          rule
+        }
+      );
+    }
+  }
+  return [];
+}
+
 // lib/process_stylesheets.ts
 function processStyleSheets(root) {
-  let hasToggledImports = false;
-  let loop = 0;
   const detail = {
     cssRules: findStyleRules(root)
   };
   const addedRules = [];
-  if (!triggerBeforeEvent(root, "processStyleSheets", detail)) {
-    return;
-  }
-  do {
+  if (triggerBeforeEvent(root, "processStyleSheets", detail)) {
     const cssRules = detail.cssRules;
     if (!cssRules) {
       return;
     }
-    console.debug("processStyleSheets loop:", loop);
-    let hasNewImports = false;
     for (const [rule, props] of cssRules) {
-      switch (processCssImports(rule, props)) {
-        case "created":
-          hasNewImports = true;
-          break;
-        case "enabled":
-        case "disabled":
-          hasToggledImports = true;
-          break;
-      }
+      processCssImports(rule, props, () => {
+        processStyleSheets(root);
+      });
     }
-    if (hasNewImports) {
-      return;
+    for (const [rule, props] of cssRules) {
+      addedRules.push(...processGuardRule(rule, props));
     }
     for (const [rule] of cssRules) {
       createPseudoElements(rule);
     }
     for (const [rule, props] of cssRules) {
-      addedRules.push(...processStyleRule(rule, props));
+      addedRules.push(...processTriggerRule(rule, props));
     }
-    loop++;
-  } while (loop < config.maxLoopCount && hasToggledImports);
-  triggerAfterEvent(document, "processStyleSheets", {
-    ...detail,
-    addedRules,
-    removedRules: []
-  });
-  if (loop === config.maxLoopCount) {
-    console.error("ahx css rules: exceeded maximum loop count", loop);
+    triggerAfterEvent(document, "processStyleSheets", {
+      ...detail,
+      addedRules,
+      removedRules: []
+    });
   }
 }
 
@@ -1007,10 +1063,10 @@ function initLoadTriggerHandling(document2) {
   document2.addEventListener(`${config.prefix}:addEventType`, (event) => {
     if (event.detail.eventType === "load") {
       document2.addEventListener(`${config.prefix}:addRule:done`, (event2) => {
-        if (event2.detail.trigger.eventType === "load") {
-          const target = event2.detail.target.deref();
-          if (target instanceof Element) {
-            target.dispatchEvent(
+        if ("trigger" in event2.detail && event2.detail.trigger.eventType === "load") {
+          const origin = event2.detail.origin.deref();
+          if (origin instanceof Element) {
+            origin.dispatchEvent(
               new CustomEvent("load", {
                 bubbles: true
               })
@@ -1055,18 +1111,28 @@ __export(debug_exports, {
 function logRules() {
   console.group("AHX Rules");
   for (const rule of getRules()) {
-    const { eventType, ...trigger } = rule.trigger;
-    console.log(eventType, rule.target.deref(), trigger, rule.action);
+    const origin = rule.origin.deref();
+    const layer = origin instanceof CSSRule && isInLayer(origin, config.prefix) ? "ahx" : "";
+    if (isTriggerRule(rule)) {
+      const { eventType, ...trigger } = rule.trigger;
+      console.log("trigger", eventType, layer, origin, trigger, rule.action);
+    } else {
+      const { origin: _, ...props } = rule;
+      console.log("guard", props, layer, origin);
+    }
   }
   console.groupEnd();
+}
+function isTriggerRule(rule) {
+  return "trigger" in rule;
 }
 
 // lib/ahx.ts
 ready((document2) => {
   logAll(document2);
   initLoadTriggerHandling(document2);
-  processStyleSheets(document2);
   startObserver(document2);
+  processStyleSheets(document2);
   processTree(document2);
 });
 window.ahx = debug_exports;

@@ -17,8 +17,7 @@
         <h1>Augmented Hypermedia</h1>
       </header>
 
-      <!--
-      <a ahx-get="/loaded.html">Load me</a>
+      <a ahx-get="/more.html">Load me</a>
 
       <br/>
 
@@ -26,14 +25,25 @@
 
       <br/>
 
-      <span ahx-get="/loaded.html" ahx-trigger="load once">Load me on load</span>
+      <span ahx-get="/more.html" ahx-trigger="load once">Load me on load</span>
 
       <br/>
 
       <span class="load-on-load">Load me on load via CSS rule</span>
 
       <hr/>
-      -->
+
+      <div ahx-deny-trigger>
+        <a ahx-get="/more.html">Load me</a>
+        <br/>
+        <a class="load-on-click">Load me too</a>
+        <br/>
+        <span ahx-get="/more.html" ahx-trigger="load once">Load me on load</span>
+        <br/>
+        <span class="load-on-load">Load me on load via CSS rule</span>
+      </div>
+
+      <hr/>
 
       <table class="numberwang">
         <thead>

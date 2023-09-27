@@ -1,0 +1,18 @@
+[ahx-deny-trigger] * {
+  /* attempt to override host rule, this should get rejected */
+  --ahx-deny-trigger: false !important;
+}
+
+a.load-on-click {
+  --ahx-trigger: click;
+  --ahx-get: url('./more.html');
+}
+
+.load-on-load {
+  --ahx-trigger: load;
+  --ahx-get: url('./more.html');
+}
+
+.numberwang {
+  --ahx-import: url("numberwang.css");
+}

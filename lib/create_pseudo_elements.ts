@@ -1,5 +1,5 @@
 import { config } from "./config.ts";
-import { processStyleRule } from "./process_style_rule.ts";
+import { processTriggerRule } from "./process_trigger_rule.ts";
 import {
   triggerAfterEvent,
   triggerBeforeEvent,
@@ -124,7 +124,7 @@ function createPseudoRule(
           styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)
         ] as CSSStyleRule;
 
-        const addedRules = processStyleRule(pseudoRule);
+        const addedRules = processTriggerRule(pseudoRule);
 
         triggerAfterEvent(document, "pseudoRule", {
           ...detail,

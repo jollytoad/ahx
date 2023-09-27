@@ -2,7 +2,7 @@
 
 import { parseInterval } from "./parse_interval.ts";
 import { triggerErrorEvent } from "./trigger_event.ts";
-import type { RuleTarget, TriggerSpec } from "./types.ts";
+import type { RuleOrigin, TriggerSpec } from "./types.ts";
 
 const WHITESPACE_OR_COMMA = /[\s,]/;
 const SYMBOL_START = /[_$a-zA-Z]/;
@@ -13,15 +13,15 @@ const NOT_WHITESPACE = /[^\s]/;
 const INPUT_SELECTOR = "input, textarea, select";
 
 export function parseTriggers(
-  target: RuleTarget,
+  origin: RuleOrigin,
   triggerValue?: string,
   defaultEventType = "click",
 ): TriggerSpec[] {
   const triggerSpecs: TriggerSpec[] = [];
-  const elt = target instanceof Element
-    ? target
-    : target.parentStyleSheet?.ownerNode instanceof Element
-    ? target.parentStyleSheet.ownerNode
+  const elt = origin instanceof Element
+    ? origin
+    : origin.parentStyleSheet?.ownerNode instanceof Element
+    ? origin.parentStyleSheet.ownerNode
     : undefined;
 
   if (triggerValue) {
@@ -36,17 +36,9 @@ export function parseTriggers(
           consumeUntil(tokens, NOT_WHITESPACE);
           every.pollInterval = parseInterval(consumeUntil(tokens, /[,\[\s]/));
           consumeUntil(tokens, NOT_WHITESPACE);
-          // const eventFilter = maybeGenerateConditional(elt, tokens, "event");
-          // if (eventFilter) {
-          //   every.eventFilter = eventFilter;
-          // }
           triggerSpecs.push(every);
         } else {
           const triggerSpec: TriggerSpec = { eventType: trigger };
-          // const eventFilter = maybeGenerateConditional(elt, tokens, "event");
-          // if (eventFilter) {
-          //   triggerSpec.eventFilter = eventFilter;
-          // }
           while (tokens.length > 0 && tokens[0] !== ",") {
             consumeUntil(tokens, NOT_WHITESPACE);
             const token = tokens.shift();

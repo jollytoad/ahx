@@ -1,0 +1,3 @@
+[ahx-deny-trigger], [ahx-deny-trigger] * {
+  --ahx-deny-trigger: true;
+}

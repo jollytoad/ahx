@@ -1,21 +1,21 @@
 import { config } from "./config.ts";
 import { parseCssValue } from "./parse_css_value.ts";
-import { addRules } from "./rules.ts";
+import { addTriggerRules } from "./rules.ts";
 import { getStyleProps } from "./style_props.ts";
 import { parseTriggers } from "./parse_triggers.ts";
-import type { ActionSpec, AhxRule, CSSPropertyName } from "./types.ts";
+import type { ActionSpec, AhxTriggerRule, CSSPropertyName } from "./types.ts";
 import { getAhxValue } from "./get_ahx_value.ts";
 
-export function processStyleRule(
+export function processTriggerRule(
   rule: CSSStyleRule,
   props: Set<CSSPropertyName> = getStyleProps(rule),
-): AhxRule[] {
+): AhxTriggerRule[] {
   const value = getAhxValue(rule, "trigger");
   const triggers = parseTriggers(rule, value, "default");
 
   const actions = getActionSpecs(rule, props);
 
-  return addRules(rule, triggers, actions);
+  return addTriggerRules(rule, triggers, actions);
 }
 
 function getActionSpecs(

@@ -1,6 +1,6 @@
 import { parseActions } from "./parse_actions.ts";
 import { hasAhxAttributes } from "./attributes.ts";
-import { addRules } from "./rules.ts";
+import { addTriggerRules } from "./rules.ts";
 import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
 import { parseTriggers } from "./parse_triggers.ts";
 import type { AhxRule } from "./types.ts";
@@ -15,7 +15,7 @@ export function processElement(elt: Element): AhxRule[] {
       );
       const actions = parseActions(elt);
 
-      const addedRules = addRules(elt, triggers, actions);
+      const addedRules = addTriggerRules(elt, triggers, actions);
 
       triggerAfterEvent(elt, "processElement", {
         addedRules,

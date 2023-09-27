@@ -1,7 +1,7 @@
 # Comparison to htmx features
 
-Shows which features from htmx are included or not in ahx,
-along with differences.
+Shows which features from htmx are included or not in ahx, along with
+differences.
 
 This is a work in progress and may not currently reflect reality.
 

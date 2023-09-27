@@ -1,0 +1,4 @@
+.numberwang tbody tr::after {
+  --ahx-trigger: load once;
+  --ahx-get: url("./more.html");
+}

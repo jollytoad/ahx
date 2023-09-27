@@ -9,7 +9,7 @@ export function parseSwap(elt: Element, swapInfoOverride?: string) {
   const swapInfo = swapInfoOverride || getAhxValue(elt, "swap");
 
   const swapSpec: SwapSpec = {
-    swapStyle: "innerhtml",
+    swapStyle: config.defaultSwapStyle,
     swapDelay: config.defaultSwapDelay,
     settleDelay: config.defaultSettleDelay,
   };

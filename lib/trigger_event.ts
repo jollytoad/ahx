@@ -1,5 +1,5 @@
 import { config } from "./config.ts";
-import type { AhxEventMap, EventType } from "./types.ts";
+import type { AhxErrorMap, AhxEventMap, EventType } from "./types.ts";
 
 export function triggerEvent<T>(
   target: EventTarget,
@@ -38,6 +38,7 @@ export function triggerBeforeEvent<E extends keyof AhxEventMap>(
     if (!permitted) {
       triggerEvent(target, `${config.prefix}:${name}:veto`, detail, false);
     }
+
     return permitted;
   }
   return false;
@@ -56,10 +57,10 @@ export function triggerAfterEvent<E extends keyof AhxEventMap>(
   triggerEvent(target, `${config.prefix}:${name}:done`, detail, false);
 }
 
-export function triggerErrorEvent<E extends keyof AhxEventMap>(
+export function triggerErrorEvent<E extends keyof AhxErrorMap>(
   target: EventTarget,
   name: E,
-  detail?: AhxEventMap[E][0],
+  detail?: AhxErrorMap[E],
 ): void {
   triggerEvent(target, `${config.prefix}:${name}:error`, {
     error: name,
