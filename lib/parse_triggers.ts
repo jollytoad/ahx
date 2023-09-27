@@ -1,8 +1,8 @@
 // Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
 
 import { parseInterval } from "./parse_interval.ts";
-import { triggerErrorEvent } from "./trigger_event.ts";
-import type { RuleOrigin, TriggerSpec } from "./types.ts";
+import { dispatchError } from "./dispatch.ts";
+import type { TriggerOrigin, TriggerSpec } from "./types.ts";
 
 const WHITESPACE_OR_COMMA = /[\s,]/;
 const SYMBOL_START = /[_$a-zA-Z]/;
@@ -13,7 +13,7 @@ const NOT_WHITESPACE = /[^\s]/;
 const INPUT_SELECTOR = "input, textarea, select";
 
 export function parseTriggers(
-  origin: RuleOrigin,
+  origin: TriggerOrigin,
   triggerValue?: string,
   defaultEventType = "click",
 ): TriggerSpec[] {
@@ -82,7 +82,7 @@ export function parseTriggers(
                 WHITESPACE_OR_COMMA,
               ) as typeof triggerSpec["queue"];
             } else {
-              triggerErrorEvent(elt ?? document, "triggerSyntax", {
+              dispatchError(elt ?? document, "triggerSyntax", {
                 token: tokens.shift(),
               });
             }
@@ -91,7 +91,7 @@ export function parseTriggers(
         }
       }
       if (tokens.length === initialLength) {
-        triggerErrorEvent(elt ?? document, "triggerSyntax", {
+        dispatchError(elt ?? document, "triggerSyntax", {
           token: tokens.shift(),
         });
       }

@@ -39,7 +39,10 @@ Dispatched when mutations from the observer have been detected.
 **Details**
 
 - `detail.mutations` - the array of `MutationRecords`
-- _:done_ `detail` also contains rule & element changes (see above)
+- _:done_ `detail.removedElements` - an array of all Elements removed from the
+  document
+- _:done_ `detail.addedElements` - an array of all Elements added to the
+  document
 
 ## `ahx:processTree`
 
@@ -55,7 +58,7 @@ observations.
 
 ## `ahx:processElement`
 
-Dispatched on an Element before being processed for `ahx-*` attributes.
+Dispatched on an `Element` before being processed for `ahx-*` attributes.
 
 **Details**
 
@@ -74,13 +77,24 @@ property.
   present in the rule, the map and/or sets of properties may be modified to skip
   processing.
 
+## `ahx:processRule`
+
+Dispatched for a `CSSStyleRule` before being processed for `--ahx-*` properties.
+The event target will be the `<link>` element of the stylesheet or just
+`document`.
+
+**Details**
+
+- `detail.rule` - the CSSStyleRule
+- `detail.props` - the set of ahx property names found on the style rule
+
 ## `ahx:cssImport`
 
 Dispatched on the `document` before a CSS stylesheet is imported due to a
 `--ahx-import` property.
 
-NOTE: `ahx:cssImport:done` is trigger on the inserted `<link>` element for the
-stylesheet after the file has loaded and has been added into
+NOTE: `ahx:cssImport:done` is dispatched on the inserted `<link>` element for
+the stylesheet after the file has loaded and has been added into
 `document.styleSheets`.
 
 **Details**
@@ -125,17 +139,16 @@ document before the rule is added into the stylesheet.
 
 The `detail.pseudoRule` may be modified.
 
-## `ahx:addRule`
+## `ahx:addTrigger`
 
-Dispatched when a new ahx rule is found, this may be a trigger rule from an
-Element or CSS rule, or a guard rule from a CSS rule (eg `--ahx-deny-trigger`).
+Dispatched when a new ahx trigger is found, this may be a from an Element or CSS
+rule.
 
 **Details**
 
 - `detail.origin` - the Element or CSS rule from which the rule originated
-- `detail.trigger` - the trigger spec (trigger rule only)
-- `detail.action` - the action to perform on triggering (trigger rule only)
-- `detail.denyTrigger` - triggering is denied (guard rule only)
+- `detail.trigger` - the trigger spec
+- `detail.action` - the action to perform on triggering
 
 ## `ahx:addEventType`
 
@@ -145,18 +158,20 @@ Dispatched when the first listener for a type of event is added.
 
 - `detail.eventType` - the event type (immutable)
 
-## `ahx:triggerRule`
+## `ahx:trigger`
 
-Dispatched when an ahx rule has been triggered (and not denied). Maybe cancelled
-to prevent the action.
+Dispatched when an event is handled by an ahx trigger (and not denied). Maybe
+cancelled to prevent the action.
 
-- `detail` - the triggered rule
+- `detail.trigger` - the trigger spec
+- `detail.action` - the action to perform on triggering
 
 ## `ahx:performAction`
 
 Dispatched before a triggered action is performed.
 
-- `detail` - the triggered rule
+- `detail.trigger` - the trigger spec
+- `detail.action` - the action to perform on triggering
 
 ## `ahx:swap`
 
@@ -183,5 +198,5 @@ Dispatched when an ahx css property value is invalid.
 
 ### `ahx:triggerDenied:error`
 
-Dispatched when a trigger rule was denied due to a `--ahx-deny-trigger` rule
-being applied to the target element.
+Dispatched when a trigger was denied due to a `--ahx-deny-trigger` rule being
+applied to the target element.

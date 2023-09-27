@@ -1,5 +1,5 @@
 import { parseSwap } from "./parse_swap.ts";
-import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { SwapSpec, SwapStyle } from "./types.ts";
 
 export async function swap(target: Element, response: Response) {
@@ -15,11 +15,11 @@ export async function swap(target: Element, response: Response) {
       content,
     };
 
-    if (triggerBeforeEvent(target, "swap", detail)) {
+    if (dispatchBefore(target, "swap", detail)) {
       const { content, ...swapSpec } = detail;
       swapHandlers[swapSpec.swapStyle]?.(target, content, swapSpec);
 
-      triggerAfterEvent(target, "swap", detail);
+      dispatchAfter(target, "swap", detail);
     }
   }
   // TODO: trigger events for non-ok response and non-html content

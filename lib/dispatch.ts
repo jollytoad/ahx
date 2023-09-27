@@ -1,7 +1,7 @@
 import { config } from "./config.ts";
 import type { AhxErrorMap, AhxEventMap, EventType } from "./types.ts";
 
-export function triggerEvent<T>(
+export function dispatchEvent<T>(
   target: EventTarget,
   eventType: EventType,
   detail?: T,
@@ -26,7 +26,7 @@ export function triggerEvent<T>(
   return target.dispatchEvent(event);
 }
 
-export function triggerBeforeEvent<E extends keyof AhxEventMap>(
+export function dispatchBefore<E extends keyof AhxEventMap>(
   target: EventTarget | undefined | null,
   name: E,
   detail: AhxEventMap[E][0],
@@ -34,9 +34,14 @@ export function triggerBeforeEvent<E extends keyof AhxEventMap>(
   if (target) {
     // @ts-ignore to aid logging
     detail._before = true;
-    const permitted = triggerEvent(target, `${config.prefix}:${name}`, detail);
+
+    const permitted = dispatchEvent(target, `${config.prefix}:${name}`, detail);
+
+    // @ts-ignore to aid logging
+    delete detail._before;
+
     if (!permitted) {
-      triggerEvent(target, `${config.prefix}:${name}:veto`, detail, false);
+      dispatchEvent(target, `${config.prefix}:${name}:veto`, detail, false);
     }
 
     return permitted;
@@ -44,25 +49,26 @@ export function triggerBeforeEvent<E extends keyof AhxEventMap>(
   return false;
 }
 
-export function triggerAfterEvent<E extends keyof AhxEventMap>(
+export function dispatchAfter<E extends keyof AhxEventMap>(
   target: EventTarget,
   name: E,
   detail?: AhxEventMap[E][1],
 ): void {
   // @ts-ignore to aid logging
   detail._after = true;
-  // @ts-ignore to aid logging
-  delete detail._before;
 
-  triggerEvent(target, `${config.prefix}:${name}:done`, detail, false);
+  dispatchEvent(target, `${config.prefix}:${name}:done`, detail, false);
+
+  // @ts-ignore to aid logging
+  delete detail._after;
 }
 
-export function triggerErrorEvent<E extends keyof AhxErrorMap>(
+export function dispatchError<E extends keyof AhxErrorMap>(
   target: EventTarget,
   name: E,
   detail?: AhxErrorMap[E],
 ): void {
-  triggerEvent(target, `${config.prefix}:${name}:error`, {
+  dispatchEvent(target, `${config.prefix}:${name}:error`, {
     error: name,
     ...detail,
   }, false);

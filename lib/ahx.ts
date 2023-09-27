@@ -9,6 +9,15 @@ import { processTree } from "./process_tree.ts";
 import { processStyleSheets } from "./process_stylesheets.ts";
 import { initLoadTriggerHandling } from "./trigger_load.ts";
 import * as ahx from "./debug.ts";
+import { patchCSSOM } from "./cssom_patch.ts";
+
+patchCSSOM({
+  onInsertRule() {
+    setTimeout(() => {
+      processStyleSheets(document);
+    }, 0);
+  },
+});
 
 ready((document) => {
   logAll(document);

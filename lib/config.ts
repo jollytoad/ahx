@@ -1,7 +1,20 @@
-import type { Prefix, SwapStyle } from "./types.ts";
+import type { AhxHttpMethod, AhxName, Prefix, SwapStyle } from "./types.ts";
 
-export const config = {
-  prefix: "ahx" as Prefix,
+interface Config {
+  prefix: Prefix;
+  httpMethods: AhxHttpMethod[];
+  ahxAttrs: AhxName[];
+  maxLoopCount: number;
+  defaultDelay: number;
+  defaultSettleDelay: number;
+  defaultSwapDelay: number;
+  defaultSwapStyle: SwapStyle;
+  enableAhxCombinedEvent: boolean;
+  pseudoChildTags: Record<string, string | null | undefined>;
+}
+
+export const config: Config = {
+  prefix: "ahx",
 
   httpMethods: [
     "get",
@@ -15,18 +28,12 @@ export const config = {
     "trigger",
   ],
 
-  customProps: [
-    "--name",
-    "--value",
-    "--class",
-  ],
-
   maxLoopCount: 10,
 
   defaultDelay: 20,
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
-  defaultSwapStyle: "outerhtml" satisfies SwapStyle as SwapStyle,
+  defaultSwapStyle: "outerhtml",
 
   enableAhxCombinedEvent: false,
 
@@ -89,5 +96,5 @@ export const config = {
 
     // default for all other parents
     "*": "span",
-  } as Record<string, string | null | undefined>,
+  },
 };

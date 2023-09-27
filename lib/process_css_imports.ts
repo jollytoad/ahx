@@ -1,27 +1,20 @@
-import { config } from "./config.ts";
+import { getInternal } from "./internal.ts";
 import { parseCssValue } from "./parse_css_value.ts";
-import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { CssImportDetail, CSSPropertyName } from "./types.ts";
-
-const importLinks = new WeakMap<
-  CSSStyleRule,
-  Map<CSSPropertyName, HTMLLinkElement>
->();
+import { asAhxCSSPropertyName } from "./names.ts";
 
 export function processCssImports(
   rule: CSSStyleRule,
   props: Set<CSSPropertyName>,
   onReady?: () => void,
-): void {
-  const importProp = `--${config.prefix}-import`;
+) {
+  const importProp = asAhxCSSPropertyName("import");
 
   for (const prop of props) {
     if (prop === importProp || prop.startsWith(`${importProp}-`)) {
-      if (!importLinks.has(rule)) {
-        importLinks.set(rule, new Map());
-      }
-
-      let link: HTMLLinkElement | undefined = importLinks.get(rule)?.get(prop);
+      let link: HTMLLinkElement | undefined = getInternal(rule, "importLinks")
+        ?.get(prop);
       let ruleApplies = false;
 
       for (const elt of document.querySelectorAll(rule.selectorText)) {
@@ -49,7 +42,7 @@ export function processCssImports(
             );
 
             if (link) {
-              importLinks.get(rule)?.set(prop, link);
+              getInternal(rule, "importLinks", () => new Map()).set(prop, link);
               break;
             }
           }
@@ -70,7 +63,7 @@ function createStyleSheetLink(
 ): HTMLLinkElement | undefined {
   const detail: CssImportDetail = { url, crossOrigin, disabled: false };
 
-  if (triggerBeforeEvent(document, "cssImport", detail)) {
+  if (dispatchBefore(document, "cssImport", detail)) {
     if (
       !document.querySelector(`link[rel="stylesheet"][href="${detail.url}"]`)
     ) {
@@ -86,7 +79,7 @@ function createStyleSheetLink(
         // IMPORTANT: setTimeout is required to ensure the stylesheet has
         // is exposed in the DOM before we trigger the done event.
         setTimeout(() => {
-          triggerAfterEvent(event.target ?? document, "cssImport", detail);
+          dispatchAfter(event.target ?? document, "cssImport", detail);
           onReady?.();
         }, 0);
       }, { once: true, passive: true });

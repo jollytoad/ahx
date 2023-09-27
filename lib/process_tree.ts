@@ -1,29 +1,24 @@
-import { ahxSelector } from "./attributes.ts";
 import { processElement } from "./process_element.ts";
-import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
-import type { AhxRule } from "./types.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { config } from "./config.ts";
+import { asAhxAttributeName } from "./names.ts";
 
-export function processTree(root: ParentNode): AhxRule[] {
-  const detail = {
-    selector: ahxSelector(),
-  };
+export function processTree(root: ParentNode, selector = defaultSelector()) {
+  const detail = { selector };
 
-  if (triggerBeforeEvent(root, "processTree", detail)) {
-    const addedRules: AhxRule[] = [];
+  if (dispatchBefore(root, "processTree", detail)) {
     const elements = root.querySelectorAll(detail.selector);
 
     for (const elt of elements) {
-      addedRules.push(...processElement(elt));
+      processElement(elt);
     }
 
-    triggerAfterEvent(root, "processTree", {
-      ...detail,
-      addedRules,
-      removedRules: [],
-    });
-
-    return addedRules;
+    dispatchAfter(root, "processTree", detail);
   }
+}
 
-  return [];
+export function defaultSelector() {
+  return [...config.ahxAttrs, ...config.httpMethods].map((attr) =>
+    `[${asAhxAttributeName(attr)}]`
+  ).join(",");
 }

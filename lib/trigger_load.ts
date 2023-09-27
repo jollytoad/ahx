@@ -1,24 +1,14 @@
 import { config } from "./config.ts";
+import type { EventType } from "./types.ts";
 
 export function initLoadTriggerHandling(document: Document) {
   document.addEventListener(`${config.prefix}:addEventType`, (event) => {
-    // At least one ahx rule has registered an interest in the 'load' event
     if (event.detail.eventType === "load") {
       // Listener for new ahx-trigger attributes with the 'load' event,
       // and trigger the event immediately
-      document.addEventListener(`${config.prefix}:addRule:done`, (event) => {
-        if (
-          "trigger" in event.detail && event.detail.trigger.eventType === "load"
-        ) {
-          const origin = event.detail.origin.deref();
-
-          if (origin instanceof Element) {
-            origin.dispatchEvent(
-              new CustomEvent("load", {
-                bubbles: true,
-              }),
-            );
-          }
+      document.addEventListener(`${config.prefix}:addTrigger:done`, (event) => {
+        if (event.detail.trigger.eventType === "load" && event.target) {
+          dispatchLoad([event.target], { triggerEvent: event.type });
         }
       });
 
@@ -32,28 +22,36 @@ export function initLoadTriggerHandling(document: Document) {
               ? event.target.documentElement
               : event.target;
 
-            target.dispatchEvent(
-              new CustomEvent("load", {
-                bubbles: true,
-                detail: {
-                  recursive: true,
-                },
-              }),
-            );
+            dispatchLoad([target], {
+              triggerEvent: event.type,
+              recursive: true,
+            });
           }
         },
       );
 
       // Trigger a 'load' event on all newly added elements
       document.addEventListener(`${config.prefix}:mutations:done`, (event) => {
-        for (const elt of event.detail.addedElements) {
-          elt.dispatchEvent(
-            new CustomEvent("load", {
-              bubbles: true,
-            }),
-          );
-        }
+        dispatchLoad([...event.detail.addedElements], {
+          triggerEvent: event.type,
+        });
       });
     }
   });
+}
+
+function dispatchLoad(
+  targets: EventTarget[],
+  detail: { triggerEvent: EventType; recursive?: boolean },
+) {
+  setTimeout(() => {
+    for (const elt of targets) {
+      elt.dispatchEvent(
+        new CustomEvent("load", {
+          bubbles: true,
+          detail,
+        }),
+      );
+    }
+  }, 0);
 }

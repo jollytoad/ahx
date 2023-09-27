@@ -1,41 +1,27 @@
 import { config } from "./config.ts";
-import { processTriggerRule } from "./process_trigger_rule.ts";
-import {
-  triggerAfterEvent,
-  triggerBeforeEvent,
-  triggerErrorEvent,
-} from "./trigger_event.ts";
+import { getInternal, hasInternal, setInternal } from "./internal.ts";
+import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
 import type { PseudoId, PseudoPlace } from "./types.ts";
-
-const pseudoIds = new WeakMap<CSSStyleRule, PseudoId>();
 
 let nextPseudoId = 1;
 
-export function createPseudoElements(rule: CSSStyleRule): boolean {
+export function createPseudoElements(rule: CSSStyleRule) {
   // TODO: better selectorText parsing
   const before = rule.selectorText.includes("::before");
   const after = before ? false : rule.selectorText.includes("::after");
 
-  let modified = false;
-
   if (before || after) {
-    const pseudoId = pseudoIds.get(rule) || nextPseudoId++;
+    const pseudoId = getInternal(rule, "pseudoId") || nextPseudoId++;
     const place = before ? "before" : "after";
     const parentSelector = rule.selectorText.replace(`::${place}`, "");
 
     for (const elt of document.querySelectorAll(parentSelector)) {
       // Insert a 'pseudo-element'
-      if (createPseudoElement(elt, pseudoId, place)) {
-        modified = true;
-      }
+      createPseudoElement(elt, pseudoId, place);
     }
 
-    if (createPseudoRule(rule, pseudoId, place)) {
-      modified = true;
-    }
+    createPseudoRule(rule, pseudoId, place);
   }
-
-  return modified;
 }
 
 function createPseudoElement(
@@ -48,11 +34,10 @@ function createPseudoElement(
   if (!elt.querySelector(`:scope > .${pseudoIdClass}`)) {
     const parentTag = elt.localName;
 
-    // TODO: Pick appropriate tag for other types of parent too
     let pseudoTag = config.pseudoChildTags[parentTag];
 
     if (pseudoTag === null) {
-      triggerErrorEvent(elt, "pseudoElementNotPermitted", { parentTag });
+      dispatchError(elt, "pseudoElementNotPermitted", { parentTag });
       return;
     }
 
@@ -74,16 +59,16 @@ function createPseudoElement(
       place,
     };
 
-    if (triggerBeforeEvent(elt, "pseudoElement", detail)) {
+    if (dispatchBefore(elt, "pseudoElement", detail)) {
       const insertPosition = detail.place === "before"
         ? "afterbegin"
         : "beforeend";
+
       elt.insertAdjacentElement(insertPosition, detail.pseudoElt);
-      triggerAfterEvent(elt, "pseudoElement", detail);
-      return true;
+
+      dispatchAfter(elt, "pseudoElement", detail);
     }
   }
-  return false;
 }
 
 function createPseudoRule(
@@ -91,9 +76,9 @@ function createPseudoRule(
   pseudoId: PseudoId,
   place: PseudoPlace,
 ) {
-  if (!pseudoIds.has(rule)) {
+  if (!hasInternal(rule, "pseudoId")) {
     // Create a 'pseudo-rule' to target the 'pseudo-element'
-    pseudoIds.set(rule, pseudoId);
+    setInternal(rule, "pseudoId", pseudoId);
 
     const pseudoIdClass = `${config.prefix}-pseudo-${pseudoId}`;
 
@@ -115,7 +100,7 @@ function createPseudoRule(
       place,
     };
 
-    if (triggerBeforeEvent(document, "pseudoRule", detail)) {
+    if (dispatchBefore(document, "pseudoRule", detail)) {
       const styleSheet = detail.pseudoRule.parentStyleSheet;
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
@@ -124,17 +109,11 @@ function createPseudoRule(
           styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)
         ] as CSSStyleRule;
 
-        const addedRules = processTriggerRule(pseudoRule);
-
-        triggerAfterEvent(document, "pseudoRule", {
+        dispatchAfter(document, "pseudoRule", {
           ...detail,
           pseudoRule,
-          addedRules,
-          removedRules: [],
         });
-        return true;
       }
     }
   }
-  return false;
 }

@@ -1,29 +1,15 @@
-import { parseActions } from "./parse_actions.ts";
-import { hasAhxAttributes } from "./attributes.ts";
-import { addTriggerRules } from "./rules.ts";
-import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
-import { parseTriggers } from "./parse_triggers.ts";
-import type { AhxRule } from "./types.ts";
-import { config } from "./config.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { hasAhxAttributes } from "./names.ts";
+import { processTriggers } from "./process_triggers.ts";
 
-export function processElement(elt: Element): AhxRule[] {
+export function processElement(elt: Element) {
   if (hasAhxAttributes(elt)) {
-    if (triggerBeforeEvent(elt, "processElement", {})) {
-      const triggers = parseTriggers(
-        elt,
-        elt.getAttribute(`${config.prefix}-trigger`) ?? "",
-      );
-      const actions = parseActions(elt);
+    const detail = {};
 
-      const addedRules = addTriggerRules(elt, triggers, actions);
+    if (dispatchBefore(elt, "processElement", detail)) {
+      processTriggers(elt, "click");
 
-      triggerAfterEvent(elt, "processElement", {
-        addedRules,
-        removedRules: [],
-      });
-
-      return addedRules;
+      dispatchAfter(elt, "processElement", detail);
     }
   }
-  return [];
 }

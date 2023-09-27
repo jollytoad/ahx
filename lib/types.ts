@@ -6,34 +6,29 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 
-export type AhxPropertyName =
-  | "deny-trigger"
-  | "trigger"
+export type AhxHttpMethod =
   | "get"
   | "post"
   | "put"
   | "patch"
   | "delete";
 
-export type AhxCSSPropertyName = `--${Prefix}-${AhxPropertyName}`;
-export type AhxAttributeName = `${Prefix}-${AhxPropertyName}`;
+export type AhxName =
+  | "import"
+  | "deny-trigger"
+  | "trigger"
+  | "swap"
+  | AhxHttpMethod;
 
-export type RuleOrigin = Element | CSSStyleRule;
+export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;
+export type AhxAttributeName = `${Prefix}-${AhxName}`;
 
-export interface AhxTriggerRule {
-  /** The Element or CSSStyleRule from where this rule originated */
-  origin: WeakRef<RuleOrigin>;
+export type TriggerOrigin = Element | CSSStyleRule;
+
+export interface AhxTrigger {
   trigger: TriggerSpec;
   action: ActionSpec;
 }
-
-export interface AhxGuardRule {
-  /** The CSSStyleRule that declared this rule */
-  origin: WeakRef<CSSStyleRule>;
-  denyTrigger?: boolean;
-}
-
-export type AhxRule = AhxTriggerRule | AhxGuardRule;
 
 export interface TriggerSpec {
   eventType: EventType;
@@ -70,24 +65,25 @@ export interface AhxEventMap {
   "startObserver": [MutationObserverInit, MutationObserverInit];
   "mutations": [
     MutationsDetail,
-    MutationsDetail & RuleChanges & ElementChanges,
+    MutationsDetail & ElementChanges,
   ];
-  "processTree": [ProcessTreeDetail, ProcessTreeDetail & RuleChanges];
-  "processElement": [ProcessElementDetail, ProcessElementDetail & RuleChanges];
+  "processTree": [ProcessTreeDetail, ProcessTreeDetail];
+  "processElement": [ProcessElementDetail, ProcessElementDetail];
   "processStyleSheets": [
     ProcessStyleSheetsDetail,
-    ProcessStyleSheetsDetail & RuleChanges,
+    ProcessStyleSheetsDetail,
   ];
+  "processRule": [ProcessRuleDetail, ProcessRuleDetail];
   "cssImport": [CssImportDetail, CssImportDetail];
   "pseudoElement": [PseudoElementDetail, PseudoElementDetail];
   "pseudoRule": [
     PseudoRuleDetail,
-    Omit<PseudoRuleDetail, "pseudoRule"> & WithPseudoRule & RuleChanges,
+    Omit<PseudoRuleDetail, "pseudoRule"> & WithPseudoRule,
   ];
-  "addRule": [AhxRule, AhxRule];
+  "addTrigger": [AddTriggerDetail, AddTriggerDetail];
   "addEventType": [AddEventTypeDetail, AddEventTypeDetail];
-  "triggerRule": [AhxRule, AhxRule];
-  "performAction": [AhxRule, AhxRule];
+  "trigger": [AhxTrigger, AhxTrigger];
+  "performAction": [AhxTrigger, AhxTrigger];
   "swap": [SwapDetail, SwapDetail];
 }
 
@@ -99,16 +95,11 @@ export interface AhxErrorMap {
     value?: string;
     rule: CSSStyleRule;
   };
-  "triggerDenied": { rule: AhxTriggerRule };
+  "triggerDenied": AhxTrigger;
 }
 
 export interface MutationsDetail {
   mutations: MutationRecord[];
-}
-
-export interface RuleChanges {
-  removedRules: AhxRule[];
-  addedRules: AhxRule[];
 }
 
 export interface ElementChanges {
@@ -125,7 +116,12 @@ export interface ProcessElementDetail {
 }
 
 export interface ProcessStyleSheetsDetail {
-  cssRules: Map<CSSStyleRule, Set<CSSPropertyName>>;
+  cssRules: Map<CSSStyleRule, Set<AhxCSSPropertyName>>;
+}
+
+export interface ProcessRuleDetail {
+  rule: CSSStyleRule;
+  props: Set<AhxCSSPropertyName>;
 }
 
 export interface CssImportDetail {
@@ -152,6 +148,10 @@ export interface PseudoRuleDetail {
 
 export interface WithPseudoRule {
   pseudoRule: CSSStyleRule;
+}
+
+export interface AddTriggerDetail extends AhxTrigger {
+  origin: TriggerOrigin;
 }
 
 export interface AddEventTypeDetail {

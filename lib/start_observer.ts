@@ -1,28 +1,27 @@
+import { deleteInternal } from "./internal.ts";
 import { processElement } from "./process_element.ts";
-import { removeRules } from "./rules.ts";
-import { triggerAfterEvent, triggerBeforeEvent } from "./trigger_event.ts";
-import type { AhxRule } from "./types.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 
 export function startObserver(root: ParentNode) {
   const observer = new MutationObserver((mutations) => {
     const detail = { mutations };
-    if (triggerBeforeEvent(root, "mutations", detail)) {
-      const removedRules: AhxRule[] = [];
-      const addedRules: AhxRule[] = [];
+    if (dispatchBefore(root, "mutations", detail)) {
+      const removedNodes = new Set<Node>();
       const removedElements: Element[] = [];
       const addedElements: Element[] = [];
 
       for (const mutation of detail.mutations) {
         for (const node of mutation.removedNodes) {
+          removedNodes.add(node);
           if (node instanceof Element) {
-            removedRules.push(...removeRules(node));
             removedElements.push(node);
           }
         }
 
         for (const node of mutation.addedNodes) {
+          removedNodes.delete(node);
           if (node instanceof Element) {
-            addedRules.push(...processElement(node));
+            processElement(node);
             addedElements.push(node);
           }
         }
@@ -30,18 +29,19 @@ export function startObserver(root: ParentNode) {
         if (
           mutation.type === "attributes" && mutation.target instanceof Element
         ) {
-          removedRules.push(...removeRules(mutation.target));
-          addedRules.push(...processElement(mutation.target));
+          processElement(mutation.target);
         }
       }
 
-      triggerAfterEvent(root, "mutations", {
+      dispatchAfter(root, "mutations", {
         ...detail,
-        removedRules,
-        addedRules,
         removedElements,
         addedElements,
       });
+
+      for (const node of removedNodes) {
+        deleteInternal(node);
+      }
     }
   });
 
@@ -52,9 +52,9 @@ export function startObserver(root: ParentNode) {
     attributeOldValue: true,
   };
 
-  if (triggerBeforeEvent(root, "startObserver", options)) {
+  if (dispatchBefore(root, "startObserver", options)) {
     observer.observe(root, options);
 
-    triggerAfterEvent(root, "startObserver", options);
+    dispatchAfter(root, "startObserver", options);
   }
 }

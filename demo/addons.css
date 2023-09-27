@@ -1,5 +1,5 @@
+/* attempt to override host rule, this should get rejected */
 [ahx-deny-trigger] * {
-  /* attempt to override host rule, this should get rejected */
   --ahx-deny-trigger: false !important;
 }
 

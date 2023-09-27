@@ -1,10 +1,10 @@
-import { getStyleProps } from "./style_props.ts";
-import type { CSSPropertyName } from "./types.ts";
+import { getAhxCSSPropertyNames } from "./names.ts";
+import type { AhxCSSPropertyName } from "./types.ts";
 
 export function findStyleRules(
   root: DocumentOrShadowRoot,
-): Map<CSSStyleRule, Set<CSSPropertyName>> {
-  const cssRules = new Map<CSSStyleRule, Set<CSSPropertyName>>();
+): Map<CSSStyleRule, Set<AhxCSSPropertyName>> {
+  const cssRules = new Map<CSSStyleRule, Set<AhxCSSPropertyName>>();
 
   function fromStylesheet(stylesheet: CSSStyleSheet) {
     if (!stylesheet.disabled) {
@@ -29,7 +29,7 @@ export function findStyleRules(
   }
 
   function fromStyleRule(rule: CSSStyleRule) {
-    const props = getStyleProps(rule);
+    const props = getAhxCSSPropertyNames(rule);
     if (props.size > 0) {
       cssRules.set(rule, props);
     }

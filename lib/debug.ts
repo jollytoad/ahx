@@ -1,27 +1,43 @@
-import { config } from "./config.ts";
-import { isInLayer } from "./find_style_rules.ts";
-import { getRules } from "./rules.ts";
-import type { AhxRule, AhxTriggerRule } from "./types.ts";
+import { internalEntries } from "./internal.ts";
 
-export function logRules() {
-  console.group("AHX Rules");
-  for (const rule of getRules()) {
-    const origin = rule.origin.deref();
-    const layer = origin instanceof CSSRule && isInLayer(origin, config.prefix)
-      ? "ahx"
-      : "";
+export function logInternals() {
+  console.group("AHX Internal Properties");
 
-    if (isTriggerRule(rule)) {
-      const { eventType, ...trigger } = rule.trigger;
-      console.log("trigger", eventType, layer, origin, trigger, rule.action);
+  let groupObject: unknown;
+  for (const [object, key, value] of internalEntries()) {
+    if (object !== groupObject) {
+      if (groupObject) {
+        console.groupEnd();
+      }
+
+      const representation = object instanceof CSSRule
+        ? object.cssText
+        : object;
+
+      console.groupCollapsed(representation);
+      console.dir(object);
+
+      if (object instanceof CSSStyleRule) {
+        // console.groupCollapsed('matched nodes...');
+        for (const node of document.querySelectorAll(object.selectorText)) {
+          console.log(node);
+        }
+        // console.groupEnd();
+      }
+
+      groupObject = object;
+    }
+
+    if (value instanceof Map) {
+      console.group("%s:", key);
+      for (const entry of value) {
+        console.log("%c%s:", "font-weight: bold", ...entry);
+      }
+      console.groupEnd();
     } else {
-      const { origin: _, ...props } = rule;
-      console.log("guard", props, layer, origin);
+      console.log("%c%s:", "font-weight: bold", key, value);
     }
   }
-  console.groupEnd();
-}
 
-function isTriggerRule(rule: AhxRule): rule is AhxTriggerRule {
-  return "trigger" in rule;
+  console.groupEnd();
 }
