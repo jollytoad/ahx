@@ -281,8 +281,12 @@ function parseCssValue({ rule, style, prop, elt }) {
     }
     spec.value = parseQuoted(spec.value);
     if (isURL) {
-      const styleSheet = rule?.parentStyleSheet ?? style?.parentRule?.parentStyleSheet;
-      spec.value = new URL(spec.value, styleSheet?.href ?? void 0).href;
+      const baseURL = rule?.parentStyleSheet?.href ?? style?.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
+      try {
+        spec.value = new URL(spec.value, baseURL).href;
+      } catch (e) {
+        console.error(e, spec.value, baseURL);
+      }
     }
   }
   return spec;
@@ -442,8 +446,8 @@ async function performAction(trigger, elt) {
 
 // lib/triggers.ts
 var eventTypes = /* @__PURE__ */ new Set();
-function addTriggers(origin, triggers, actions) {
-  for (const trigger of triggers) {
+function addTriggers(origin, triggers2, actions) {
+  for (const trigger of triggers2) {
     for (const action of actions) {
       addTrigger(origin, trigger, action);
     }
@@ -478,9 +482,9 @@ function* getTriggersForEvent(event) {
     if (trigger) {
       yield [trigger, event.target];
     }
-    for (const [origin, triggers] of objectsWithInternal("triggers")) {
+    for (const [origin, triggers2] of objectsWithInternal("triggers")) {
       if (origin instanceof CSSStyleRule) {
-        const trigger2 = triggers.get(event.type);
+        const trigger2 = triggers2.get(event.type);
         if (trigger2 && isEnabled(origin)) {
           if (trigger2 && event.target.matches(origin.selectorText)) {
             yield [trigger2, event.target];
@@ -652,9 +656,9 @@ function parseActions(origin) {
 // lib/process_triggers.ts
 function processTriggers(origin, defaultEventType) {
   const triggerValue = getAhxValue(origin, "trigger");
-  const triggers = parseTriggers(origin, triggerValue, defaultEventType);
+  const triggers2 = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
-  addTriggers(origin, triggers, actions);
+  addTriggers(origin, triggers2, actions);
 }
 
 // lib/process_element.ts
@@ -716,31 +720,40 @@ function startObserver(root) {
   }
 }
 
-// lib/logger.ts
-function logAll(root = document) {
+// lib/debug/events.ts
+var loggerConfig = {
+  collapse: true
+};
+var rootRef;
+function eventsAll(root = document) {
   config.enableAhxCombinedEvent = true;
-  root.addEventListener(config.prefix, (event) => {
-    if (event instanceof CustomEvent && event.detail instanceof CustomEvent) {
-      event = event.detail;
-    }
-    const detail = event.detail;
-    if (detail?._before) {
-      console.group(event.type, event, detail);
-    } else {
-      console.log(event.type, event, detail);
-    }
-    if (detail?._after) {
-      console.groupEnd();
-    }
-  });
+  if (!rootRef) {
+    root.addEventListener(config.prefix, logger);
+    rootRef = new WeakRef(root);
+  }
+}
+function eventsNone() {
+  rootRef?.deref()?.removeEventListener(config.prefix, logger);
+  rootRef = void 0;
+}
+function logger({ detail: event }) {
+  const detail = event.detail;
+  if (detail?._before) {
+    console[loggerConfig.collapse ? "groupCollapsed" : "group"](event.type, event, detail);
+  } else {
+    console.log(event.type, event, detail);
+  }
+  if (detail?._after) {
+    console.groupEnd();
+  }
 }
 
 // lib/process_tree.ts
 function processTree(root, selector = defaultSelector()) {
   const detail = { selector };
   if (dispatchBefore(root, "processTree", detail)) {
-    const elements = root.querySelectorAll(detail.selector);
-    for (const elt of elements) {
+    const elements2 = root.querySelectorAll(detail.selector);
+    for (const elt of elements2) {
       processElement(elt);
     }
     dispatchAfter(root, "processTree", detail);
@@ -1029,9 +1042,17 @@ function dispatchLoad(targets, detail) {
 // lib/debug.ts
 var debug_exports = {};
 __export(debug_exports, {
-  logInternals: () => logInternals
+  elements: () => elements,
+  eventsAll: () => eventsAll,
+  eventsNone: () => eventsNone,
+  internals: () => internals,
+  logger: () => logger,
+  loggerConfig: () => loggerConfig,
+  triggers: () => triggers
 });
-function logInternals() {
+
+// lib/debug/internals.ts
+function internals() {
   console.group("AHX Internal Properties");
   let groupObject;
   for (const [object, key, value] of internalEntries()) {
@@ -1058,6 +1079,113 @@ function logInternals() {
     } else {
       console.log("%c%s:", "font-weight: bold", key, value);
     }
+  }
+  console.groupEnd();
+}
+
+// lib/debug/compare_position.ts
+function comparePosition(a, b) {
+  if (a === b) {
+    return 0;
+  }
+  const position = a.compareDocumentPosition(b);
+  if (position & Node.DOCUMENT_POSITION_FOLLOWING || position & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+    return -1;
+  } else if (position & Node.DOCUMENT_POSITION_PRECEDING || position & Node.DOCUMENT_POSITION_CONTAINS) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+// lib/debug/elements.ts
+function elements(ahxProp) {
+  console.group("AHX Elements");
+  const elements2 = /* @__PURE__ */ new Set();
+  const rules = /* @__PURE__ */ new Set();
+  for (const [object] of internalEntries()) {
+    if (object instanceof Element) {
+      elements2.add(object);
+    } else if (object instanceof CSSStyleRule) {
+      rules.add(object);
+    }
+  }
+  for (const rule of rules) {
+    for (const node of document.querySelectorAll(rule.selectorText)) {
+      if (node instanceof Element) {
+        elements2.add(node);
+      }
+    }
+  }
+  for (const elt of [...elements2].sort(comparePosition)) {
+    if (ahxProp) {
+      const value = getAhxValue(elt, ahxProp);
+      if (value) {
+        console.log(elt, value);
+      }
+    } else {
+      console.log(elt);
+    }
+  }
+  console.groupEnd();
+}
+
+// lib/debug/triggers.ts
+function triggers(verbose = false) {
+  console.group("AHX Triggers");
+  const elements2 = /* @__PURE__ */ new Map();
+  function addOrigin(elt, origin) {
+    if (!elements2.has(elt)) {
+      elements2.set(elt, /* @__PURE__ */ new Set());
+    }
+    elements2.get(elt).add(origin);
+  }
+  for (const [origin] of objectsWithInternal("triggers")) {
+    if (origin instanceof Element) {
+      addOrigin(origin, origin);
+    } else if (origin instanceof CSSStyleRule) {
+      for (const node of document.querySelectorAll(origin.selectorText)) {
+        if (node instanceof Element) {
+          addOrigin(node, origin);
+        }
+      }
+    }
+  }
+  const orderedElements = [...elements2.keys()].sort(comparePosition);
+  for (const elt of orderedElements) {
+    const origins = elements2.get(elt) ?? [];
+    const events = /* @__PURE__ */ new Set();
+    for (const origin of origins) {
+      const triggers2 = getInternal(origin, "triggers");
+      for (const eventType of triggers2.keys()) {
+        events.add(eventType);
+      }
+    }
+    console.groupCollapsed(elt, ...events);
+    for (const origin of origins) {
+      const triggers2 = getInternal(origin, "triggers");
+      for (const { trigger, action } of triggers2.values()) {
+        if (verbose) {
+          console.log("trigger:", trigger, "action:", action, "origin:", origin);
+        } else {
+          const originRep = origin instanceof Element ? "element" : origin.cssText;
+          console.log(
+            "%c%s%c -> %c%s %s%c from: %c%s%c",
+            "color: red; font-weight: bold",
+            trigger.eventType,
+            "color: inherit; font-weight: normal",
+            "color: green",
+            action.method.toUpperCase(),
+            action.url,
+            "color: inherit",
+            "color: blue",
+            originRep,
+            "color: inherit"
+          );
+        }
+      }
+    }
+    console.groupEnd();
   }
   console.groupEnd();
 }
@@ -1100,7 +1228,7 @@ patchCSSOM({
   }
 });
 ready((document2) => {
-  logAll(document2);
+  eventsAll(document2);
   initLoadTriggerHandling(document2);
   startObserver(document2);
   processStyleSheets(document2);

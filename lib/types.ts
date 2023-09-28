@@ -178,16 +178,39 @@ type ErrorEventMap = {
   >;
 };
 
-type CustomEventMap = BeforeEventMap & AfterEventMap & ErrorEventMap & {
-  Prefix: CustomEvent<CustomEvent>;
-};
+type CustomEventMap =
+  & BeforeEventMap
+  & AfterEventMap
+  & ErrorEventMap
+  & {
+    [K in Prefix]: CustomEvent<CustomEvent>;
+  };
 
 declare global {
+  interface EventTarget {
+    addEventListener<K extends keyof CustomEventMap>(
+      type: K,
+      listener: (this: Document, ev: CustomEventMap[K]) => void,
+      options?: AddEventListenerOptions | boolean,
+    ): void;
+    removeEventListener<K extends keyof CustomEventMap>(
+      type: K,
+      listener: (this: Document, ev: CustomEventMap[K]) => void,
+      options?: EventListenerOptions | boolean,
+    ): void;
+  }
+  // Document doesn't extend EventTarget, so we have to declare
+  // the event listener overrides again!...
   interface Document {
     addEventListener<K extends keyof CustomEventMap>(
       type: K,
       listener: (this: Document, ev: CustomEventMap[K]) => void,
-      options?: boolean | AddEventListenerOptions,
+      options?: AddEventListenerOptions | boolean,
+    ): void;
+    removeEventListener<K extends keyof CustomEventMap>(
+      type: K,
+      listener: (this: Document, ev: CustomEventMap[K]) => void,
+      options?: EventListenerOptions | boolean,
     ): void;
   }
 }

@@ -72,9 +72,14 @@ export function parseCssValue(
     spec.value = parseQuoted(spec.value);
 
     if (isURL) {
-      const styleSheet = rule?.parentStyleSheet ??
-        style?.parentRule?.parentStyleSheet;
-      spec.value = new URL(spec.value, styleSheet?.href ?? undefined).href;
+      const baseURL = rule?.parentStyleSheet?.href ??
+        style?.parentRule?.parentStyleSheet?.href ??
+        elt?.baseURI;
+      try {
+        spec.value = new URL(spec.value, baseURL).href;
+      } catch (e) {
+        console.error(e, spec.value, baseURL);
+      }
     }
   }
 

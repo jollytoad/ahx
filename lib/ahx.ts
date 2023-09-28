@@ -4,7 +4,7 @@
 
 import { ready } from "./ready.ts";
 import { startObserver } from "./start_observer.ts";
-import { logAll } from "./logger.ts";
+import { eventsAll } from "./debug/events.ts";
 import { processTree } from "./process_tree.ts";
 import { processStyleSheets } from "./process_stylesheets.ts";
 import { initLoadTriggerHandling } from "./trigger_load.ts";
@@ -20,7 +20,7 @@ patchCSSOM({
 });
 
 ready((document) => {
-  logAll(document);
+  eventsAll(document);
 
   initLoadTriggerHandling(document);
 
