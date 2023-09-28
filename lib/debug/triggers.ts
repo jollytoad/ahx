@@ -1,3 +1,4 @@
+import { isDenied } from "../handle_trigger.ts";
 import { getInternal, objectsWithInternal } from "../internal.ts";
 import type { EventType, TriggerOrigin } from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
@@ -31,6 +32,7 @@ export function triggers(verbose = false) {
   for (const elt of orderedElements) {
     const origins = elements.get(elt) ?? [];
     const events = new Set<EventType>();
+    const denied = isDenied(elt);
 
     for (const origin of origins) {
       const triggers = getInternal(origin, "triggers")!;
@@ -38,7 +40,13 @@ export function triggers(verbose = false) {
         events.add(eventType);
       }
     }
-    console.groupCollapsed(elt, ...events);
+
+    console.groupCollapsed(
+      "%o : %c%s",
+      elt,
+      denied ? "text-decoration: line-through; color: grey" : "color: red",
+      [...events].join(", "),
+    );
 
     for (const origin of origins) {
       const triggers = getInternal(origin, "triggers")!;

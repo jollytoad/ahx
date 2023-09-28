@@ -53,7 +53,7 @@ export function handleTrigger(trigger: AhxTrigger, elt: Element) {
   }
 }
 
-function isDenied(elt: Element) {
+export function isDenied(elt: Element) {
   return getAhxValue(elt, "deny-trigger") === "true";
 }
 

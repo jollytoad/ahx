@@ -739,7 +739,11 @@ function eventsNone() {
 function logger({ detail: event }) {
   const detail = event.detail;
   if (detail?._before) {
-    console[loggerConfig.collapse ? "groupCollapsed" : "group"](event.type, event, detail);
+    console[loggerConfig.collapse ? "groupCollapsed" : "group"](
+      event.type,
+      event,
+      detail
+    );
   } else {
     console.log(event.type, event, detail);
   }
@@ -1155,18 +1159,31 @@ function triggers(verbose = false) {
   for (const elt of orderedElements) {
     const origins = elements2.get(elt) ?? [];
     const events = /* @__PURE__ */ new Set();
+    const denied = isDenied(elt);
     for (const origin of origins) {
       const triggers2 = getInternal(origin, "triggers");
       for (const eventType of triggers2.keys()) {
         events.add(eventType);
       }
     }
-    console.groupCollapsed(elt, ...events);
+    console.groupCollapsed(
+      "%o : %c%s",
+      elt,
+      denied ? "text-decoration: line-through; color: grey" : "color: red",
+      [...events].join(", ")
+    );
     for (const origin of origins) {
       const triggers2 = getInternal(origin, "triggers");
       for (const { trigger, action } of triggers2.values()) {
         if (verbose) {
-          console.log("trigger:", trigger, "action:", action, "origin:", origin);
+          console.log(
+            "trigger:",
+            trigger,
+            "action:",
+            action,
+            "origin:",
+            origin
+          );
         } else {
           const originRep = origin instanceof Element ? "element" : origin.cssText;
           console.log(
