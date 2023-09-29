@@ -2,26 +2,29 @@
 
 ## Data Harvesting
 
-Augmentations need a way to 'harvest' data from the host app, this data could come from several places:
+Augmentations need a way to 'harvest' data from the host app, this data could
+come from several places:
 
 - From the document
 - From the host app, via the host app proxy
 - From the host app API
 
-The augmentation should be able to declare an identifiable bundle of data combined from these sources.
+The augmentation should be able to declare an identifiable bundle of data
+combined from these sources.
 
 The document sourced data could also feed into another UI element, eg a form.
 
-Any trigger should be able to reference a bundle (or multiple?) to indicate the data it wants.
+Any trigger should be able to reference a bundle (or multiple?) to indicate the
+data it wants.
 
 ## More htmx features
 
 ### Targets, out of band, swapping
 
-I suspect out of band is going to be a very common pattern for augmentations, I'd like to come
-up with something a bit more natural than the htmx oob attributes... maybe a new swap style to
-distribute fetched elements based on ids or selectors.
-Need to consider morph swaps and view transitions in the mix.
+I suspect out of band is going to be a very common pattern for augmentations,
+I'd like to come up with something a bit more natural than the htmx oob
+attributes... maybe a new swap style to distribute fetched elements based on ids
+or selectors. Need to consider morph swaps and view transitions in the mix.
 
 - transition?
 - settle?
