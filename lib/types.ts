@@ -118,8 +118,8 @@ export interface ProcessTreeDetail {
   selector: CSSSelector;
 }
 
-// deno-lint-ignore no-empty-interface
 export interface ProcessElementDetail {
+  owner?: Owner;
 }
 
 export interface ProcessStyleSheetsDetail {
@@ -129,18 +129,21 @@ export interface ProcessStyleSheetsDetail {
 export interface ProcessRuleDetail {
   rule: CSSStyleRule;
   props: Set<AhxCSSPropertyName>;
+  owner?: Owner;
 }
 
 export interface CssImportDetail {
   url: string;
   crossOrigin?: string;
   disabled: boolean;
+  owner?: Owner;
 }
 
 export interface PseudoElementDetail {
   pseudoElt: Element;
   pseudoId: PseudoId;
   place: PseudoPlace;
+  owner?: Owner;
 }
 
 export interface PseudoRuleDetail {
@@ -151,6 +154,7 @@ export interface PseudoRuleDetail {
   >;
   rule: CSSStyleRule;
   place: PseudoPlace;
+  owner?: Owner;
 }
 
 export interface WithPseudoRule {

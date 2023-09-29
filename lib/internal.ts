@@ -1,6 +1,6 @@
 import type { AhxTrigger, CSSPropertyName, EventType, Owner } from "./types.ts";
 
-type Thing = Node | CSSRule;
+type Thing = Node | CSSRule | StyleSheet;
 
 interface Props {
   // CSSStyleRule

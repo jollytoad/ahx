@@ -98,6 +98,10 @@ function createPseudoRule(
       pseudoRule,
       rule,
       place,
+      owner: rule.parentStyleSheet
+        ? getInternal(rule.parentStyleSheet, "owner") ??
+          rule.parentStyleSheet.href ?? undefined
+        : undefined,
     };
 
     if (dispatchBefore(document, "pseudoRule", detail)) {
@@ -109,8 +113,12 @@ function createPseudoRule(
           styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)
         ] as CSSStyleRule;
 
-        if (styleSheet.href) {
-          setInternal(pseudoRule, "owner", styleSheet.href);
+        if (!detail.owner && styleSheet.href) {
+          detail.owner = styleSheet.href;
+        }
+
+        if (detail.owner) {
+          setInternal(pseudoRule, "owner", detail.owner);
         }
 
         dispatchAfter(document, "pseudoRule", {

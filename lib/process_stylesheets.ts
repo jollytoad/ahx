@@ -3,6 +3,7 @@ import { processCssImports } from "./process_css_imports.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { ProcessStyleSheetsDetail } from "./types.ts";
 import { processRule } from "./process_rule.ts";
+import { hasInternal, setInternal } from "./internal.ts";
 
 export function processStyleSheets(root: DocumentOrShadowRoot & EventTarget) {
   const detail: ProcessStyleSheetsDetail = {
@@ -14,6 +15,16 @@ export function processStyleSheets(root: DocumentOrShadowRoot & EventTarget) {
 
     if (!cssRules) {
       return;
+    }
+
+    for (const [rule] of cssRules) {
+      // TODO: dispatch event allowing a stylesheet to be veto and/or it's owner changed
+      if (
+        rule.parentStyleSheet && rule.parentStyleSheet.href &&
+        !hasInternal(rule.parentStyleSheet, "owner")
+      ) {
+        setInternal(rule.parentStyleSheet, "owner", rule.parentStyleSheet.href);
+      }
     }
 
     // TODO: Perform this in processRule

@@ -745,8 +745,13 @@ function processTriggers(origin, defaultEventType) {
 // lib/process_element.ts
 function processElement(elt) {
   if (hasAhxAttributes(elt)) {
-    const detail = {};
+    const detail = {
+      owner: getInternal(elt, "owner")
+    };
     if (dispatchBefore(elt, "processElement", detail)) {
+      if (detail.owner) {
+        setInternal(elt, "owner", detail.owner);
+      }
       processTriggers(elt, "click");
       dispatchAfter(elt, "processElement", detail);
     }
@@ -1030,15 +1035,19 @@ function createPseudoRule(rule, pseudoId, place) {
       pseudoId,
       pseudoRule,
       rule,
-      place
+      place,
+      owner: rule.parentStyleSheet ? getInternal(rule.parentStyleSheet, "owner") ?? rule.parentStyleSheet.href ?? void 0 : void 0
     };
     if (dispatchBefore(document, "pseudoRule", detail)) {
       const styleSheet = detail.pseudoRule.parentStyleSheet;
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
         const pseudoRule2 = cssRules[styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)];
-        if (styleSheet.href) {
-          setInternal(pseudoRule2, "owner", styleSheet.href);
+        if (!detail.owner && styleSheet.href) {
+          detail.owner = styleSheet.href;
+        }
+        if (detail.owner) {
+          setInternal(pseudoRule2, "owner", detail.owner);
         }
         dispatchAfter(document, "pseudoRule", {
           ...detail,
@@ -1052,12 +1061,12 @@ function createPseudoRule(rule, pseudoId, place) {
 // lib/process_rule.ts
 function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
   if (props.size) {
-    const owner = rule.parentStyleSheet?.href;
-    const detail = { rule, props };
+    const owner = getInternal(rule, "owner") ?? (rule.parentStyleSheet ? getInternal(rule.parentStyleSheet, "owner") ?? rule.parentStyleSheet.href ?? void 0 : void 0);
+    const detail = { rule, props, owner };
     const target = rule.parentStyleSheet?.ownerNode ?? document;
     if (dispatchBefore(target, "processRule", detail)) {
-      if (owner) {
-        setInternal(rule, "owner", owner);
+      if (detail.owner) {
+        setInternal(rule, "owner", detail.owner);
       }
       processGuards(rule, props);
       createPseudoElements(rule);
@@ -1076,6 +1085,11 @@ function processStyleSheets(root) {
     const cssRules = detail.cssRules;
     if (!cssRules) {
       return;
+    }
+    for (const [rule] of cssRules) {
+      if (rule.parentStyleSheet && rule.parentStyleSheet.href && !hasInternal(rule.parentStyleSheet, "owner")) {
+        setInternal(rule.parentStyleSheet, "owner", rule.parentStyleSheet.href);
+      }
     }
     for (const [rule, props] of cssRules) {
       processCssImports(rule, props, () => {

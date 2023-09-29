@@ -102,6 +102,10 @@ arbitrary extension to the property name to allow importing of multiple sheets:
 NOTE: The stylesheet is not removed or disabled later should the rule no longer
 match any element (this behaviour may get implemented in the future).
 
+Has no attribute equivalent.
+
+No equivalent in _htmx_.
+
 ### --ahx-get/post/put/patch/delete
 
 Cause an element to issue a HTTP request to the specified URL on the trigger
@@ -111,14 +115,59 @@ The triggering event is determined by the type of the element, or may be
 explicitly given via a `--ahx-trigger` CSS property or `ahx-trigger` attribute
 on the element.
 
+This can also be specified directly on an element using `ahx-*` attributes.
+
+Equivalent of [hx-get](https://htmx.org/attributes/hx-get),
+[hx-post](https://htmx.org/attributes/hx-post),
+[hx-put](https://htmx.org/attributes/hx-put),
+[hx-patch](https://htmx.org/attributes/hx-patch),
+[hx-delete](https://htmx.org/attributes/hx-delete).
+
 ### --ahx-trigger
 
 Specify what triggers an HTTP request. The value may be one, or many
 (comma-separated) of an event name (eg. "click" or "my-custom-event") followed
 by a set of event modifiers.
 
+This can also be specified directly on an element using the `ahx-trigger`
+attribute.
+
+Equivalent of [hx-trigger](https://htmx.org/attributes/hx-trigger).
+
+### --ahx-swap
+
+Specify how the response of a request (`--ahx-get` etc) will be swapped into the
+document relative to the target.
+
+Possible values are:
+
+- `innerHTML` - Replace the inner html of the target element
+- `outerHTML` - Replace the entire target element with the response
+- `beforebegin` - Insert the response before the target element
+- `afterbegin` - Insert the response before the first child of the target
+  element
+- `beforeend` - Insert the response after the last child of the target element
+- `afterend` - Insert the response after the target element
+- `delete` - Deletes the target element regardless of the response
+- `none`- Does not append content from response
+
+This can also be specified directly on an element using the `ahx-swap`
+attribute.
+
+Equivalent of [hx-swap](https://htmx.org/attributes/hx-swap).
+
 ### --ahx-deny-trigger
 
 Prevents triggering of requests on the selected elements. The only valid value
 for this is `true`, and invalid properties will be deleted. Once a rule has
 applied this, it is not possible to undo it via another rule.
+
+Has no attribute equivalent, although a CSS rule could be added to emulate it:
+
+```css
+[ahx-deny-trigger], [ahx-deny-trigger] * {
+  --ahx-deny-trigger: true;
+}
+```
+
+Nearest thing in _htmx_ is [hx-disable](https://htmx.org/attributes/hx-disable).

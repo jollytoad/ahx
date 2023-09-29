@@ -11,6 +11,7 @@ import { initLoadTriggerHandling } from "./trigger_load.ts";
 import * as ahx from "./debug.ts";
 import { patchCSSOM } from "./cssom_patch.ts";
 
+// TODO: Combine this into the observer, maybe create a CssMutationObserver?
 patchCSSOM({
   onInsertRule() {
     setTimeout(() => {

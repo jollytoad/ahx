@@ -29,3 +29,8 @@ a CSS rule that has _ahx_ properties.
 Logs all elements that have an _ahx_ trigger, along with details of the event
 type of the trigger, the action, and the origin of the trigger (ie. from element
 attributes or CSS rule).
+
+## `ahx.owners()`
+
+Logs all elements and their 'owner', which is the URL of the stylesheet that was
+ultimately responsible for the element being added to the page.

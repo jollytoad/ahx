@@ -4,6 +4,10 @@ Almost everything that **ahx** does dispatches an event, and most of these are
 cancellable and/or carry a mutable `detail` object. This allows the host app to
 have total control over all **ahx** operations.
 
+See the [types](../lib/types.ts) module (`AhxEventMap`/`AhxErrorMap`) for a
+comprehensive set of events and details specified in TypeScript. These can
+enforce the correct event details in dispatching and listener functions.
+
 Event names follow a common pattern:
 
 - `ahx:<name>` - before an operation and is cancellable unless stated otherwise,
@@ -12,16 +16,6 @@ Event names follow a common pattern:
   have the same `detail` as the before event unless stated.
 - `ahx:<name>:veto` - if an operation was cancelled.
 - `ahx:<name>:error` - if an error occurred.
-
-**Common Details**
-
-Many `ahx:*:done` events carry rule and/or element changes in the event
-`detail`:
-
-- `detail.removedRules` - an array of all removed `AhxRule`s
-- `detail.addedRules` - an array of all added `AhxRule`s
-- `detail.removedElements` - an array of all Elements removed from the document
-- `detail.addedElements` - an array of all Elements added to the document
 
 ## `ahx:startObserver`
 
@@ -53,8 +47,7 @@ observations.
 **Details**
 
 - `detail.selector` - the CSS selector used to find all elements to be
-  processed.
-- _:done_ `detail` also contains rule changes (see above)
+  processed. The event handler may modify this to use a different selector.
 
 ## `ahx:processElement`
 
@@ -62,9 +55,9 @@ Dispatched on an `Element` before being processed for `ahx-*` attributes.
 
 **Details**
 
-The _before_ event has no details, but...
-
-- _:done_ `detail` contains rule changes (see above)
+- `detail.owner` - the _owner_ of the element, which by default is the URL of
+  the stylesheet responsible for the existence of the element. This may be
+  changed by the handler.
 
 ## `ahx:processStyleSheets`
 
@@ -87,6 +80,9 @@ The event target will be the `<link>` element of the stylesheet or just
 
 - `detail.rule` - the CSSStyleRule
 - `detail.props` - the set of ahx property names found on the style rule
+- `detail.owner` - the _owner_ that this rule will apply to any elements created
+  as a result of a actioned triggered by the rule, it defaults to the stylesheet
+  URL but may be changed by the event handler.
 
 ## `ahx:cssImport`
 
@@ -132,12 +128,11 @@ document before the rule is added into the stylesheet.
 - `detail.pseudoRule` - a representation of rule to be added
 - `detail.rule` - the original pseudo element [`CSSStyleRule`]
 - `detail.place` - the literal `"before"` or `"after"`
+- `detail.owner` - the _owner_ of the new pseudo rule
 
 - _:done_ `detail.pseudoRule` - this will be the added [`CSSStyleRule`]
 
 [`CSSStyleRule`]: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleRule
-
-The `detail.pseudoRule` may be modified.
 
 ## `ahx:addTrigger`
 
@@ -149,6 +144,8 @@ rule.
 - `detail.origin` - the Element or CSS rule from which the rule originated
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
+- `detail.owner` - the _owner_ of the trigger, obtained from the originating
+  element or rule, may be changed by the event handler
 
 ## `ahx:addEventType`
 
@@ -165,6 +162,7 @@ cancelled to prevent the action.
 
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
+- `detail.owner` - the _owner_ of the trigger
 
 ## `ahx:handleAction`
 
@@ -172,15 +170,20 @@ Dispatched before a triggered action is performed.
 
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
+- `detail.owner` - the _owner_ of the trigger
 
 ## `ahx:swap`
 
-Dispatch before fetched HTML content is inserted into the DOM.
+Dispatch before a fetched element is inserted into the DOM.
 
 **Details**
 
-- `detail.content` - the HTML
+- `detail.element` - the element to swap in
+- `detail.previous` - the previous sibling element that was successfully swapped
+  in
+- `detail.index` - the index of the element within the body of the response
 - `detail.swapStyle` - the type of swap
+- `detail.owner` - the _owner_ of the elements to be swapped in
 
 ## Error Events
 
