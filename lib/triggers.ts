@@ -3,7 +3,7 @@ import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { handleTrigger } from "./handle_trigger.ts";
 import type {
   ActionSpec,
-  AhxTrigger,
+  AhxTriggered,
   EventType,
   TriggerOrigin,
   TriggerSpec,
@@ -62,14 +62,15 @@ export function addTrigger(
 
 export function* getTriggersForEvent(
   event: Event,
-): Iterable<[AhxTrigger, Element]> {
+): Iterable<AhxTriggered> {
   if (event.target instanceof Element) {
+    const target = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
 
-    const trigger = getInternal(event.target, "triggers")?.get(event.type);
+    const trigger = getInternal(target, "triggers")?.get(event.type);
 
     if (trigger) {
-      yield [trigger, event.target];
+      yield { ...trigger, target, ...originProps(target) };
     }
 
     // Find css rules with triggers
@@ -79,15 +80,15 @@ export function* getTriggersForEvent(
 
         if (trigger && isEnabled(origin)) {
           // ... that match the element
-          if (trigger && event.target.matches(origin.selectorText)) {
-            yield [trigger, event.target];
+          if (trigger && target.matches(origin.selectorText)) {
+            yield { ...trigger, target, ...originProps(origin) };
           }
 
           // ... on all sub-elements that match the selector
           if (recursive) {
-            const found = event.target.querySelectorAll(origin.selectorText);
+            const found = target.querySelectorAll(origin.selectorText);
             for (const elt of found) {
-              yield [trigger, elt];
+              yield { ...trigger, target: elt, ...originProps(origin) };
             }
           }
         }
@@ -97,11 +98,20 @@ export function* getTriggersForEvent(
 }
 
 function eventListener(event: Event) {
-  for (const [trigger_, elt] of getTriggersForEvent(event)) {
-    handleTrigger(trigger_, elt);
+  for (const triggered of getTriggersForEvent(event)) {
+    handleTrigger(triggered);
   }
 }
 
 function isEnabled(styleRule: CSSStyleRule): boolean {
   return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
+}
+
+function originProps(
+  origin: TriggerOrigin,
+): Pick<AhxTriggered, "origin" | "owner"> {
+  return {
+    origin,
+    owner: getInternal(origin, "owner"),
+  };
 }

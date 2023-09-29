@@ -5,6 +5,7 @@ export type EventType = string;
 export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
+export type Owner = string;
 
 export type AhxHttpMethod =
   | "get"
@@ -28,6 +29,12 @@ export type TriggerOrigin = Element | CSSStyleRule;
 export interface AhxTrigger {
   trigger: TriggerSpec;
   action: ActionSpec;
+}
+
+export interface AhxTriggered extends AhxTrigger {
+  target: Element;
+  origin: TriggerOrigin;
+  owner?: Owner;
 }
 
 export interface TriggerSpec {
@@ -82,8 +89,8 @@ export interface AhxEventMap {
   ];
   "addTrigger": [AddTriggerDetail, AddTriggerDetail];
   "addEventType": [AddEventTypeDetail, AddEventTypeDetail];
-  "trigger": [AhxTrigger, AhxTrigger];
-  "performAction": [AhxTrigger, AhxTrigger];
+  "handleTrigger": [AhxTriggered, AhxTriggered];
+  "handleAction": [AhxTriggered, AhxTriggered];
   "swap": [SwapDetail, SwapDetail];
 }
 
@@ -95,7 +102,7 @@ export interface AhxErrorMap {
     value?: string;
     rule: CSSStyleRule;
   };
-  "triggerDenied": AhxTrigger;
+  "triggerDenied": AhxTriggered;
 }
 
 export interface MutationsDetail {
@@ -159,7 +166,10 @@ export interface AddEventTypeDetail {
 }
 
 export interface SwapDetail extends SwapSpec {
-  content: HTML;
+  element: Element;
+  previous?: Element;
+  index: number;
+  owner?: Owner;
 }
 
 type BeforeEventMap = {

@@ -1,11 +1,11 @@
-import type { AhxTrigger, CSSPropertyName, EventType } from "./types.ts";
+import type { AhxTrigger, CSSPropertyName, EventType, Owner } from "./types.ts";
 
 type Thing = Node | CSSRule;
 
 interface Props {
   // CSSStyleRule
   "pseudoId": number | string;
-  "importLinks": Map<CSSPropertyName, HTMLLinkElement>;
+  "importLinks": Map<CSSPropertyName, HTMLLinkElement>; // TODO: WeakRef<HTMLLinkElement>
   "denyTrigger": true;
 
   // Element
@@ -14,9 +14,10 @@ interface Props {
 
   // Common
   "triggers": Map<EventType, AhxTrigger>;
+  "owner": Owner;
 }
 
-type Key = keyof Props;
+export type Key = keyof Props;
 
 const values = new Map<Key, WeakMap<Thing, Props[Key]>>();
 

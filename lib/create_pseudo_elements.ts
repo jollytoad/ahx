@@ -109,6 +109,10 @@ function createPseudoRule(
           styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)
         ] as CSSStyleRule;
 
+        if (styleSheet.href) {
+          setInternal(pseudoRule, "owner", styleSheet.href);
+        }
+
         dispatchAfter(document, "pseudoRule", {
           ...detail,
           pseudoRule,

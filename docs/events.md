@@ -158,7 +158,7 @@ Dispatched when the first listener for a type of event is added.
 
 - `detail.eventType` - the event type (immutable)
 
-## `ahx:trigger`
+## `ahx:handleTrigger`
 
 Dispatched when an event is handled by an ahx trigger (and not denied). Maybe
 cancelled to prevent the action.
@@ -166,7 +166,7 @@ cancelled to prevent the action.
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
 
-## `ahx:performAction`
+## `ahx:handleAction`
 
 Dispatched before a triggered action is performed.
 

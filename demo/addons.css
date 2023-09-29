@@ -16,3 +16,9 @@ a.load-on-click {
 .numberwang {
   --ahx-import: url("numberwang.css");
 }
+
+.huge {
+  --ahx-trigger: click;
+  --ahx-get: url('/huge');
+  --ahx-swap: innerHTML;
+}

@@ -360,33 +360,105 @@ function parseSwap(elt, swapInfoOverride) {
   return swapSpec;
 }
 
-// lib/swap.ts
-async function swap(target, response) {
-  if (response.ok && response.headers.get("Content-Type")?.startsWith("text/html")) {
-    const content = await response.text();
-    const swapSpec = parseSwap(target);
-    const detail = {
-      ...swapSpec,
-      content
+// lib/parse_body.ts
+var HTMLElementParserStream = class extends TransformStream {
+  constructor(target = document) {
+    let doc;
+    super({
+      start() {
+        doc = target.implementation.createHTMLDocument();
+        doc.open();
+      },
+      transform(chunk, controller) {
+        doc.write(chunk);
+        while (doc.body?.childElementCount > 1) {
+          const node = doc.body?.children[0];
+          controller.enqueue(target.adoptNode(node));
+        }
+      },
+      flush(controller) {
+        for (const node of [...doc.body?.children]) {
+          controller.enqueue(target.adoptNode(node));
+        }
+      }
+    });
+  }
+};
+function asAsyncIterable(readable) {
+  const readable_ = readable;
+  if (Symbol.asyncIterator in readable_) {
+    return readable;
+  } else {
+    const reader = readable.getReader();
+    return {
+      async next() {
+        const { done, value } = await reader.read();
+        return done ? { done, value } : { value };
+      },
+      async return() {
+        await reader.releaseLock();
+        return { done: true, value: void 0 };
+      },
+      [Symbol.asyncIterator]() {
+        return this;
+      }
     };
-    if (dispatchBefore(target, "swap", detail)) {
-      const { content: content2, ...swapSpec2 } = detail;
-      swapHandlers[swapSpec2.swapStyle]?.(target, content2, swapSpec2);
-      dispatchAfter(target, "swap", detail);
+  }
+}
+function parseBody(stream) {
+  return asAsyncIterable(
+    stream.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLElementParserStream())
+  );
+}
+
+// lib/swap.ts
+async function swap(target, response, owner) {
+  if (response.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
+    const swapSpec = parseSwap(target);
+    let index = 0;
+    let previous;
+    for await (const element of parseBody(response.body)) {
+      const detail = {
+        ...swapSpec,
+        element,
+        previous,
+        index,
+        owner
+      };
+      if (dispatchBefore(target, "swap", detail)) {
+        const {
+          element: element2,
+          previous: _previous,
+          index: _index,
+          owner: owner2,
+          ...swapSpec2
+        } = detail;
+        if (owner2) {
+          setInternal(element2, "owner", owner2);
+        }
+        if (!previous) {
+          swapHandlers[swapSpec2.swapStyle]?.(target, element2, swapSpec2);
+        } else {
+          previous.after(element2);
+        }
+        previous = element2;
+        dispatchAfter(target, "swap", detail);
+      }
+      index++;
     }
   }
 }
-var swapAdjacent = (target, content, spec) => {
-  target.insertAdjacentHTML(spec.swapStyle, content);
+var swapAdjacent = (target, element, spec) => {
+  target.insertAdjacentElement(spec.swapStyle, element);
 };
 var swapHandlers = {
   none: () => {
   },
-  innerhtml(target, content) {
-    target.innerHTML = content;
+  innerhtml(target, element) {
+    target.replaceChildren(element);
   },
-  outerhtml(target, content) {
-    target.outerHTML = content;
+  outerhtml(target, element) {
+    target.replaceWith(element);
   },
   beforebegin: swapAdjacent,
   afterbegin: swapAdjacent,
@@ -394,54 +466,58 @@ var swapHandlers = {
   afterend: swapAdjacent
 };
 
+// lib/handle_action.ts
+async function handleAction(triggered) {
+  const { target, action, owner } = triggered;
+  if (dispatchBefore(target, "handleAction", triggered)) {
+    switch (action.type) {
+      case "request": {
+        const response = await fetch(action.url, {
+          method: action.method
+        });
+        await swap(target, response, owner);
+      }
+    }
+    dispatchAfter(target, "handleAction", triggered);
+  }
+}
+
 // lib/handle_trigger.ts
-function handleTrigger(trigger, elt) {
-  if (isDenied(elt)) {
-    dispatchError(elt, "triggerDenied", trigger);
+function handleTrigger(triggered) {
+  const { trigger, target } = triggered;
+  if (isDenied(target)) {
+    dispatchError(target, "triggerDenied", triggered);
     return;
   }
-  if (dispatchBefore(elt, "trigger", trigger)) {
-    if (trigger.trigger.target) {
-      if (!elt.matches(trigger.trigger.target)) {
+  if (dispatchBefore(target, "handleTrigger", triggered)) {
+    if (trigger.target) {
+      if (!target.matches(trigger.target)) {
         return;
       }
     }
-    if (trigger.trigger.once) {
-      if (hasInternal(elt, "triggeredOnce")) {
+    if (trigger.once) {
+      if (hasInternal(target, "triggeredOnce")) {
         return;
       } else {
-        setInternal(elt, "triggeredOnce", true);
+        setInternal(target, "triggeredOnce", true);
       }
     }
-    if (trigger.trigger.changed) {
+    if (trigger.changed) {
     }
-    if (hasInternal(elt, "delayed")) {
-      clearTimeout(getInternal(elt, "delayed"));
-      deleteInternal(elt, "delayed");
+    if (hasInternal(target, "delayed")) {
+      clearTimeout(getInternal(target, "delayed"));
+      deleteInternal(target, "delayed");
     }
-    if (trigger.trigger.throttle) {
-    } else if (trigger.trigger.delay) {
+    if (trigger.throttle) {
+    } else if (trigger.delay) {
     } else {
-      performAction(trigger, elt);
+      handleAction(triggered);
     }
-    dispatchAfter(elt, "trigger", trigger);
+    dispatchAfter(target, "handleTrigger", triggered);
   }
 }
 function isDenied(elt) {
   return getAhxValue(elt, "deny-trigger") === "true";
-}
-async function performAction(trigger, elt) {
-  if (dispatchBefore(elt, "performAction", trigger)) {
-    switch (trigger.action.type) {
-      case "request": {
-        const response = await fetch(trigger.action.url, {
-          method: trigger.action.method
-        });
-        swap(elt, response);
-      }
-    }
-    dispatchAfter(elt, "performAction", trigger);
-  }
 }
 
 // lib/triggers.ts
@@ -477,22 +553,23 @@ function addTrigger(origin, trigger, action) {
 }
 function* getTriggersForEvent(event) {
   if (event.target instanceof Element) {
+    const target = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    const trigger = getInternal(event.target, "triggers")?.get(event.type);
+    const trigger = getInternal(target, "triggers")?.get(event.type);
     if (trigger) {
-      yield [trigger, event.target];
+      yield { ...trigger, target, ...originProps(target) };
     }
     for (const [origin, triggers2] of objectsWithInternal("triggers")) {
       if (origin instanceof CSSStyleRule) {
         const trigger2 = triggers2.get(event.type);
         if (trigger2 && isEnabled(origin)) {
-          if (trigger2 && event.target.matches(origin.selectorText)) {
-            yield [trigger2, event.target];
+          if (trigger2 && target.matches(origin.selectorText)) {
+            yield { ...trigger2, target, ...originProps(origin) };
           }
           if (recursive) {
-            const found = event.target.querySelectorAll(origin.selectorText);
+            const found = target.querySelectorAll(origin.selectorText);
             for (const elt of found) {
-              yield [trigger2, elt];
+              yield { ...trigger2, target: elt, ...originProps(origin) };
             }
           }
         }
@@ -501,12 +578,18 @@ function* getTriggersForEvent(event) {
   }
 }
 function eventListener(event) {
-  for (const [trigger_, elt] of getTriggersForEvent(event)) {
-    handleTrigger(trigger_, elt);
+  for (const triggered of getTriggersForEvent(event)) {
+    handleTrigger(triggered);
   }
 }
 function isEnabled(styleRule) {
   return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
+}
+function originProps(origin) {
+  return {
+    origin,
+    owner: getInternal(origin, "owner")
+  };
 }
 
 // lib/parse_triggers.ts
@@ -956,6 +1039,9 @@ function createPseudoRule(rule, pseudoId, place) {
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
         const pseudoRule2 = cssRules[styleSheet.insertRule(detail.pseudoRule.cssText, cssRules.length)];
+        if (styleSheet.href) {
+          setInternal(pseudoRule2, "owner", styleSheet.href);
+        }
         dispatchAfter(document, "pseudoRule", {
           ...detail,
           pseudoRule: pseudoRule2
@@ -968,9 +1054,13 @@ function createPseudoRule(rule, pseudoId, place) {
 // lib/process_rule.ts
 function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
   if (props.size) {
+    const owner = rule.parentStyleSheet?.href;
     const detail = { rule, props };
     const target = rule.parentStyleSheet?.ownerNode ?? document;
     if (dispatchBefore(target, "processRule", detail)) {
+      if (owner) {
+        setInternal(rule, "owner", owner);
+      }
       processGuards(rule, props);
       createPseudoElements(rule);
       processTriggers(rule, "default");
@@ -1052,6 +1142,7 @@ __export(debug_exports, {
   internals: () => internals,
   logger: () => logger,
   loggerConfig: () => loggerConfig,
+  owners: () => owners,
   triggers: () => triggers
 });
 
@@ -1203,6 +1294,28 @@ function triggers(verbose = false) {
       }
     }
     console.groupEnd();
+  }
+  console.groupEnd();
+}
+
+// lib/debug/owners.ts
+function owners() {
+  console.group("AHX Ownership");
+  const elements2 = /* @__PURE__ */ new Set();
+  for (const [object, key, owner] of internalEntries()) {
+    if (object instanceof Element) {
+      elements2.add(object);
+    } else if (key === "owner") {
+      if (object instanceof CSSRule) {
+        console.log("%o -> %s", object.cssText, owner);
+      } else {
+        console.log("%o -> %s", object, owner);
+      }
+    }
+  }
+  for (const elt of [...elements2].sort(comparePosition)) {
+    const owner = getInternal(elt, "owner");
+    console.log("%o -> %s", elt, owner ?? "none");
   }
   console.groupEnd();
 }

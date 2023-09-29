@@ -5,70 +5,56 @@ import {
   hasInternal,
   setInternal,
 } from "./internal.ts";
-import { swap } from "./swap.ts";
 import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
-import type { AhxTrigger } from "./types.ts";
+import type { AhxTriggered } from "./types.ts";
+import { handleAction } from "./handle_action.ts";
 
-export function handleTrigger(trigger: AhxTrigger, elt: Element) {
-  if (isDenied(elt)) {
-    dispatchError(elt, "triggerDenied", trigger);
+export function handleTrigger(triggered: AhxTriggered) {
+  const { trigger, target } = triggered;
+
+  if (isDenied(target)) {
+    dispatchError(target, "triggerDenied", triggered);
     return;
   }
 
-  if (dispatchBefore(elt, "trigger", trigger)) {
-    if (trigger.trigger.target) {
-      if (!elt.matches(trigger.trigger.target)) {
+  if (dispatchBefore(target, "handleTrigger", triggered)) {
+    if (trigger.target) {
+      if (!target.matches(trigger.target)) {
         return;
       }
     }
 
-    if (trigger.trigger.once) {
-      if (hasInternal(elt, "triggeredOnce")) {
+    if (trigger.once) {
+      if (hasInternal(target, "triggeredOnce")) {
         return;
       } else {
-        setInternal(elt, "triggeredOnce", true);
+        setInternal(target, "triggeredOnce", true);
       }
     }
 
-    if (trigger.trigger.changed) {
+    if (trigger.changed) {
       // TODO: return if value hasn't changed
     }
 
-    if (hasInternal(elt, "delayed")) {
-      clearTimeout(getInternal(elt, "delayed"));
-      deleteInternal(elt, "delayed");
+    if (hasInternal(target, "delayed")) {
+      clearTimeout(getInternal(target, "delayed"));
+      deleteInternal(target, "delayed");
     }
 
     // TODO: throttle
 
-    if (trigger.trigger.throttle) {
+    if (trigger.throttle) {
       // TODO
-    } else if (trigger.trigger.delay) {
+    } else if (trigger.delay) {
       // TODO
     } else {
-      performAction(trigger, elt);
+      handleAction(triggered);
     }
 
-    dispatchAfter(elt, "trigger", trigger);
+    dispatchAfter(target, "handleTrigger", triggered);
   }
 }
 
 export function isDenied(elt: Element) {
   return getAhxValue(elt, "deny-trigger") === "true";
-}
-
-async function performAction(trigger: AhxTrigger, elt: Element) {
-  if (dispatchBefore(elt, "performAction", trigger)) {
-    switch (trigger.action.type) {
-      case "request": {
-        const response = await fetch(trigger.action.url, {
-          method: trigger.action.method,
-        });
-
-        swap(elt, response);
-      }
-    }
-
-    dispatchAfter(elt, "performAction", trigger);
-  }
 }

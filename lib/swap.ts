@@ -1,45 +1,82 @@
 import { parseSwap } from "./parse_swap.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { SwapSpec, SwapStyle } from "./types.ts";
+import { setInternal } from "./internal.ts";
+import { parseBody } from "./parse_body.ts";
 
-export async function swap(target: Element, response: Response) {
+export async function swap(
+  target: Element,
+  response: Response,
+  owner?: string,
+) {
   if (
-    response.ok && response.headers.get("Content-Type")?.startsWith("text/html")
+    response.ok &&
+    response.headers.get("Content-Type")?.startsWith("text/html") &&
+    response.body
   ) {
-    const content = await response.text();
-
     const swapSpec = parseSwap(target);
 
-    const detail = {
-      ...swapSpec,
-      content,
-    };
+    let index = 0;
+    let previous: Element | undefined;
 
-    if (dispatchBefore(target, "swap", detail)) {
-      const { content, ...swapSpec } = detail;
-      swapHandlers[swapSpec.swapStyle]?.(target, content, swapSpec);
+    for await (const element of parseBody(response.body)) {
+      const detail = {
+        ...swapSpec,
+        element,
+        previous,
+        index,
+        owner,
+      };
 
-      dispatchAfter(target, "swap", detail);
+      if (dispatchBefore(target, "swap", detail)) {
+        const {
+          element,
+          previous: _previous,
+          index: _index,
+          owner,
+          ...swapSpec
+        } = detail;
+
+        if (owner) {
+          setInternal(element, "owner", owner);
+        }
+
+        if (!previous) {
+          swapHandlers[swapSpec.swapStyle]?.(target, element, swapSpec);
+        } else {
+          previous.after(element);
+        }
+
+        previous = element;
+
+        dispatchAfter(target, "swap", detail);
+      }
+
+      index++;
     }
   }
   // TODO: trigger events for non-ok response and non-html content
 }
 
-type SwapHandler = (target: Element, content: string, spec: SwapSpec) => void;
+type SwapHandler = (
+  target: Element,
+  content: Element,
+  swapSpec: SwapSpec,
+) => void;
 
-const swapAdjacent: SwapHandler = (target, content, spec) => {
-  target.insertAdjacentHTML(spec.swapStyle as InsertPosition, content);
+const swapAdjacent: SwapHandler = (target, element, spec) => {
+  target.insertAdjacentElement(spec.swapStyle as InsertPosition, element);
 };
 
 const swapHandlers: Record<SwapStyle, SwapHandler> = {
   none: () => {
     // no-op
   },
-  innerhtml(target, content) {
-    target.innerHTML = content;
+  innerhtml(target, element) {
+    target.replaceChildren(element);
   },
-  outerhtml(target, content) {
-    target.outerHTML = content;
+  outerhtml(target, element) {
+    target.replaceWith(element);
   },
   beforebegin: swapAdjacent,
   afterbegin: swapAdjacent,
