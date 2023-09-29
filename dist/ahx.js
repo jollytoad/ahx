@@ -313,6 +313,23 @@ function getAhxValue(origin, name) {
   }
 }
 
+// ext/polyfill/ReadableStream_asyncIterator.js
+async function* readableStreamIterator() {
+  const reader = this.getReader();
+  try {
+    let done, value;
+    do {
+      ({ done, value } = await reader.read());
+      if (value !== void 0) {
+        yield value;
+      }
+    } while (!done);
+  } finally {
+    reader.releaseLock();
+  }
+}
+ReadableStream.prototype[Symbol.asyncIterator] ??= readableStreamIterator;
+
 // lib/parse_interval.ts
 function parseInterval(str) {
   if (str == void 0) {
@@ -360,56 +377,36 @@ function parseSwap(elt, swapInfoOverride) {
   return swapSpec;
 }
 
-// lib/parse_body.ts
-var HTMLElementParserStream = class extends TransformStream {
-  constructor(target = document) {
-    let doc;
+// ext/HTMLBodyElementParserStream.js
+var HTMLBodyElementParserStream = class extends TransformStream {
+  /**
+   * @param {Document} document will own the emitted elements
+   */
+  constructor(document2) {
+    let parser;
     super({
       start() {
-        doc = target.implementation.createHTMLDocument();
-        doc.open();
+        parser = document2.implementation.createHTMLDocument();
       },
       transform(chunk, controller) {
-        doc.write(chunk);
-        while (doc.body?.childElementCount > 1) {
-          const node = doc.body?.children[0];
-          controller.enqueue(target.adoptNode(node));
+        parser.write(chunk);
+        while (parser.body.childElementCount > 1) {
+          const element = parser.body.children[0];
+          document2.adoptNode(element);
+          controller.enqueue(element);
         }
       },
       flush(controller) {
-        for (const node of [...doc.body?.children]) {
-          controller.enqueue(target.adoptNode(node));
+        for (const element of [...parser.body.children]) {
+          document2.adoptNode(element);
+          controller.enqueue(element);
         }
+        parser.close();
+        parser = void 0;
       }
     });
   }
 };
-function asAsyncIterable(readable) {
-  const readable_ = readable;
-  if (Symbol.asyncIterator in readable_) {
-    return readable;
-  } else {
-    const reader = readable.getReader();
-    return {
-      async next() {
-        const { done, value } = await reader.read();
-        return done ? { done, value } : { value };
-      },
-      async return() {
-        await reader.releaseLock();
-        return { done: true, value: void 0 };
-      },
-      [Symbol.asyncIterator]() {
-        return this;
-      }
-    };
-  }
-}
-function parseBody(stream) {
-  return asAsyncIterable(
-    stream.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLElementParserStream())
-  );
-}
 
 // lib/swap.ts
 async function swap(target, response, owner) {
@@ -417,7 +414,8 @@ async function swap(target, response, owner) {
     const swapSpec = parseSwap(target);
     let index = 0;
     let previous;
-    for await (const element of parseBody(response.body)) {
+    const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document));
+    for await (const element of elements2) {
       const detail = {
         ...swapSpec,
         element,

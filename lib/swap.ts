@@ -1,8 +1,10 @@
+import "../ext/polyfill/ReadableStream_asyncIterator.js";
+
 import { parseSwap } from "./parse_swap.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { SwapSpec, SwapStyle } from "./types.ts";
 import { setInternal } from "./internal.ts";
-import { parseBody } from "./parse_body.ts";
+import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
 
 export async function swap(
   target: Element,
@@ -19,7 +21,11 @@ export async function swap(
     let index = 0;
     let previous: Element | undefined;
 
-    for await (const element of parseBody(response.body)) {
+    const elements = response.body
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new HTMLBodyElementParserStream(document));
+
+    for await (const element of elements) {
       const detail = {
         ...swapSpec,
         element,
