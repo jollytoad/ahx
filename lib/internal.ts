@@ -5,7 +5,7 @@ type Thing = Node | CSSRule | StyleSheet;
 interface Props {
   // CSSStyleRule
   "pseudoId": number | string;
-  "importLinks": Map<CSSPropertyName, HTMLLinkElement>; // TODO: WeakRef<HTMLLinkElement>
+  "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
 
   // Element

@@ -14,7 +14,7 @@ export function processCssImports(
   for (const prop of props) {
     if (prop === importProp || prop.startsWith(`${importProp}-`)) {
       let link: HTMLLinkElement | undefined = getInternal(rule, "importLinks")
-        ?.get(prop);
+        ?.get(prop)?.deref();
       let ruleApplies = false;
 
       for (const elt of document.querySelectorAll(rule.selectorText)) {
@@ -42,7 +42,10 @@ export function processCssImports(
             );
 
             if (link) {
-              getInternal(rule, "importLinks", () => new Map()).set(prop, link);
+              getInternal(rule, "importLinks", () => new Map()).set(
+                prop,
+                new WeakRef(link),
+              );
               break;
             }
           }

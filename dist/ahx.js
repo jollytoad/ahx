@@ -894,7 +894,7 @@ function processCssImports(rule, props, onReady) {
   const importProp = asAhxCSSPropertyName("import");
   for (const prop of props) {
     if (prop === importProp || prop.startsWith(`${importProp}-`)) {
-      let link = getInternal(rule, "importLinks")?.get(prop);
+      let link = getInternal(rule, "importLinks")?.get(prop)?.deref();
       let ruleApplies = false;
       for (const elt of document.querySelectorAll(rule.selectorText)) {
         const url = parseCssValue({ rule, prop, elt }).value;
@@ -915,7 +915,10 @@ function processCssImports(rule, props, onReady) {
               onReady
             );
             if (link) {
-              getInternal(rule, "importLinks", () => /* @__PURE__ */ new Map()).set(prop, link);
+              getInternal(rule, "importLinks", () => /* @__PURE__ */ new Map()).set(
+                prop,
+                new WeakRef(link)
+              );
               break;
             }
           }
