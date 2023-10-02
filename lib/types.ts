@@ -19,6 +19,9 @@ export type AhxName =
   | "deny-trigger"
   | "trigger"
   | "swap"
+  | "value"
+  | "target"
+  | "input"
   | AhxHttpMethod;
 
 export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;
@@ -92,6 +95,8 @@ export interface AhxEventMap {
   "handleTrigger": [AhxTriggered, AhxTriggered];
   "handleAction": [AhxTriggered, AhxTriggered];
   "swap": [SwapDetail, SwapDetail];
+  "processValue": [Partial<ValueDetail>, Partial<ValueDetail>];
+  "updateForm": [ValueDetail, ValueDetail];
 }
 
 export interface AhxErrorMap {
@@ -174,6 +179,16 @@ export interface SwapDetail extends SwapSpec {
   previous?: Element;
   index: number;
   owner?: Owner;
+}
+
+export interface ValueDetail {
+  target: Element;
+  inputName: string;
+  input?: Element | RadioNodeList;
+  formData?: FormData;
+  oldValue?: string | File;
+  newValue: string;
+  updated?: boolean;
 }
 
 type BeforeEventMap = {

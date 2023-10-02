@@ -2,6 +2,8 @@ import { config } from "./config.ts";
 import { getInternal, hasInternal, setInternal } from "./internal.ts";
 import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
 import type { PseudoId, PseudoPlace } from "./types.ts";
+import { resolveElement } from "./resolve_element.ts";
+import { getOwner } from "./owner.ts";
 
 let nextPseudoId = 1;
 
@@ -98,13 +100,12 @@ function createPseudoRule(
       pseudoRule,
       rule,
       place,
-      owner: rule.parentStyleSheet
-        ? getInternal(rule.parentStyleSheet, "owner") ??
-          rule.parentStyleSheet.href ?? undefined
-        : undefined,
+      owner: getOwner(rule),
     };
 
-    if (dispatchBefore(document, "pseudoRule", detail)) {
+    const target = resolveElement(rule) ?? document;
+
+    if (dispatchBefore(target, "pseudoRule", detail)) {
       const styleSheet = detail.pseudoRule.parentStyleSheet;
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
@@ -121,7 +122,7 @@ function createPseudoRule(
           setInternal(pseudoRule, "owner", detail.owner);
         }
 
-        dispatchAfter(document, "pseudoRule", {
+        dispatchAfter(target, "pseudoRule", {
           ...detail,
           pseudoRule,
         });

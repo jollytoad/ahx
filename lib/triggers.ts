@@ -8,6 +8,7 @@ import type {
   TriggerOrigin,
   TriggerSpec,
 } from "./types.ts";
+import { resolveElement } from "./resolve_element.ts";
 
 const eventTypes = new Set<EventType>();
 
@@ -36,8 +37,7 @@ export function addTrigger(
 
   const target = origin instanceof Element
     ? origin
-    : origin.parentStyleSheet?.ownerNode ??
-      document;
+    : resolveElement(origin) ?? document;
 
   if (dispatchBefore(target, "addTrigger", detail)) {
     const { trigger, action } = detail;

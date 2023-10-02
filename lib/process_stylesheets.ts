@@ -5,7 +5,9 @@ import type { ProcessStyleSheetsDetail } from "./types.ts";
 import { processRule } from "./process_rule.ts";
 import { hasInternal, setInternal } from "./internal.ts";
 
-export function processStyleSheets(root: DocumentOrShadowRoot & EventTarget) {
+export function processStyleSheets(
+  root: (DocumentOrShadowRoot | LinkStyle) & EventTarget,
+) {
   const detail: ProcessStyleSheetsDetail = {
     cssRules: findStyleRules(root),
   };

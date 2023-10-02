@@ -1,4 +1,23 @@
 .numberwang tbody tr::after {
   --ahx-trigger: load once;
   --ahx-get: url("./more.html");
+
+  /* use the harvested data from the 'form' of the closest tr ancestor element */
+  --ahx-include: closest tr;
 }
+
+.numberwang tbody td:nth-child(3) {
+  outline: 1px dotted red;
+
+  /* get the value of innerText of the element that matches this rule */
+  --ahx-value: --prop(innerText);
+
+  /* select the 'form' as the closest tr ancestor */
+  --ahx-target: closest tr;
+
+  /* set the value of the form input named "description" */
+  --ahx-input: "description";
+}
+
+/* if the --ahx-form is not an actual form, an internal hidden form is created */
+/* if the --ahx-input does not reference a form input then a hidden input if created for it */

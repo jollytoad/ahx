@@ -12,9 +12,18 @@ export function getAhxValue(
       elt: origin,
       prop: asAhxCSSPropertyName(name),
     });
-    return important && value ? value : attrValue ?? value;
+    return important && value ? value : (attrValue ?? value);
   } else {
     return parseCssValue({ rule: origin, prop: asAhxCSSPropertyName(name) })
       .value;
   }
+}
+
+export function getAhxCssValue(
+  origin: TriggerOrigin,
+  name: AhxName,
+): string | undefined {
+  const rule = origin instanceof CSSStyleRule ? origin : undefined;
+  const elt = origin instanceof Element ? origin : undefined;
+  return parseCssValue({ rule, elt, prop: asAhxCSSPropertyName(name) }).value;
 }

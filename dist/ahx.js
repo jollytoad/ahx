@@ -244,11 +244,6 @@ function parseCssValue({ rule, style, prop, elt }) {
     important: style?.getPropertyPriority(prop) === "important"
   };
   if (spec.value) {
-    const isAppend = /^--append\(([^\)]*)\)\s+(.+)$/.exec(spec.value);
-    if (isAppend) {
-      spec.delim = isAppend[1] ? parseQuoted(isAppend[1]) : " ";
-      spec.value = isAppend[2];
-    }
     if (elt) {
       const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
         spec.value
@@ -311,6 +306,11 @@ function getAhxValue(origin, name) {
   } else {
     return parseCssValue({ rule: origin, prop: asAhxCSSPropertyName(name) }).value;
   }
+}
+function getAhxCssValue(origin, name) {
+  const rule = origin instanceof CSSStyleRule ? origin : void 0;
+  const elt = origin instanceof Element ? origin : void 0;
+  return parseCssValue({ rule, elt, prop: asAhxCSSPropertyName(name) }).value;
 }
 
 // ext/polyfill/ReadableStream_asyncIterator.js
@@ -518,6 +518,22 @@ function isDenied(elt) {
   return getAhxValue(elt, "deny-trigger") === "true";
 }
 
+// lib/resolve_element.ts
+function resolveElement(origin) {
+  if (origin instanceof Element) {
+    return origin;
+  }
+  if (origin && "ownerNode" in origin && origin.ownerNode && origin.ownerNode instanceof Element) {
+    return origin.ownerNode;
+  }
+  if (origin?.parentStyleSheet) {
+    return resolveElement(origin.parentStyleSheet);
+  }
+  if (origin && "ownerRule" in origin) {
+    return resolveElement(origin.ownerRule);
+  }
+}
+
 // lib/triggers.ts
 var eventTypes = /* @__PURE__ */ new Set();
 function addTriggers(origin, triggers2, actions) {
@@ -533,7 +549,7 @@ function addTrigger(origin, trigger, action) {
     trigger,
     action
   };
-  const target = origin instanceof Element ? origin : origin.parentStyleSheet?.ownerNode ?? document;
+  const target = origin instanceof Element ? origin : resolveElement(origin) ?? document;
   if (dispatchBefore(target, "addTrigger", detail)) {
     const { trigger: trigger2, action: action2 } = detail;
     const { eventType } = trigger2;
@@ -599,7 +615,8 @@ var NOT_WHITESPACE = /[^\s]/;
 var INPUT_SELECTOR = "input, textarea, select";
 function parseTriggers(origin, triggerValue, defaultEventType = "click") {
   const triggerSpecs = [];
-  const elt = origin instanceof Element ? origin : origin.parentStyleSheet?.ownerNode instanceof Element ? origin.parentStyleSheet.ownerNode : void 0;
+  const elt = origin instanceof Element ? origin : void 0;
+  const target = resolveElement(origin) ?? document;
   if (triggerValue) {
     const tokens = tokenizeString(triggerValue);
     do {
@@ -653,7 +670,7 @@ function parseTriggers(origin, triggerValue, defaultEventType = "click") {
                 WHITESPACE_OR_COMMA
               );
             } else {
-              dispatchError(elt ?? document, "triggerSyntax", {
+              dispatchError(target, "triggerSyntax", {
                 token: tokens.shift()
               });
             }
@@ -662,7 +679,7 @@ function parseTriggers(origin, triggerValue, defaultEventType = "click") {
         }
       }
       if (tokens.length === initialLength) {
-        dispatchError(elt ?? document, "triggerSyntax", {
+        dispatchError(target, "triggerSyntax", {
           token: tokens.shift()
         });
       }
@@ -758,6 +775,100 @@ function processElement(elt) {
   }
 }
 
+// lib/find_target.ts
+function findTarget(elt, ahxName = "target") {
+  const targetStr = getAhxCssValue(elt, ahxName);
+  if (targetStr) {
+    if (targetStr.startsWith("closest ")) {
+      return elt.closest(targetStr.substring(8)) ?? void 0;
+    } else {
+      return elt.querySelector(targetStr) ?? void 0;
+    }
+  }
+}
+
+// lib/parse_input.ts
+function parseInput(elt) {
+  return getAhxCssValue(elt, "input");
+}
+
+// lib/update_form.ts
+function updateForm(target, inputName, value) {
+  const detail = {
+    target,
+    inputName,
+    newValue: value
+  };
+  if (target instanceof HTMLFormElement) {
+    detail.input = target.elements.namedItem(inputName) ?? void 0;
+    if (!detail.input) {
+      const hiddenInput = target.ownerDocument.createElement("input");
+      hiddenInput.type = "hidden";
+      detail.input = hiddenInput;
+    } else if ("value" in detail.input) {
+      detail.oldValue = detail.input.value;
+    }
+  } else {
+    detail.formData = getInternal(target, "formData", () => new FormData());
+    detail.oldValue = detail.formData.get(inputName) ?? void 0;
+  }
+  if (dispatchBefore(target, "updateForm", detail)) {
+    const { target: target2, input, inputName: inputName2, formData, newValue } = detail;
+    if (input && "value" in input) {
+      input.value = newValue;
+      if (input instanceof Element && !input.parentElement) {
+        target2.insertAdjacentElement("beforeend", input);
+      }
+    } else if (formData) {
+      formData.set(inputName2, newValue);
+    }
+    dispatchAfter(target2, "updateForm", detail);
+  }
+}
+
+// lib/process_value.ts
+function processValueSource(rule, props) {
+  if (props.has(asAhxCSSPropertyName("value"))) {
+    setInternal(rule, "valueSource", true);
+    const document2 = resolveElement(rule)?.ownerDocument;
+    if (document2) {
+      processValues(document2);
+    }
+  }
+}
+function processValues(root) {
+  const valueRules = objectsWithInternal("valueSource");
+  for (const [rule] of valueRules) {
+    if (rule instanceof CSSStyleRule) {
+      for (const elt of root.querySelectorAll(rule.selectorText)) {
+        processValue(elt);
+      }
+    }
+  }
+}
+function processValue(elt) {
+  const newValue = getAhxCssValue(elt, "value");
+  if (newValue) {
+    const oldValue = getInternal(elt, "value");
+    const detail = {
+      target: findTarget(elt),
+      inputName: parseInput(elt),
+      oldValue,
+      newValue
+    };
+    if (newValue !== oldValue) {
+      if (dispatchBefore(elt, "processValue", detail)) {
+        const { target, inputName, newValue: newValue2 } = detail;
+        setInternal(elt, "value", newValue2);
+        if (target && inputName) {
+          updateForm(target, inputName, newValue2);
+        }
+        dispatchAfter(elt, "processValue", detail);
+      }
+    }
+  }
+}
+
 // lib/start_observer.ts
 function startObserver(root) {
   const observer = new MutationObserver((mutations) => {
@@ -777,11 +888,13 @@ function startObserver(root) {
           removedNodes.delete(node);
           if (node instanceof Element) {
             processElement(node);
+            processValue(node);
             addedElements.push(node);
           }
         }
         if (mutation.type === "attributes" && mutation.target instanceof Element) {
           processElement(mutation.target);
+          processValue(mutation.target);
         }
       }
       dispatchAfter(root, "mutations", {
@@ -883,8 +996,12 @@ function findStyleRules(root) {
       cssRules.set(rule, props);
     }
   }
-  for (const stylesheet of root.styleSheets) {
-    fromStylesheet(stylesheet);
+  if ("sheet" in root && root.sheet) {
+    fromStylesheet(root.sheet);
+  } else if ("styleSheets" in root) {
+    for (const stylesheet of root.styleSheets) {
+      fromStylesheet(stylesheet);
+    }
   }
   return cssRules;
 }
@@ -904,14 +1021,14 @@ function processCssImports(rule, props, onReady) {
             if (link.sheet && link.sheet.disabled) {
               link.sheet.disabled = false;
               setTimeout(() => {
-                onReady?.();
+                onReady?.(link);
               }, 0);
             }
             break;
           } else {
             link = createStyleSheetLink(
               url,
-              rule.parentStyleSheet?.ownerNode?.crossOrigin ?? void 0,
+              resolveElement(rule)?.crossOrigin ?? void 0,
               onReady
             );
             if (link) {
@@ -941,10 +1058,21 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
         link.setAttribute("crossorigin", detail.crossOrigin);
       }
       link.addEventListener("load", (event) => {
-        setTimeout(() => {
-          dispatchAfter(event.target ?? document, "cssImport", detail);
-          onReady?.();
-        }, 0);
+        console.log("After load", detail.url, link.sheet);
+        function process(delay = 1) {
+          setTimeout(() => {
+            console.log("After load + timeout", detail.url, link.sheet);
+            if (link.sheet) {
+              dispatchAfter(event.target ?? document, "cssImport", detail);
+              onReady?.(link);
+            } else if (delay < 1e3) {
+              process(delay * 2);
+            } else {
+              console.error("TIMEOUT");
+            }
+          }, delay);
+        }
+        process();
       }, { once: true, passive: true });
       document.head.appendChild(link);
       return link;
@@ -973,6 +1101,22 @@ function processGuards(rule, props) {
     }
   }
   return [];
+}
+
+// lib/owner.ts
+function getOwner(origin) {
+  if (hasInternal(origin, "owner")) {
+    return getInternal(origin, "owner");
+  }
+  if (origin instanceof StyleSheet) {
+    return getInternal(origin, "owner") ?? origin.href ?? void 0;
+  }
+  if (origin instanceof CSSRule && origin.parentStyleSheet) {
+    return getOwner(origin.parentStyleSheet);
+  }
+  if (origin instanceof Element && origin.parentElement) {
+    return getOwner(origin.parentElement);
+  }
 }
 
 // lib/create_pseudo_elements.ts
@@ -1039,9 +1183,10 @@ function createPseudoRule(rule, pseudoId, place) {
       pseudoRule,
       rule,
       place,
-      owner: rule.parentStyleSheet ? getInternal(rule.parentStyleSheet, "owner") ?? rule.parentStyleSheet.href ?? void 0 : void 0
+      owner: getOwner(rule)
     };
-    if (dispatchBefore(document, "pseudoRule", detail)) {
+    const target = resolveElement(rule) ?? document;
+    if (dispatchBefore(target, "pseudoRule", detail)) {
       const styleSheet = detail.pseudoRule.parentStyleSheet;
       if (styleSheet) {
         const cssRules = styleSheet.cssRules;
@@ -1052,7 +1197,7 @@ function createPseudoRule(rule, pseudoId, place) {
         if (detail.owner) {
           setInternal(pseudoRule2, "owner", detail.owner);
         }
-        dispatchAfter(document, "pseudoRule", {
+        dispatchAfter(target, "pseudoRule", {
           ...detail,
           pseudoRule: pseudoRule2
         });
@@ -1064,15 +1209,16 @@ function createPseudoRule(rule, pseudoId, place) {
 // lib/process_rule.ts
 function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
   if (props.size) {
-    const owner = getInternal(rule, "owner") ?? (rule.parentStyleSheet ? getInternal(rule.parentStyleSheet, "owner") ?? rule.parentStyleSheet.href ?? void 0 : void 0);
+    const owner = getOwner(rule);
     const detail = { rule, props, owner };
-    const target = rule.parentStyleSheet?.ownerNode ?? document;
+    const target = resolveElement(rule) ?? document;
     if (dispatchBefore(target, "processRule", detail)) {
       if (detail.owner) {
         setInternal(rule, "owner", detail.owner);
       }
       processGuards(rule, props);
       createPseudoElements(rule);
+      processValueSource(rule, props);
       processTriggers(rule, "default");
       dispatchAfter(target, "processRule", detail);
     }
@@ -1154,11 +1300,13 @@ __export(debug_exports, {
   elements: () => elements,
   eventsAll: () => eventsAll,
   eventsNone: () => eventsNone,
+  forms: () => forms,
   internals: () => internals,
   logger: () => logger,
   loggerConfig: () => loggerConfig,
   owners: () => owners,
-  triggers: () => triggers
+  triggers: () => triggers,
+  values: () => values2
 });
 
 // lib/debug/internals.ts
@@ -1335,6 +1483,48 @@ function owners() {
   console.groupEnd();
 }
 
+// lib/debug/values.ts
+function values2() {
+  console.group("AHX Values");
+  for (const [rule] of objectsWithInternal("valueSource")) {
+    if (rule instanceof CSSStyleRule) {
+      console.group(rule.cssText);
+      for (const elt of document.querySelectorAll(rule.selectorText)) {
+        const form = findTarget(elt);
+        const inputName = parseInput(elt);
+        if (form && inputName) {
+          console.log(
+            "%o -> %c%s%c -> %o %s",
+            elt,
+            "font-weight: bold",
+            getInternal(elt, "value"),
+            "font-weight: normal",
+            form,
+            inputName
+          );
+        }
+      }
+      console.groupEnd();
+    }
+  }
+  console.groupEnd();
+}
+
+// lib/debug/forms.ts
+function forms() {
+  console.group("AHX Forms");
+  for (const [form, formData] of objectsWithInternal("formData")) {
+    if (form instanceof Element) {
+      console.group(form);
+      for (const [name, value] of formData) {
+        console.log("%s: %c%s", name, "font-weight: bold", value);
+      }
+      console.groupEnd();
+    }
+  }
+  console.groupEnd();
+}
+
 // lib/cssom_patch.ts
 function patchCSSOM({ onInsertRule, onDeleteRule }) {
   if (onInsertRule) {
@@ -1377,6 +1567,7 @@ ready((document2) => {
   initLoadTriggerHandling(document2);
   startObserver(document2);
   processStyleSheets(document2);
+  processValues(document2);
   processTree(document2);
 });
 window.ahx = debug_exports;

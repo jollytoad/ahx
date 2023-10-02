@@ -1,6 +1,7 @@
 import { deleteInternal } from "./internal.ts";
 import { processElement } from "./process_element.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { processValue } from "./process_value.ts";
 
 export function startObserver(root: ParentNode) {
   const observer = new MutationObserver((mutations) => {
@@ -22,6 +23,7 @@ export function startObserver(root: ParentNode) {
           removedNodes.delete(node);
           if (node instanceof Element) {
             processElement(node);
+            processValue(node);
             addedElements.push(node);
           }
         }
@@ -30,6 +32,7 @@ export function startObserver(root: ParentNode) {
           mutation.type === "attributes" && mutation.target instanceof Element
         ) {
           processElement(mutation.target);
+          processValue(mutation.target);
         }
       }
 

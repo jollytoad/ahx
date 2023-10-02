@@ -3,6 +3,7 @@
 import { parseInterval } from "./parse_interval.ts";
 import { dispatchError } from "./dispatch.ts";
 import type { TriggerOrigin, TriggerSpec } from "./types.ts";
+import { resolveElement } from "./resolve_element.ts";
 
 const WHITESPACE_OR_COMMA = /[\s,]/;
 const SYMBOL_START = /[_$a-zA-Z]/;
@@ -18,11 +19,8 @@ export function parseTriggers(
   defaultEventType = "click",
 ): TriggerSpec[] {
   const triggerSpecs: TriggerSpec[] = [];
-  const elt = origin instanceof Element
-    ? origin
-    : origin.parentStyleSheet?.ownerNode instanceof Element
-    ? origin.parentStyleSheet.ownerNode
-    : undefined;
+  const elt = origin instanceof Element ? origin : undefined;
+  const target = resolveElement(origin) ?? document;
 
   if (triggerValue) {
     const tokens = tokenizeString(triggerValue);
@@ -82,7 +80,7 @@ export function parseTriggers(
                 WHITESPACE_OR_COMMA,
               ) as typeof triggerSpec["queue"];
             } else {
-              dispatchError(elt ?? document, "triggerSyntax", {
+              dispatchError(target, "triggerSyntax", {
                 token: tokens.shift(),
               });
             }
@@ -91,7 +89,7 @@ export function parseTriggers(
         }
       }
       if (tokens.length === initialLength) {
-        dispatchError(elt ?? document, "triggerSyntax", {
+        dispatchError(target, "triggerSyntax", {
           token: tokens.shift(),
         });
       }

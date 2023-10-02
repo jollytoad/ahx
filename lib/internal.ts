@@ -7,10 +7,13 @@ interface Props {
   "pseudoId": number | string;
   "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
+  "valueSource": true;
 
   // Element
   "triggeredOnce": true;
   "delayed": ReturnType<typeof setTimeout>;
+  "value": string;
+  "formData": FormData;
 
   // Common
   "triggers": Map<EventType, AhxTrigger>;

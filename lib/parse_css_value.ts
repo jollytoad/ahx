@@ -9,7 +9,6 @@ interface ParseValueProps {
 
 interface CssValueSpec {
   value?: string;
-  delim?: string;
   important?: boolean;
 }
 
@@ -24,13 +23,6 @@ export function parseCssValue(
   };
 
   if (spec.value) {
-    // match: --append(<delim?>) *
-    const isAppend = /^--append\(([^\)]*)\)\s+(.+)$/.exec(spec.value);
-    if (isAppend) {
-      spec.delim = isAppend[1] ? parseQuoted(isAppend[1]) : " ";
-      spec.value = isAppend[2];
-    }
-
     // match: attr(<name> <type?>)
     if (elt) {
       const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(

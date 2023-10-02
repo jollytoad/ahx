@@ -4,6 +4,8 @@ import { config } from "./config.ts";
 import { asAhxAttributeName } from "./names.ts";
 
 export function processTree(root: ParentNode, selector = defaultSelector()) {
+  // Maybe selector should combine all value rules too?
+
   const detail = { selector };
 
   if (dispatchBefore(root, "processTree", detail)) {

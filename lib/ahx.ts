@@ -10,6 +10,7 @@ import { processStyleSheets } from "./process_stylesheets.ts";
 import { initLoadTriggerHandling } from "./trigger_load.ts";
 import * as ahx from "./debug.ts";
 import { patchCSSOM } from "./cssom_patch.ts";
+import { processValues } from "./process_value.ts";
 
 // TODO: Combine this into the observer, maybe create a CssMutationObserver?
 patchCSSOM({
@@ -28,6 +29,8 @@ ready((document) => {
   startObserver(document);
 
   processStyleSheets(document);
+
+  processValues(document);
 
   processTree(document);
 });

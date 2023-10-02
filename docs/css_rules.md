@@ -18,7 +18,6 @@ The values of these custom properties can be:
 - [`url()`](https://developer.mozilla.org/en-US/docs/Web/CSS/url) function
 - [`attr()`](https://developer.mozilla.org/en-US/docs/Web/CSS/attr) function
 - `--prop()` custom function
-- prefixed with `--append()` function
 
 ### `url()`
 
@@ -55,18 +54,6 @@ from a property of the DOM element as opposed to an attribute.
 ```css
 --prop(innerText)
 --prop(href url)
-```
-
-### `--append()`
-
-NOTE: This is not a standard CSS function.
-
-Prefixing a custom property value with this will cause the value to be appended
-to an existing value in the target attribute. It can accept a string that will
-separate the new value.
-
-```css
---append(',') attr(data-foo)
 ```
 
 ## Custom Ahx Properties
@@ -171,3 +158,32 @@ Has no attribute equivalent, although a CSS rule could be added to emulate it:
 ```
 
 Nearest thing in _htmx_ is [hx-disable](https://htmx.org/attributes/hx-disable).
+
+### --ahx-value
+
+Declare that a value should be harvested from all matching elements. A
+`--prop()` or `attr()` function is usually used here to pick a value from the
+element.
+
+### --ahx-target
+
+The target of this rule, in combination with `--ahx-value`, this targets an
+element to hold form data, which may or may not be an actual form element. If it
+is a form then the value is set on the named input belonging to the form, a new
+hidden input is created if the named input does not exist. If it isn't a form
+then an internal `FormData` object is associated with the element and values are
+set in this.
+
+_TODO: document extended selector_
+
+### --ahx-input
+
+Declares the name of the input inside the `--ahx-target` form (or FormData) to
+received the value of `--ahx-value`.
+
+### --ahx-include
+
+_Not yet implemented_
+
+Select a form (or element with an internal FormData) from which to include
+request data (params or body data depending on the request method and encoding).

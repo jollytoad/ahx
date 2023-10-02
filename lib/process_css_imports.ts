@@ -3,11 +3,12 @@ import { parseCssValue } from "./parse_css_value.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { CssImportDetail, CSSPropertyName } from "./types.ts";
 import { asAhxCSSPropertyName } from "./names.ts";
+import { resolveElement } from "./resolve_element.ts";
 
 export function processCssImports(
   rule: CSSStyleRule,
   props: Set<CSSPropertyName>,
-  onReady?: () => void,
+  onReady?: (link: HTMLLinkElement) => void,
 ) {
   const importProp = asAhxCSSPropertyName("import");
 
@@ -29,15 +30,15 @@ export function processCssImports(
             if (link.sheet && link.sheet.disabled) {
               link.sheet.disabled = false;
               setTimeout(() => {
-                onReady?.();
+                onReady?.(link!);
               }, 0);
             }
             break;
           } else {
             link = createStyleSheetLink(
               url,
-              (rule.parentStyleSheet?.ownerNode as HTMLLinkElement)
-                ?.crossOrigin ?? undefined,
+              (resolveElement(rule) as HTMLLinkElement)?.crossOrigin ??
+                undefined,
               onReady,
             );
 
@@ -62,7 +63,7 @@ export function processCssImports(
 function createStyleSheetLink(
   url: string,
   crossOrigin?: string,
-  onReady?: () => void,
+  onReady?: (link: HTMLLinkElement) => void,
 ): HTMLLinkElement | undefined {
   const detail: CssImportDetail = { url, crossOrigin, disabled: false };
 
@@ -79,12 +80,25 @@ function createStyleSheetLink(
       }
 
       link.addEventListener("load", (event) => {
-        // IMPORTANT: setTimeout is required to ensure the stylesheet has
-        // is exposed in the DOM before we trigger the done event.
-        setTimeout(() => {
-          dispatchAfter(event.target ?? document, "cssImport", detail);
-          onReady?.();
-        }, 0);
+        console.log("After load", detail.url, link.sheet);
+        // IMPORTANT: The sheet object may not immediately appear in the DOM,
+        // even after the load event, so we may need to poll until it actually
+        // appears.
+        function process(delay = 1) {
+          setTimeout(() => {
+            console.log("After load + timeout", detail.url, link.sheet);
+            if (link.sheet) {
+              dispatchAfter(event.target ?? document, "cssImport", detail);
+              onReady?.(link);
+            } else if (delay < 1000) {
+              process(delay * 2);
+            } else {
+              console.error("TIMEOUT");
+            }
+          }, delay);
+        }
+
+        process();
       }, { once: true, passive: true });
 
       document.head.appendChild(link);
