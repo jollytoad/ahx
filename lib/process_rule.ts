@@ -4,9 +4,8 @@ import { getAhxCSSPropertyNames } from "./names.ts";
 import { processTriggers } from "./process_triggers.ts";
 import { processGuards } from "./process_guards.ts";
 import { createPseudoElements } from "./create_pseudo_elements.ts";
-import { setInternal } from "./internal.ts";
 import { processValueSource } from "./process_value.ts";
-import { getOwner } from "./owner.ts";
+import { getOwner, setOwner } from "./owner.ts";
 import { resolveElement } from "./resolve_element.ts";
 
 export function processRule(
@@ -24,7 +23,7 @@ export function processRule(
 
     if (dispatchBefore(target, "processRule", detail)) {
       if (detail.owner) {
-        setInternal(rule, "owner", detail.owner);
+        setOwner(rule, detail.owner);
       }
 
       processGuards(rule, props);

@@ -236,10 +236,33 @@ function asAhxAttributeName(name) {
   return `${config.prefix}-${name}`;
 }
 
+// lib/owner.ts
+function getOwner(origin) {
+  if (hasInternal(origin, "owner")) {
+    return getInternal(origin, "owner");
+  }
+  if (origin instanceof StyleSheet) {
+    return getInternal(origin, "owner") ?? origin.href ?? void 0;
+  }
+  if (origin instanceof CSSRule && origin.parentStyleSheet) {
+    return getOwner(origin.parentStyleSheet);
+  }
+  if (origin instanceof Element && origin.parentElement) {
+    return getOwner(origin.parentElement);
+  }
+}
+function setOwner(origin, owner) {
+  setInternal(origin, "owner", owner);
+}
+
 // lib/parse_css_value.ts
 function parseCssValue({ rule, style, prop, elt }) {
   style ??= rule?.style ?? (elt && getComputedStyle(elt));
   const spec = {
+    rule,
+    style,
+    prop,
+    elt,
     value: style?.getPropertyValue(prop)?.trim(),
     important: style?.getPropertyPriority(prop) === "important"
   };
@@ -311,6 +334,37 @@ function getAhxCssValue(origin, name) {
   const rule = origin instanceof CSSStyleRule ? origin : void 0;
   const elt = origin instanceof Element ? origin : void 0;
   return parseCssValue({ rule, elt, prop: asAhxCSSPropertyName(name) }).value;
+}
+function findMatchingRules(elt, internalKey, ahxName) {
+  const prop = asAhxCSSPropertyName(ahxName);
+  const computedValue = getComputedStyle(elt).getPropertyValue(
+    asAhxCSSPropertyName(ahxName)
+  );
+  if (computedValue) {
+    const rules = objectsWithInternal(internalKey);
+    const matches = [];
+    for (const [rule] of rules) {
+      if (rule instanceof CSSStyleRule) {
+        if (elt.matches(rule.selectorText)) {
+          matches.push(parseCssValue({ rule, elt, prop }));
+        }
+      }
+    }
+    return matches;
+  }
+  return [];
+}
+
+// lib/find_target.ts
+function findTarget(elt, ahxName = "target") {
+  const targetStr = getAhxCssValue(elt, ahxName);
+  if (targetStr) {
+    if (targetStr.startsWith("closest ")) {
+      return elt.closest(targetStr.substring(8)) ?? void 0;
+    } else {
+      return elt.querySelector(targetStr) ?? void 0;
+    }
+  }
 }
 
 // ext/polyfill/ReadableStream_asyncIterator.js
@@ -432,7 +486,7 @@ async function swap(target, response, owner) {
           ...swapSpec2
         } = detail;
         if (owner2) {
-          setInternal(element2, "owner", owner2);
+          setOwner(element2, owner2);
         }
         if (!previous) {
           swapHandlers[swapSpec2.swapStyle]?.(target, element2, swapSpec2);
@@ -466,18 +520,64 @@ var swapHandlers = {
 
 // lib/handle_action.ts
 async function handleAction(triggered) {
-  const { target, action, owner } = triggered;
-  if (dispatchBefore(target, "handleAction", triggered)) {
+  const { target } = triggered;
+  const include = findTarget(target, "include");
+  const formData = include ? getFormData(include) : void 0;
+  const detail = {
+    ...triggered,
+    formData
+  };
+  if (dispatchBefore(target, "handleAction", detail)) {
+    const { target: target2, action, owner } = detail;
     switch (action.type) {
       case "request": {
-        const response = await fetch(action.url, {
-          method: action.method
-        });
-        await swap(target, response, owner);
+        const detail2 = {
+          request: prepareRequest(action, formData)
+        };
+        if (dispatchBefore(target2, "request", detail2)) {
+          const { request } = detail2;
+          try {
+            const response = await fetch(request);
+            dispatchAfter(target2, "request", { request, response });
+            await swap(target2, response, owner);
+          } catch (error) {
+            dispatchAfter(target2, "request", { request, error });
+          }
+        }
       }
     }
-    dispatchAfter(target, "handleAction", triggered);
+    dispatchAfter(target2, "handleAction", triggered);
   }
+}
+function getFormData(elt) {
+  if (hasInternal(elt, "formData")) {
+    return getInternal(elt, "formData");
+  }
+  if (elt instanceof HTMLFormElement) {
+    return new FormData(elt);
+  }
+}
+function prepareRequest(action, formData) {
+  const url = new URL(action.url);
+  const init = {
+    method: action.method.toUpperCase()
+  };
+  if (formData) {
+    switch (init.method) {
+      case "GET":
+      case "HEAD":
+      case "DELETE":
+        for (const [key, value] of formData) {
+          url.searchParams.append(key, String(value));
+        }
+        break;
+      case "PUT":
+      case "POST":
+      case "PATCH":
+        init.body = formData;
+    }
+  }
+  return new Request(url, init);
 }
 
 // lib/handle_trigger.ts
@@ -549,7 +649,7 @@ function addTrigger(origin, trigger, action) {
     trigger,
     action
   };
-  const target = origin instanceof Element ? origin : resolveElement(origin) ?? document;
+  const target = resolveElement(origin) ?? document;
   if (dispatchBefore(target, "addTrigger", detail)) {
     const { trigger: trigger2, action: action2 } = detail;
     const { eventType } = trigger2;
@@ -571,19 +671,24 @@ function* getTriggersForEvent(event) {
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
     const trigger = getInternal(target, "triggers")?.get(event.type);
     if (trigger) {
-      yield { ...trigger, target, ...originProps(target) };
+      yield { ...trigger, target, origin: target, owner: getOwner(target) };
     }
     for (const [origin, triggers2] of objectsWithInternal("triggers")) {
       if (origin instanceof CSSStyleRule) {
         const trigger2 = triggers2.get(event.type);
         if (trigger2 && isEnabled(origin)) {
           if (trigger2 && target.matches(origin.selectorText)) {
-            yield { ...trigger2, target, ...originProps(origin) };
+            yield { ...trigger2, target, origin, owner: getOwner(origin) };
           }
           if (recursive) {
             const found = target.querySelectorAll(origin.selectorText);
             for (const elt of found) {
-              yield { ...trigger2, target: elt, ...originProps(origin) };
+              yield {
+                ...trigger2,
+                target: elt,
+                origin,
+                owner: getOwner(origin)
+              };
             }
           }
         }
@@ -598,12 +703,6 @@ function eventListener(event) {
 }
 function isEnabled(styleRule) {
   return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
-}
-function originProps(origin) {
-  return {
-    origin,
-    owner: getInternal(origin, "owner")
-  };
 }
 
 // lib/parse_triggers.ts
@@ -763,26 +862,14 @@ function processTriggers(origin, defaultEventType) {
 function processElement(elt) {
   if (hasAhxAttributes(elt)) {
     const detail = {
-      owner: getInternal(elt, "owner")
+      owner: getOwner(elt)
     };
     if (dispatchBefore(elt, "processElement", detail)) {
       if (detail.owner) {
-        setInternal(elt, "owner", detail.owner);
+        setOwner(elt, detail.owner);
       }
       processTriggers(elt, "click");
       dispatchAfter(elt, "processElement", detail);
-    }
-  }
-}
-
-// lib/find_target.ts
-function findTarget(elt, ahxName = "target") {
-  const targetStr = getAhxCssValue(elt, ahxName);
-  if (targetStr) {
-    if (targetStr.startsWith("closest ")) {
-      return elt.closest(targetStr.substring(8)) ?? void 0;
-    } else {
-      return elt.querySelector(targetStr) ?? void 0;
     }
   }
 }
@@ -793,12 +880,8 @@ function parseInput(elt) {
 }
 
 // lib/update_form.ts
-function updateForm(target, inputName, value) {
-  const detail = {
-    target,
-    inputName,
-    newValue: value
-  };
+function updateForm(detail) {
+  const { target, inputName } = detail;
   if (target instanceof HTMLFormElement) {
     detail.input = target.elements.namedItem(inputName) ?? void 0;
     if (!detail.input) {
@@ -850,23 +933,49 @@ function processValue(elt) {
   const newValue = getAhxCssValue(elt, "value");
   if (newValue) {
     const oldValue = getInternal(elt, "value");
+    const target = findTarget(elt);
     const detail = {
-      target: findTarget(elt),
+      target,
       inputName: parseInput(elt),
       oldValue,
-      newValue
+      newValue,
+      sourceOwner: getOwner(elt),
+      targetOwner: target ? getOwner(target) : void 0
     };
     if (newValue !== oldValue) {
+      const owners2 = getRuleOwners(elt, newValue);
+      if (owners2.size > 1) {
+        dispatchError(elt, "multipleValueRuleOwners", { owners: owners2 });
+        return;
+      }
+      detail.ruleOwner = [...owners2][0];
       if (dispatchBefore(elt, "processValue", detail)) {
-        const { target, inputName, newValue: newValue2 } = detail;
+        const { target: target2, inputName, newValue: newValue2 } = detail;
         setInternal(elt, "value", newValue2);
-        if (target && inputName) {
-          updateForm(target, inputName, newValue2);
+        if (target2 && inputName) {
+          updateForm({
+            target: target2,
+            inputName,
+            ...detail
+          });
         }
         dispatchAfter(elt, "processValue", detail);
       }
     }
   }
+}
+function getRuleOwners(elt, expectedValue) {
+  const owners2 = /* @__PURE__ */ new Set();
+  const matches = findMatchingRules(elt, "valueSource", "value");
+  for (const m of matches) {
+    if (m.rule && m.value === expectedValue) {
+      const owner = getOwner(m.rule);
+      if (owner) {
+        owners2.add(owner);
+      }
+    }
+  }
+  return owners2;
 }
 
 // lib/start_observer.ts
@@ -921,7 +1030,8 @@ function startObserver(root) {
 
 // lib/debug/events.ts
 var loggerConfig = {
-  collapse: true
+  collapse: true,
+  include: []
 };
 var rootRef;
 function eventsAll(root = document) {
@@ -936,19 +1046,30 @@ function eventsNone() {
   rootRef = void 0;
 }
 function logger({ detail: event }) {
-  const detail = event.detail;
-  if (detail?._before) {
-    console[loggerConfig.collapse ? "groupCollapsed" : "group"](
-      event.type,
-      event,
-      detail
-    );
-  } else {
-    console.log(event.type, event, detail);
+  if (shouldLog(event.type)) {
+    const detail = event.detail;
+    if (detail?._before) {
+      console[loggerConfig.collapse ? "groupCollapsed" : "group"](
+        event.type,
+        event,
+        detail
+      );
+    } else {
+      console.log(event.type, event, detail);
+    }
+    if (detail?._after) {
+      console.groupEnd();
+    }
   }
-  if (detail?._after) {
-    console.groupEnd();
+}
+function shouldLog(type) {
+  if (loggerConfig.include?.length) {
+    if (loggerConfig.include.some((v) => type.includes(`:${v}`))) {
+      return true;
+    }
+    return false;
   }
+  return true;
 }
 
 // lib/process_tree.ts
@@ -1103,22 +1224,6 @@ function processGuards(rule, props) {
   return [];
 }
 
-// lib/owner.ts
-function getOwner(origin) {
-  if (hasInternal(origin, "owner")) {
-    return getInternal(origin, "owner");
-  }
-  if (origin instanceof StyleSheet) {
-    return getInternal(origin, "owner") ?? origin.href ?? void 0;
-  }
-  if (origin instanceof CSSRule && origin.parentStyleSheet) {
-    return getOwner(origin.parentStyleSheet);
-  }
-  if (origin instanceof Element && origin.parentElement) {
-    return getOwner(origin.parentElement);
-  }
-}
-
 // lib/create_pseudo_elements.ts
 var nextPseudoId = 1;
 function createPseudoElements(rule) {
@@ -1195,7 +1300,7 @@ function createPseudoRule(rule, pseudoId, place) {
           detail.owner = styleSheet.href;
         }
         if (detail.owner) {
-          setInternal(pseudoRule2, "owner", detail.owner);
+          setOwner(pseudoRule2, detail.owner);
         }
         dispatchAfter(target, "pseudoRule", {
           ...detail,
@@ -1214,7 +1319,7 @@ function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
     const target = resolveElement(rule) ?? document;
     if (dispatchBefore(target, "processRule", detail)) {
       if (detail.owner) {
-        setInternal(rule, "owner", detail.owner);
+        setOwner(rule, detail.owner);
       }
       processGuards(rule, props);
       createPseudoElements(rule);
@@ -1237,7 +1342,7 @@ function processStyleSheets(root) {
     }
     for (const [rule] of cssRules) {
       if (rule.parentStyleSheet && rule.parentStyleSheet.href && !hasInternal(rule.parentStyleSheet, "owner")) {
-        setInternal(rule.parentStyleSheet, "owner", rule.parentStyleSheet.href);
+        setOwner(rule.parentStyleSheet, rule.parentStyleSheet.href);
       }
     }
     for (const [rule, props] of cssRules) {

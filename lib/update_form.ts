@@ -1,13 +1,9 @@
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { getInternal } from "./internal.ts";
-import type { ValueDetail } from "./types.ts";
+import type { UpdateFormDetail } from "./types.ts";
 
-export function updateForm(target: Element, inputName: string, value: string) {
-  const detail: ValueDetail = {
-    target,
-    inputName,
-    newValue: value,
-  };
+export function updateForm(detail: UpdateFormDetail) {
+  const { target, inputName } = detail;
 
   if (target instanceof HTMLFormElement) {
     detail.input = target.elements.namedItem(inputName) ?? undefined;

@@ -12,6 +12,8 @@ import * as ahx from "./debug.ts";
 import { patchCSSOM } from "./cssom_patch.ts";
 import { processValues } from "./process_value.ts";
 
+// ahx.loggerConfig.include = ["processValue", "updateForm"];
+
 // TODO: Combine this into the observer, maybe create a CssMutationObserver?
 patchCSSOM({
   onInsertRule() {

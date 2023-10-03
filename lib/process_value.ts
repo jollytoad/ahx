@@ -1,12 +1,13 @@
-import type { AhxCSSPropertyName } from "./types.ts";
+import type { AhxCSSPropertyName, Owner, ProcessValueDetail } from "./types.ts";
 import { asAhxCSSPropertyName } from "./names.ts";
-import { getAhxCssValue } from "./get_ahx_value.ts";
+import { findMatchingRules, getAhxCssValue } from "./get_ahx_value.ts";
 import { getInternal, objectsWithInternal, setInternal } from "./internal.ts";
 import { resolveElement } from "./resolve_element.ts";
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
 import { findTarget } from "./find_target.ts";
 import { parseInput } from "./parse_input.ts";
 import { updateForm } from "./update_form.ts";
+import { getOwner } from "./owner.ts";
 
 export function processValueSource(
   rule: CSSStyleRule,
@@ -38,26 +39,56 @@ export function processValue(elt: Element) {
   const newValue = getAhxCssValue(elt, "value");
   if (newValue) {
     const oldValue = getInternal(elt, "value");
+    const target = findTarget(elt);
 
-    const detail = {
-      target: findTarget(elt),
+    const detail: ProcessValueDetail = {
+      target,
       inputName: parseInput(elt),
       oldValue,
       newValue,
+      sourceOwner: getOwner(elt),
+      targetOwner: target ? getOwner(target) : undefined,
     };
 
     if (newValue !== oldValue) {
+      const owners = getRuleOwners(elt, newValue);
+
+      if (owners.size > 1) {
+        dispatchError(elt, "multipleValueRuleOwners", { owners });
+        return;
+      }
+
+      detail.ruleOwner = [...owners][0];
+
       if (dispatchBefore(elt, "processValue", detail)) {
         const { target, inputName, newValue } = detail;
 
         setInternal(elt, "value", newValue);
 
         if (target && inputName) {
-          updateForm(target, inputName, newValue);
+          updateForm({
+            target,
+            inputName,
+            ...detail,
+          });
         }
 
         dispatchAfter(elt, "processValue", detail);
       }
     }
   }
+}
+
+function getRuleOwners(elt: Element, expectedValue: string): Set<Owner> {
+  const owners = new Set<Owner>();
+  const matches = findMatchingRules(elt, "valueSource", "value");
+  for (const m of matches) {
+    if (m.rule && m.value === expectedValue) {
+      const owner = getOwner(m.rule);
+      if (owner) {
+        owners.add(owner);
+      }
+    }
+  }
+  return owners;
 }

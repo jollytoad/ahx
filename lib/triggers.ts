@@ -3,12 +3,13 @@ import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { handleTrigger } from "./handle_trigger.ts";
 import type {
   ActionSpec,
-  AhxTriggered,
   EventType,
+  HandleTriggerDetail,
   TriggerOrigin,
   TriggerSpec,
 } from "./types.ts";
 import { resolveElement } from "./resolve_element.ts";
+import { getOwner } from "./owner.ts";
 
 const eventTypes = new Set<EventType>();
 
@@ -35,9 +36,7 @@ export function addTrigger(
     action,
   };
 
-  const target = origin instanceof Element
-    ? origin
-    : resolveElement(origin) ?? document;
+  const target = resolveElement(origin) ?? document;
 
   if (dispatchBefore(target, "addTrigger", detail)) {
     const { trigger, action } = detail;
@@ -62,7 +61,7 @@ export function addTrigger(
 
 export function* getTriggersForEvent(
   event: Event,
-): Iterable<AhxTriggered> {
+): Iterable<HandleTriggerDetail> {
   if (event.target instanceof Element) {
     const target = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
@@ -70,7 +69,7 @@ export function* getTriggersForEvent(
     const trigger = getInternal(target, "triggers")?.get(event.type);
 
     if (trigger) {
-      yield { ...trigger, target, ...originProps(target) };
+      yield { ...trigger, target, origin: target, owner: getOwner(target) };
     }
 
     // Find css rules with triggers
@@ -81,14 +80,19 @@ export function* getTriggersForEvent(
         if (trigger && isEnabled(origin)) {
           // ... that match the element
           if (trigger && target.matches(origin.selectorText)) {
-            yield { ...trigger, target, ...originProps(origin) };
+            yield { ...trigger, target, origin, owner: getOwner(origin) };
           }
 
           // ... on all sub-elements that match the selector
           if (recursive) {
             const found = target.querySelectorAll(origin.selectorText);
             for (const elt of found) {
-              yield { ...trigger, target: elt, ...originProps(origin) };
+              yield {
+                ...trigger,
+                target: elt,
+                origin,
+                owner: getOwner(origin),
+              };
             }
           }
         }
@@ -105,13 +109,4 @@ function eventListener(event: Event) {
 
 function isEnabled(styleRule: CSSStyleRule): boolean {
   return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
-}
-
-function originProps(
-  origin: TriggerOrigin,
-): Pick<AhxTriggered, "origin" | "owner"> {
-  return {
-    origin,
-    owner: getInternal(origin, "owner"),
-  };
 }

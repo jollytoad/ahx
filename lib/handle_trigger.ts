@@ -6,10 +6,10 @@ import {
   setInternal,
 } from "./internal.ts";
 import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
-import type { AhxTriggered } from "./types.ts";
+import type { HandleTriggerDetail } from "./types.ts";
 import { handleAction } from "./handle_action.ts";
 
-export function handleTrigger(triggered: AhxTriggered) {
+export function handleTrigger(triggered: HandleTriggerDetail) {
   const { trigger, target } = triggered;
 
   if (isDenied(target)) {

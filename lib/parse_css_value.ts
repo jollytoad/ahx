@@ -7,17 +7,22 @@ interface ParseValueProps {
   elt?: Element;
 }
 
-interface CssValueSpec {
+export interface CSSValueSpec extends ParseValueProps {
+  rule?: CSSStyleRule;
   value?: string;
   important?: boolean;
 }
 
 export function parseCssValue(
   { rule, style, prop, elt }: ParseValueProps,
-): CssValueSpec {
+): CSSValueSpec {
   style ??= rule?.style ?? (elt && getComputedStyle(elt));
 
-  const spec: CssValueSpec = {
+  const spec: CSSValueSpec = {
+    rule,
+    style,
+    prop,
+    elt,
     value: style?.getPropertyValue(prop)?.trim(),
     important: style?.getPropertyPriority(prop) === "important",
   };

@@ -3,8 +3,8 @@ import "../ext/polyfill/ReadableStream_asyncIterator.js";
 import { parseSwap } from "./parse_swap.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { SwapSpec, SwapStyle } from "./types.ts";
-import { setInternal } from "./internal.ts";
 import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
+import { setOwner } from "./owner.ts";
 
 export async function swap(
   target: Element,
@@ -44,7 +44,7 @@ export async function swap(
         } = detail;
 
         if (owner) {
-          setInternal(element, "owner", owner);
+          setOwner(element, owner);
         }
 
         if (!previous) {

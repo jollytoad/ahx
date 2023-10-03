@@ -3,7 +3,8 @@ import { processCssImports } from "./process_css_imports.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { ProcessStyleSheetsDetail } from "./types.ts";
 import { processRule } from "./process_rule.ts";
-import { hasInternal, setInternal } from "./internal.ts";
+import { hasInternal } from "./internal.ts";
+import { setOwner } from "./owner.ts";
 
 export function processStyleSheets(
   root: (DocumentOrShadowRoot | LinkStyle) & EventTarget,
@@ -25,7 +26,7 @@ export function processStyleSheets(
         rule.parentStyleSheet && rule.parentStyleSheet.href &&
         !hasInternal(rule.parentStyleSheet, "owner")
       ) {
-        setInternal(rule.parentStyleSheet, "owner", rule.parentStyleSheet.href);
+        setOwner(rule.parentStyleSheet, rule.parentStyleSheet.href);
       }
     }
 

@@ -3,7 +3,7 @@ import { getInternal, hasInternal, setInternal } from "./internal.ts";
 import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
 import type { PseudoId, PseudoPlace } from "./types.ts";
 import { resolveElement } from "./resolve_element.ts";
-import { getOwner } from "./owner.ts";
+import { getOwner, setOwner } from "./owner.ts";
 
 let nextPseudoId = 1;
 
@@ -119,7 +119,7 @@ function createPseudoRule(
         }
 
         if (detail.owner) {
-          setInternal(pseudoRule, "owner", detail.owner);
+          setOwner(pseudoRule, detail.owner);
         }
 
         dispatchAfter(target, "pseudoRule", {

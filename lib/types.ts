@@ -22,6 +22,7 @@ export type AhxName =
   | "value"
   | "target"
   | "input"
+  | "include"
   | AhxHttpMethod;
 
 export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;
@@ -34,10 +35,14 @@ export interface AhxTrigger {
   action: ActionSpec;
 }
 
-export interface AhxTriggered extends AhxTrigger {
+export interface HandleTriggerDetail extends AhxTrigger {
   target: Element;
   origin: TriggerOrigin;
   owner?: Owner;
+}
+
+export interface HandleActionDetail extends HandleTriggerDetail {
+  formData?: FormData;
 }
 
 export interface TriggerSpec {
@@ -92,11 +97,12 @@ export interface AhxEventMap {
   ];
   "addTrigger": [AddTriggerDetail, AddTriggerDetail];
   "addEventType": [AddEventTypeDetail, AddEventTypeDetail];
-  "handleTrigger": [AhxTriggered, AhxTriggered];
-  "handleAction": [AhxTriggered, AhxTriggered];
+  "handleTrigger": [HandleTriggerDetail, HandleTriggerDetail];
+  "handleAction": [HandleTriggerDetail, HandleTriggerDetail];
   "swap": [SwapDetail, SwapDetail];
-  "processValue": [Partial<ValueDetail>, Partial<ValueDetail>];
-  "updateForm": [ValueDetail, ValueDetail];
+  "processValue": [ProcessValueDetail, ProcessValueDetail];
+  "updateForm": [UpdateFormDetail, UpdateFormDetail];
+  "request": [RequestDetail, RequestDetail];
 }
 
 export interface AhxErrorMap {
@@ -107,7 +113,8 @@ export interface AhxErrorMap {
     value?: string;
     rule: CSSStyleRule;
   };
-  "triggerDenied": AhxTriggered;
+  "triggerDenied": HandleTriggerDetail;
+  "multipleValueRuleOwners": { owners: Set<Owner> };
 }
 
 export interface MutationsDetail {
@@ -181,15 +188,35 @@ export interface SwapDetail extends SwapSpec {
   owner?: Owner;
 }
 
-export interface ValueDetail {
+export interface ProcessValueDetail {
+  target?: Element;
+  inputName?: string;
+  oldValue?: string | File;
+  newValue: string;
+  ruleOwner?: Owner;
+  sourceOwner?: Owner;
+  targetOwner?: Owner;
+}
+
+export interface UpdateFormDetail {
   target: Element;
   inputName: string;
   input?: Element | RadioNodeList;
   formData?: FormData;
   oldValue?: string | File;
   newValue: string;
-  updated?: boolean;
+  ruleOwner?: Owner;
+  sourceOwner?: Owner;
+  targetOwner?: Owner;
 }
+
+export interface RequestDetail {
+  request: Request;
+  response?: Response;
+  error?: unknown;
+}
+
+export type AhxEventType = keyof AhxEventMap | keyof AhxErrorMap;
 
 type BeforeEventMap = {
   [E in keyof AhxEventMap as `${Prefix}:${E}`]: CustomEvent<AhxEventMap[E][0]>;
