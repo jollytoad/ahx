@@ -3,12 +3,12 @@ import { querySelectorExt } from "./query_selector.ts";
 import { handleRequest } from "./handle_request.ts";
 import { getInternal, hasInternal } from "./internal.ts";
 import type { HandleActionDetail, HandleTriggerDetail } from "./types.ts";
-import { parseCssValue } from "./parse_css_value.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
 
 export async function handleAction(triggered: HandleTriggerDetail) {
   const { target } = triggered;
 
-  const query = parseCssValue({ elt: target, prop: "include" }).value;
+  const query = parseAttrValue(target, "include").value;
   const include = querySelectorExt(target, query);
   const formData = include ? getFormData(include) : undefined;
 

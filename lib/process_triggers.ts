@@ -1,14 +1,14 @@
 import { addTriggers } from "./triggers.ts";
 import { parseTriggers } from "./parse_triggers.ts";
 import type { EventType, TriggerOrigin } from "./types.ts";
-import { getAhxValue } from "./get_ahx_value.ts";
 import { parseActions } from "./parse_actions.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
 
 export function processTriggers(
   origin: TriggerOrigin,
   defaultEventType: EventType,
 ) {
-  const triggerValue = getAhxValue(origin, "trigger");
+  const triggerValue = parseAttrValue(origin, "trigger").value;
   const triggers = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
 

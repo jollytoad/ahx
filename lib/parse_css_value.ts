@@ -1,10 +1,10 @@
 import { asAhxCSSPropertyName } from "./names.ts";
-import type { AhxCSSPropertyName, AhxName } from "./types.ts";
+import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
 
 interface ParseValueProps {
   rule?: CSSStyleRule;
   style?: CSSStyleDeclaration;
-  prop: AhxName | AhxCSSPropertyName;
+  prop: AhxName | AhxCSSPropertyName | AhxAttributeName;
   elt?: Element;
 }
 

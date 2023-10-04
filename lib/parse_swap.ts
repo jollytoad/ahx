@@ -1,12 +1,12 @@
 // Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
 
 import { config } from "./config.ts";
-import { getAhxValue } from "./get_ahx_value.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
 import { parseInterval } from "./parse_interval.ts";
 import type { SwapSpec, SwapStyle } from "./types.ts";
 
 export function parseSwap(elt: Element, swapInfoOverride?: string) {
-  const swapInfo = swapInfoOverride || getAhxValue(elt, "swap");
+  const swapInfo = swapInfoOverride || parseAttrValue(elt, "swap").value;
 
   const swapSpec: SwapSpec = {
     swapStyle: config.defaultSwapStyle,

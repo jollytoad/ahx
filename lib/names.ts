@@ -31,13 +31,21 @@ export function isAhxAttributeName(name: string): name is AhxAttributeName {
 }
 
 export function asAhxCSSPropertyName(
-  name: AhxName | AhxCSSPropertyName,
+  name: AhxName | AhxCSSPropertyName | AhxAttributeName,
 ): AhxCSSPropertyName {
-  return isAhxCSSPropertyName(name) ? name : `--${config.prefix}-${name}`;
+  return isAhxCSSPropertyName(name)
+    ? name
+    : isAhxAttributeName(name)
+    ? `--${name}`
+    : `--${config.prefix}-${name}`;
 }
 
 export function asAhxAttributeName(
-  name: AhxName | AhxAttributeName,
+  name: AhxName | AhxAttributeName | AhxCSSPropertyName,
 ): AhxAttributeName {
-  return isAhxAttributeName(name) ? name : `${config.prefix}-${name}`;
+  return isAhxAttributeName(name)
+    ? name
+    : isAhxCSSPropertyName(name)
+    ? name.substring(2) as AhxAttributeName
+    : `${config.prefix}-${name}`;
 }

@@ -1,13 +1,13 @@
 import { config } from "./config.ts";
-import { getAhxValue } from "./get_ahx_value.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
 import { resolveElement } from "./resolve_element.ts";
-import type { ActionSpec, AhxName, TriggerOrigin } from "./types.ts";
+import type { ActionSpec, TriggerOrigin } from "./types.ts";
 
 export function parseActions(origin: TriggerOrigin): ActionSpec[] {
   const actionSpecs: ActionSpec[] = [];
 
   for (const method of config.httpMethods) {
-    const url = getAhxValue(origin, method as AhxName);
+    const url = parseAttrValue(origin, method).value;
     if (url) {
       const baseURL = (resolveElement(origin) ?? document).baseURI;
 

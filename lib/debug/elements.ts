@@ -1,4 +1,4 @@
-import { getAhxValue } from "../get_ahx_value.ts";
+import { parseAttrValue } from "../parse_attr_value.ts";
 import { internalEntries } from "../internal.ts";
 import type { AhxName } from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
@@ -27,7 +27,7 @@ export function elements(ahxProp?: AhxName) {
 
   for (const elt of [...elements].sort(comparePosition)) {
     if (ahxProp) {
-      const value = getAhxValue(elt, ahxProp);
+      const { value } = parseAttrValue(elt, ahxProp);
       if (value) {
         console.log(elt, value);
       }

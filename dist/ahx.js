@@ -230,10 +230,10 @@ function isAhxAttributeName(name) {
   return name.startsWith(`${config.prefix}-`);
 }
 function asAhxCSSPropertyName(name) {
-  return isAhxCSSPropertyName(name) ? name : `--${config.prefix}-${name}`;
+  return isAhxCSSPropertyName(name) ? name : isAhxAttributeName(name) ? `--${name}` : `--${config.prefix}-${name}`;
 }
 function asAhxAttributeName(name) {
-  return isAhxAttributeName(name) ? name : `${config.prefix}-${name}`;
+  return isAhxAttributeName(name) ? name : isAhxCSSPropertyName(name) ? name.substring(2) : `${config.prefix}-${name}`;
 }
 
 // lib/owner.ts
@@ -320,17 +320,21 @@ function parseQuoted(value) {
   return value;
 }
 
-// lib/get_ahx_value.ts
-function getAhxValue(origin, name) {
+// lib/parse_attr_value.ts
+function parseAttrValue(origin, prop) {
   if (origin instanceof Element) {
-    const attrValue = origin.getAttribute(asAhxAttributeName(name));
-    const { value, important } = parseCssValue({
+    prop = asAhxAttributeName(prop);
+    const attrValue = origin.getAttribute(prop);
+    const { rule, value, important } = parseCssValue({ elt: origin, prop });
+    return {
+      prop,
       elt: origin,
-      prop: asAhxCSSPropertyName(name)
-    });
-    return important && value ? value : attrValue ?? value;
+      value: important && value ? value : attrValue ?? value,
+      rule: important || !attrValue ? rule : void 0,
+      important: important || !attrValue ? important : void 0
+    };
   } else {
-    return parseCssValue({ rule: origin, prop: asAhxCSSPropertyName(name) }).value;
+    return parseCssValue({ rule: origin, prop });
   }
 }
 
@@ -427,7 +431,7 @@ function parseInterval(str) {
 
 // lib/parse_swap.ts
 function parseSwap(elt, swapInfoOverride) {
-  const swapInfo = swapInfoOverride || getAhxValue(elt, "swap");
+  const swapInfo = swapInfoOverride || parseAttrValue(elt, "swap").value;
   const swapSpec = {
     swapStyle: config.defaultSwapStyle,
     swapDelay: config.defaultSwapDelay,
@@ -589,7 +593,7 @@ function prepareRequest(action, formData) {
 // lib/handle_action.ts
 async function handleAction(triggered) {
   const { target } = triggered;
-  const query = parseCssValue({ elt: target, prop: "include" }).value;
+  const query = parseAttrValue(target, "include").value;
   const include = querySelectorExt(target, query);
   const formData = include ? getFormData(include) : void 0;
   const detail = {
@@ -649,7 +653,7 @@ function handleTrigger(triggered) {
   }
 }
 function isDenied(elt) {
-  return getAhxValue(elt, "deny-trigger") === "true";
+  return parseAttrValue(elt, "deny-trigger").value === "true";
 }
 
 // lib/resolve_element.ts
@@ -886,7 +890,7 @@ function consumeUntil(tokens, match) {
 function parseActions(origin) {
   const actionSpecs = [];
   for (const method of config.httpMethods) {
-    const url = getAhxValue(origin, method);
+    const url = parseAttrValue(origin, method).value;
     if (url) {
       const baseURL = (resolveElement(origin) ?? document).baseURI;
       actionSpecs.push({
@@ -901,7 +905,7 @@ function parseActions(origin) {
 
 // lib/process_triggers.ts
 function processTriggers(origin, defaultEventType) {
-  const triggerValue = getAhxValue(origin, "trigger");
+  const triggerValue = parseAttrValue(origin, "trigger").value;
   const triggers2 = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
   addTriggers(origin, triggers2, actions);
@@ -1569,7 +1573,7 @@ function elements(ahxProp) {
   }
   for (const elt of [...elements2].sort(comparePosition)) {
     if (ahxProp) {
-      const value = getAhxValue(elt, ahxProp);
+      const { value } = parseAttrValue(elt, ahxProp);
       if (value) {
         console.log(elt, value);
       }

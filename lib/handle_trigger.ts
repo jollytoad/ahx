@@ -1,4 +1,4 @@
-import { getAhxValue } from "./get_ahx_value.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
 import {
   deleteInternal,
   getInternal,
@@ -56,5 +56,5 @@ export function handleTrigger(triggered: HandleTriggerDetail) {
 }
 
 export function isDenied(elt: Element) {
-  return getAhxValue(elt, "deny-trigger") === "true";
+  return parseAttrValue(elt, "deny-trigger").value === "true";
 }
