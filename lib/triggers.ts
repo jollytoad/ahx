@@ -69,7 +69,14 @@ export function* getTriggersForEvent(
     const trigger = getInternal(target, "triggers")?.get(event.type);
 
     if (trigger) {
-      yield { ...trigger, target, origin: target, owner: getOwner(target) };
+      const targetOwner = getOwner(target);
+      yield {
+        ...trigger,
+        target,
+        targetOwner,
+        origin: target,
+        originOwner: targetOwner,
+      };
     }
 
     // Find css rules with triggers
@@ -80,18 +87,25 @@ export function* getTriggersForEvent(
         if (trigger && isEnabled(origin)) {
           // ... that match the element
           if (trigger && target.matches(origin.selectorText)) {
-            yield { ...trigger, target, origin, owner: getOwner(origin) };
+            yield {
+              ...trigger,
+              target,
+              targetOwner: getOwner(target),
+              origin,
+              originOwner: getOwner(origin),
+            };
           }
 
           // ... on all sub-elements that match the selector
           if (recursive) {
             const found = target.querySelectorAll(origin.selectorText);
-            for (const elt of found) {
+            for (const target of found) {
               yield {
                 ...trigger,
-                target: elt,
+                target,
+                targetOwner: getOwner(target),
                 origin,
-                owner: getOwner(origin),
+                originOwner: getOwner(origin),
               };
             }
           }

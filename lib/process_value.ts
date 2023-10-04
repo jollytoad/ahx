@@ -1,67 +1,65 @@
-import type { AhxCSSPropertyName, Owner, ProcessValueDetail } from "./types.ts";
+import type { AhxCSSPropertyName, ValueRuleDetail } from "./types.ts";
 import { asAhxCSSPropertyName } from "./names.ts";
-import { findMatchingRules, getAhxCssValue } from "./get_ahx_value.ts";
 import { getInternal, objectsWithInternal, setInternal } from "./internal.ts";
 import { resolveElement } from "./resolve_element.ts";
-import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
-import { findTarget } from "./find_target.ts";
+import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { querySelectorExt } from "./query_selector.ts";
 import { parseInput } from "./parse_input.ts";
 import { updateForm } from "./update_form.ts";
 import { getOwner } from "./owner.ts";
+import { parseCssValue } from "./parse_css_value.ts";
 
-export function processValueSource(
+export function processValueRule(
   rule: CSSStyleRule,
   props: Set<AhxCSSPropertyName>,
 ) {
   if (props.has(asAhxCSSPropertyName("value"))) {
-    setInternal(rule, "valueSource", true);
+    setInternal(rule, "isValueRule", true);
 
     const document = resolveElement(rule)?.ownerDocument;
     if (document) {
-      processValues(document);
+      applyValueRules(document);
     }
   }
 }
 
-export function processValues(root: ParentNode) {
-  const valueRules = objectsWithInternal("valueSource");
-
-  for (const [rule] of valueRules) {
-    if (rule instanceof CSSStyleRule) {
-      for (const elt of root.querySelectorAll(rule.selectorText)) {
-        processValue(elt);
-      }
+export function* getValueRules(): Iterable<CSSStyleRule> {
+  for (const [rule, isValueRule] of objectsWithInternal("isValueRule")) {
+    if (rule instanceof CSSStyleRule && isValueRule) {
+      yield rule;
     }
   }
 }
 
-export function processValue(elt: Element) {
-  const newValue = getAhxCssValue(elt, "value");
+export function applyValueRules(root: ParentNode) {
+  for (const rule of getValueRules()) {
+    for (const elt of root.querySelectorAll(rule.selectorText)) {
+      applyValueRule(elt, rule);
+    }
+  }
+}
+
+export function applyValueRule(elt: Element, rule: CSSStyleRule) {
+  const newValue = parseCssValue({ elt, rule, prop: "value" }).value;
   if (newValue) {
     const oldValue = getInternal(elt, "value");
-    const target = findTarget(elt);
-
-    const detail: ProcessValueDetail = {
-      target,
-      inputName: parseInput(elt),
-      oldValue,
-      newValue,
-      sourceOwner: getOwner(elt),
-      targetOwner: target ? getOwner(target) : undefined,
-    };
+    const query = parseCssValue({ elt, rule, prop: "form" }).value;
+    const target = querySelectorExt(elt, query);
 
     if (newValue !== oldValue) {
-      const owners = getRuleOwners(elt, newValue);
+      const detail: ValueRuleDetail = {
+        target,
+        ...parseInput(elt),
+        oldValue,
+        newValue,
+        sourceOwner: getOwner(elt),
+        targetOwner: target ? getOwner(target) : undefined,
+        ruleOwner: getOwner(rule),
+      };
 
-      if (owners.size > 1) {
-        dispatchError(elt, "multipleValueRuleOwners", { owners });
-        return;
-      }
-
-      detail.ruleOwner = [...owners][0];
-
-      if (dispatchBefore(elt, "processValue", detail)) {
-        const { target, inputName, newValue } = detail;
+      if (dispatchBefore(elt, "applyValueRule", detail)) {
+        const { target, inputName, inputModifier, inputSeparator, newValue } =
+          detail;
 
         setInternal(elt, "value", newValue);
 
@@ -69,26 +67,14 @@ export function processValue(elt: Element) {
           updateForm({
             target,
             inputName,
+            inputModifier: inputModifier ?? "replace",
+            inputSeparator,
             ...detail,
           });
         }
 
-        dispatchAfter(elt, "processValue", detail);
+        dispatchAfter(elt, "applyValueRule", detail);
       }
     }
   }
-}
-
-function getRuleOwners(elt: Element, expectedValue: string): Set<Owner> {
-  const owners = new Set<Owner>();
-  const matches = findMatchingRules(elt, "valueSource", "value");
-  for (const m of matches) {
-    if (m.rule && m.value === expectedValue) {
-      const owner = getOwner(m.rule);
-      if (owner) {
-        owners.add(owner);
-      }
-    }
-  }
-  return owners;
 }

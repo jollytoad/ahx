@@ -1,5 +1,6 @@
 import { config } from "./config.ts";
 import { getAhxValue } from "./get_ahx_value.ts";
+import { resolveElement } from "./resolve_element.ts";
 import type { ActionSpec, AhxName, TriggerOrigin } from "./types.ts";
 
 export function parseActions(origin: TriggerOrigin): ActionSpec[] {
@@ -8,10 +9,12 @@ export function parseActions(origin: TriggerOrigin): ActionSpec[] {
   for (const method of config.httpMethods) {
     const url = getAhxValue(origin, method as AhxName);
     if (url) {
+      const baseURL = (resolveElement(origin) ?? document).baseURI;
+
       actionSpecs.push({
         type: "request",
         method,
-        url,
+        url: new URL(url, baseURL),
       });
     }
   }

@@ -34,3 +34,12 @@ attributes or CSS rule).
 
 Logs all elements and their 'owner', which is the URL of the stylesheet that was
 ultimately responsible for the element being added to the page.
+
+## `ahx.values()`
+
+Logs all elements from which values are harvested, along with the values, and
+the target element/form and input names.
+
+## `ahx.forms()`
+
+Log all forms (and internal FormData) into which values have been harvested.

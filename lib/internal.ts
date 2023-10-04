@@ -7,7 +7,7 @@ interface Props {
   "pseudoId": number | string;
   "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
-  "valueSource": true;
+  "isValueRule": true;
 
   // Element
   "triggeredOnce": true;

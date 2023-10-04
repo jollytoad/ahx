@@ -1,14 +1,16 @@
-import type { CSSPropertyName } from "./types.ts";
+import { asAhxCSSPropertyName } from "./names.ts";
+import type { AhxCSSPropertyName, AhxName } from "./types.ts";
 
 interface ParseValueProps {
   rule?: CSSStyleRule;
   style?: CSSStyleDeclaration;
-  prop: CSSPropertyName;
+  prop: AhxName | AhxCSSPropertyName;
   elt?: Element;
 }
 
 export interface CSSValueSpec extends ParseValueProps {
   rule?: CSSStyleRule;
+  prop: AhxCSSPropertyName;
   value?: string;
   important?: boolean;
 }
@@ -17,6 +19,8 @@ export function parseCssValue(
   { rule, style, prop, elt }: ParseValueProps,
 ): CSSValueSpec {
   style ??= rule?.style ?? (elt && getComputedStyle(elt));
+
+  prop = asAhxCSSPropertyName(prop);
 
   const spec: CSSValueSpec = {
     rule,

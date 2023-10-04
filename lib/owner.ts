@@ -20,5 +20,7 @@ export function getOwner(origin: CSSRule | StyleSheet | Element) {
 }
 
 export function setOwner(origin: CSSRule | StyleSheet | Element, owner: Owner) {
-  setInternal(origin, "owner", owner);
+  if (owner !== getOwner(origin)) {
+    setInternal(origin, "owner", owner);
+  }
 }

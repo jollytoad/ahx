@@ -1,13 +1,13 @@
 import { getInternal } from "./internal.ts";
 import { parseCssValue } from "./parse_css_value.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
-import type { CssImportDetail, CSSPropertyName } from "./types.ts";
+import type { AhxCSSPropertyName, CssImportDetail } from "./types.ts";
 import { asAhxCSSPropertyName } from "./names.ts";
 import { resolveElement } from "./resolve_element.ts";
 
 export function processCssImports(
   rule: CSSStyleRule,
-  props: Set<CSSPropertyName>,
+  props: Set<AhxCSSPropertyName>,
   onReady?: (link: HTMLLinkElement) => void,
 ) {
   const importProp = asAhxCSSPropertyName("import");

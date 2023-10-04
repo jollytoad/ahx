@@ -6,6 +6,7 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 export type Owner = string;
+export type InputModifier = "replace" | "append" | "join";
 
 export type AhxHttpMethod =
   | "get"
@@ -20,8 +21,10 @@ export type AhxName =
   | "trigger"
   | "swap"
   | "value"
-  | "target"
+  | "form"
   | "input"
+  | "input-modifier"
+  | "input-separator"
   | "include"
   | AhxHttpMethod;
 
@@ -33,16 +36,6 @@ export type TriggerOrigin = Element | CSSStyleRule;
 export interface AhxTrigger {
   trigger: TriggerSpec;
   action: ActionSpec;
-}
-
-export interface HandleTriggerDetail extends AhxTrigger {
-  target: Element;
-  origin: TriggerOrigin;
-  owner?: Owner;
-}
-
-export interface HandleActionDetail extends HandleTriggerDetail {
-  formData?: FormData;
 }
 
 export interface TriggerSpec {
@@ -60,7 +53,7 @@ export interface TriggerSpec {
 export interface ActionSpec {
   type: "request";
   method: string;
-  url: string;
+  url: URL;
 }
 
 export type SwapStyle =
@@ -73,6 +66,12 @@ export interface SwapSpec {
   swapStyle: SwapStyle;
   swapDelay: number;
   settleDelay: number;
+}
+
+export interface InputSpec {
+  inputName: string;
+  inputModifier: InputModifier;
+  inputSeparator?: string;
 }
 
 export interface AhxEventMap {
@@ -100,7 +99,7 @@ export interface AhxEventMap {
   "handleTrigger": [HandleTriggerDetail, HandleTriggerDetail];
   "handleAction": [HandleTriggerDetail, HandleTriggerDetail];
   "swap": [SwapDetail, SwapDetail];
-  "processValue": [ProcessValueDetail, ProcessValueDetail];
+  "applyValueRule": [ValueRuleDetail, ValueRuleDetail];
   "updateForm": [UpdateFormDetail, UpdateFormDetail];
   "request": [RequestDetail, RequestDetail];
 }
@@ -114,7 +113,6 @@ export interface AhxErrorMap {
     rule: CSSStyleRule;
   };
   "triggerDenied": HandleTriggerDetail;
-  "multipleValueRuleOwners": { owners: Set<Owner> };
 }
 
 export interface MutationsDetail {
@@ -127,7 +125,7 @@ export interface ElementChanges {
 }
 
 export interface ProcessTreeDetail {
-  selector: CSSSelector;
+  selectors: Set<CSSSelector>;
 }
 
 export interface ProcessElementDetail {
@@ -173,8 +171,21 @@ export interface WithPseudoRule {
   pseudoRule: CSSStyleRule;
 }
 
+// TODO: could AddTriggerDetail & HandleTriggerDetail be combined?
+
 export interface AddTriggerDetail extends AhxTrigger {
   origin: TriggerOrigin;
+}
+
+export interface HandleTriggerDetail extends AhxTrigger {
+  target: Element;
+  origin: TriggerOrigin;
+  targetOwner?: Owner;
+  originOwner?: Owner;
+}
+
+export interface HandleActionDetail extends HandleTriggerDetail {
+  formData?: FormData;
 }
 
 export interface AddEventTypeDetail {
@@ -188,9 +199,8 @@ export interface SwapDetail extends SwapSpec {
   owner?: Owner;
 }
 
-export interface ProcessValueDetail {
+export interface ValueRuleDetail extends Partial<InputSpec> {
   target?: Element;
-  inputName?: string;
   oldValue?: string | File;
   newValue: string;
   ruleOwner?: Owner;
@@ -198,9 +208,8 @@ export interface ProcessValueDetail {
   targetOwner?: Owner;
 }
 
-export interface UpdateFormDetail {
+export interface UpdateFormDetail extends InputSpec {
   target: Element;
-  inputName: string;
   input?: Element | RadioNodeList;
   formData?: FormData;
   oldValue?: string | File;
@@ -228,6 +237,12 @@ type AfterEventMap = {
   >;
 };
 
+type VetoEventMap = {
+  [E in keyof AhxEventMap as `${Prefix}:${E}:veto`]: CustomEvent<
+    AhxEventMap[E][0] & { reason?: string }
+  >;
+};
+
 type ErrorEventMap = {
   [E in keyof AhxErrorMap as `${Prefix}:${E}:error`]: CustomEvent<
     AhxErrorMap[E]
@@ -237,6 +252,7 @@ type ErrorEventMap = {
 type CustomEventMap =
   & BeforeEventMap
   & AfterEventMap
+  & VetoEventMap
   & ErrorEventMap
   & {
     [K in Prefix]: CustomEvent<CustomEvent>;

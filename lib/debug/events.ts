@@ -1,9 +1,14 @@
 import { config } from "../config.ts";
 import type { AhxEventType, EventType } from "../types.ts";
 
-export const loggerConfig = {
-  collapse: true,
-  include: [] as (AhxEventType | "error" | "veto")[],
+interface LoggerConfig {
+  group: boolean | "collapse";
+  include: (AhxEventType | "error" | "veto")[];
+}
+
+export const loggerConfig: LoggerConfig = {
+  group: false,
+  include: [],
 };
 
 let rootRef: WeakRef<EventTarget> | undefined;
@@ -24,17 +29,23 @@ export function eventsNone() {
 export function logger({ detail: event }: CustomEvent<CustomEvent>) {
   if (shouldLog(event.type)) {
     const detail = event.detail;
+
+    if (detail?._after && loggerConfig.group) {
+      console.groupEnd();
+    }
+
     if (detail?._before) {
-      console[loggerConfig.collapse ? "groupCollapsed" : "group"](
+      const method = loggerConfig.group
+        ? loggerConfig.group === true ? "group" : "groupCollapsed"
+        : "debug";
+
+      console[method](
         event.type,
         event,
         detail,
       );
     } else {
-      console.log(event.type, event, detail);
-    }
-    if (detail?._after) {
-      console.groupEnd();
+      console.debug(event.type, event, detail);
     }
   }
 }

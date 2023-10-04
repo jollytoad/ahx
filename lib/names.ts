@@ -30,10 +30,14 @@ export function isAhxAttributeName(name: string): name is AhxAttributeName {
   return name.startsWith(`${config.prefix}-`);
 }
 
-export function asAhxCSSPropertyName(name: AhxName): AhxCSSPropertyName {
-  return `--${config.prefix}-${name}`;
+export function asAhxCSSPropertyName(
+  name: AhxName | AhxCSSPropertyName,
+): AhxCSSPropertyName {
+  return isAhxCSSPropertyName(name) ? name : `--${config.prefix}-${name}`;
 }
 
-export function asAhxAttributeName(name: AhxName): AhxAttributeName {
-  return `${config.prefix}-${name}`;
+export function asAhxAttributeName(
+  name: AhxName | AhxAttributeName,
+): AhxAttributeName {
+  return isAhxAttributeName(name) ? name : `${config.prefix}-${name}`;
 }

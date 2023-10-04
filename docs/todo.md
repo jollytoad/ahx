@@ -5,9 +5,9 @@
 Augmentations need a way to 'harvest' data from the host app, this data could
 come from several places:
 
-- From the document
-- From the host app, via the host app proxy
-- From the host app API
+- [x] From the document
+- [ ] From the host app, via the host app proxy
+- [ ] From the host app API
 
 The augmentation should be able to declare an identifiable bundle of data
 combined from these sources.

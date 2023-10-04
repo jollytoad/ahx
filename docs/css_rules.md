@@ -165,25 +165,39 @@ Declare that a value should be harvested from all matching elements. A
 `--prop()` or `attr()` function is usually used here to pick a value from the
 element.
 
-### --ahx-target
+### --ahx-form
 
-The target of this rule, in combination with `--ahx-value`, this targets an
-element to hold form data, which may or may not be an actual form element. If it
-is a form then the value is set on the named input belonging to the form, a new
-hidden input is created if the named input does not exist. If it isn't a form
-then an internal `FormData` object is associated with the element and values are
-set in this.
+In combination with `--ahx-value`, this targets an element to hold form data,
+which may or may not be an actual form element. If it is a `<form>` then the
+value is set on the named input belonging to the form, a new hidden input is
+created if the named input does not exist. If it's another type of element then
+an internal `FormData` object is associated with the element and values are set
+in this.
 
-_TODO: document extended selector_
+The value of this property can be:
+
+- A CSS selector (from the document root)
+- `this` to indicate the target of the rule
+- `closest <CSS selector>` to find the closest ancestor element or itself, that
+  matches the selector.
+- `find <CSS selector>` to find the first descendant that matches the selector.
+- `next <CSS selector>` to scan forward for the next element that matches the
+  selector.
+- `previous <CSS selector>` to scan backwards for the previous element that
+  matches the selector.
+
+_TODO: Allow targetting of an input directly, in which case the `--ahx-input`
+should not be given._
+
+_TODO: Allow targetting of a named private form unique to the owner of the
+rule._
 
 ### --ahx-input
 
-Declares the name of the input inside the `--ahx-target` form (or FormData) to
+Declares the name of the input inside the `--ahx-form` form (or FormData) to
 received the value of `--ahx-value`.
 
 ### --ahx-include
-
-_Not yet implemented_
 
 Select a form (or element with an internal FormData) from which to include
 request data (params or body data depending on the request method and encoding).
