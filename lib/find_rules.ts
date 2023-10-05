@@ -1,27 +1,27 @@
 import { getAhxCSSPropertyNames } from "./names.ts";
 import type { AhxCSSPropertyName } from "./types.ts";
 
-export function findStyleRules(
+export function findRules(
   root: DocumentOrShadowRoot | LinkStyle,
 ): Map<CSSStyleRule, Set<AhxCSSPropertyName>> {
-  const cssRules = new Map<CSSStyleRule, Set<AhxCSSPropertyName>>();
+  const rules = new Map<CSSStyleRule, Set<AhxCSSPropertyName>>();
 
   function fromStylesheet(stylesheet: CSSStyleSheet) {
     if (!stylesheet.disabled) {
       try {
-        fromRules(stylesheet.cssRules);
+        fromRuleList(stylesheet.cssRules);
       } catch {
         // Skip SecurityError
       }
     }
   }
 
-  function fromRules(rules: CSSRuleList) {
+  function fromRuleList(rules: CSSRuleList) {
     for (const rule of rules) {
       if (rule instanceof CSSImportRule && rule.styleSheet) {
         fromStylesheet(rule.styleSheet);
       } else if (rule instanceof CSSGroupingRule) {
-        fromRules(rule.cssRules);
+        fromRuleList(rule.cssRules);
       } else if (rule instanceof CSSStyleRule) {
         fromStyleRule(rule);
       }
@@ -31,7 +31,7 @@ export function findStyleRules(
   function fromStyleRule(rule: CSSStyleRule) {
     const props = getAhxCSSPropertyNames(rule);
     if (props.size > 0) {
-      cssRules.set(rule, props);
+      rules.set(rule, props);
     }
   }
 
@@ -43,5 +43,5 @@ export function findStyleRules(
     }
   }
 
-  return cssRules;
+  return rules;
 }

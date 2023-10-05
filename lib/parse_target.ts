@@ -11,13 +11,13 @@ export function parseTarget(
   elt: Element,
   rule: CSSStyleRule,
 ): TargetSpec | undefined {
-  const query = parseCssValue({ elt, rule, prop: "target" }).value;
+  const query = parseCssValue({ elt, rule, prop: "target" }).value || "this";
   const [type, name] = parseTargetTypeAndName(elt, rule);
 
-  if (query && type && name) {
+  if (type && name) {
     const modifier = parseCssValue({ elt, rule, prop: "modifier" }).value;
     const separator = modifier === "join"
-      ? parseCssValue({ elt, rule, prop: "separator" }).value ?? " "
+      ? parseCssValue({ elt, rule, prop: "separator" }).value || " "
       : undefined;
 
     return {

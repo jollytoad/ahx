@@ -24,7 +24,7 @@ export function values() {
           "font-weight: bold",
           value,
           "font-weight: normal",
-          target,
+          target === elt ? "this" : target,
           type,
           name,
           modifier ?? "default",

@@ -110,10 +110,8 @@ export function* objectsWithInternal<K extends Key>(
   if (valueMap) {
     for (const weakRef of weakRefs) {
       const obj = weakRef.deref();
-      if (obj) {
-        if (valueMap.has(obj)) {
-          yield [obj, valueMap.get(obj) as Props[K]];
-        }
+      if (obj && valueMap.has(obj)) {
+        yield [obj, valueMap.get(obj) as Props[K]];
       }
     }
   }

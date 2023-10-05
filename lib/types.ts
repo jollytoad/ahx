@@ -84,12 +84,9 @@ export interface AhxEventMap {
     MutationsDetail,
     MutationsDetail & ElementChanges,
   ];
-  "processTree": [ProcessTreeDetail, ProcessTreeDetail];
+  "processElements": [ProcessElementsDetail, ProcessElementsDetail];
   "processElement": [ProcessElementDetail, ProcessElementDetail];
-  "processStyleSheets": [
-    ProcessStyleSheetsDetail,
-    ProcessStyleSheetsDetail,
-  ];
+  "processRules": [ProcessRulesDetail, ProcessRulesDetail];
   "processRule": [ProcessRuleDetail, ProcessRuleDetail];
   "cssImport": [CssImportDetail, CssImportDetail];
   "pseudoElement": [PseudoElementDetail, PseudoElementDetail];
@@ -127,7 +124,7 @@ export interface ElementChanges {
   addedElements: Element[];
 }
 
-export interface ProcessTreeDetail {
+export interface ProcessElementsDetail {
   selectors: Set<CSSSelector>;
 }
 
@@ -135,8 +132,8 @@ export interface ProcessElementDetail {
   owner?: Owner;
 }
 
-export interface ProcessStyleSheetsDetail {
-  cssRules: Map<CSSStyleRule, Set<AhxCSSPropertyName>>;
+export interface ProcessRulesDetail {
+  rules: Map<CSSStyleRule, Set<AhxCSSPropertyName>>;
 }
 
 export interface ProcessRuleDetail {

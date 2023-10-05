@@ -7,11 +7,18 @@ import { createPseudoElements } from "./create_pseudo_elements.ts";
 import { processValueRule } from "./process_value.ts";
 import { getOwner, setOwner } from "./owner.ts";
 import { resolveElement } from "./resolve_element.ts";
+import { processCssImports } from "./process_css_imports.ts";
+import { processRules } from "./process_rules.ts";
+import { hasInternal } from "./internal.ts";
 
 export function processRule(
   rule: CSSStyleRule,
   props: Set<AhxCSSPropertyName> = getAhxCSSPropertyNames(rule),
 ) {
+  if (rule.parentStyleSheet) {
+    processStyleSheet(rule.parentStyleSheet);
+  }
+
   if (props.size) {
     const owner = getOwner(rule);
 
@@ -26,6 +33,7 @@ export function processRule(
         setOwner(rule, detail.owner);
       }
 
+      processCssImports(rule, props, processRules);
       processGuards(rule, props);
       createPseudoElements(rule);
       processValueRule(rule, props);
@@ -33,5 +41,11 @@ export function processRule(
 
       dispatchAfter(target, "processRule", detail);
     }
+  }
+}
+
+function processStyleSheet(stylesheet: CSSStyleSheet) {
+  if (!hasInternal(stylesheet, "owner")) {
+    setOwner(stylesheet, stylesheet.href ?? "unknown");
   }
 }

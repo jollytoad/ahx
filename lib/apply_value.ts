@@ -100,6 +100,7 @@ function join(detail: ApplyValueDetail) {
   const { oldValue, newValue } = detail;
 
   const sep = detail.separator ?? " ";
-  return [...new Set(`${oldValue ?? ""}${sep}${newValue ?? ""}`.split(sep))]
-    .join(sep);
+  const values = new Set(`${oldValue ?? ""}${sep}${newValue ?? ""}`.split(sep));
+  values.delete("");
+  return [...values].join(sep);
 }

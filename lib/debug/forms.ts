@@ -1,6 +1,6 @@
 import { getValueRules } from "../get_value_rules.ts";
 import { getInternal, objectsWithInternal } from "../internal.ts";
-import { parseCssValue } from "../parse_css_value.ts";
+import { parseTarget } from "../parse_target.ts";
 import { querySelectorExt } from "../query_selector.ts";
 import { comparePosition } from "./compare_position.ts";
 
@@ -17,8 +17,8 @@ export function forms() {
 
   for (const rule of getValueRules()) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const query = parseCssValue({ elt, rule, prop: "target" }).value;
-      const target = querySelectorExt(elt, query);
+      const targetSpec = parseTarget(elt, rule);
+      const target = querySelectorExt(elt, targetSpec?.query);
       if (target) {
         elements.add(target);
       }

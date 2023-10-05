@@ -73,7 +73,7 @@ export function triggers(verbose = false) {
             action.method.toUpperCase(),
             action.url,
             "color: inherit",
-            "color: blue",
+            "color: lightblue",
             originRep,
             "color: inherit",
           );

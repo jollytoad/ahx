@@ -161,8 +161,8 @@ Nearest thing in _htmx_ is [hx-disable](https://htmx.org/attributes/hx-disable).
 
 ### --ahx-value
 
-Declare that a value should be harvested from all matching elements. A
-`--prop()` or `attr()` function is usually used here to pick a value from the
+Declare that a value should be harvested from all matching elements of the rule.
+A `--prop()` or `attr()` function is usually used here to pick a value from the
 element.
 
 ### --ahx-target
@@ -181,6 +181,8 @@ The value of this property can be:
   selector.
 - `previous <CSS selector>` to scan backwards for the previous element that
   matches the selector.
+
+Defaults to `this`.
 
 _TODO: Support targetting of an element from a trigger rule (like htmx)._
 

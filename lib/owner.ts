@@ -20,6 +20,7 @@ export function getOwner(origin: CSSRule | StyleSheet | Element) {
 }
 
 export function setOwner(origin: CSSRule | StyleSheet | Element, owner: Owner) {
+  // TODO: dispatch ahx:setOwner event?
   if (owner !== getOwner(origin)) {
     setInternal(origin, "owner", owner);
   }

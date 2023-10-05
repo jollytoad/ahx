@@ -27,9 +27,9 @@ export function eventsNone() {
 }
 
 export function logger({ detail: event }: CustomEvent<CustomEvent>) {
-  if (shouldLog(event.type)) {
-    const detail = event.detail;
+  const { type, target, detail } = event;
 
+  if (shouldLog(type)) {
     if (detail?._after && loggerConfig.group) {
       console.groupEnd();
     }
@@ -39,13 +39,9 @@ export function logger({ detail: event }: CustomEvent<CustomEvent>) {
         ? loggerConfig.group === true ? "group" : "groupCollapsed"
         : "debug";
 
-      console[method](
-        event.type,
-        event,
-        detail,
-      );
+      console[method]("%s -> %o %o", type, target, detail);
     } else {
-      console.debug(event.type, event, detail);
+      console.debug("%s -> %o %o", type, target, detail);
     }
   }
 }

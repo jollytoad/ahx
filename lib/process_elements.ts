@@ -4,7 +4,7 @@ import { config } from "./config.ts";
 import { asAhxAttributeName } from "./names.ts";
 import { getValueRules } from "./get_value_rules.ts";
 
-export function processTree(root: ParentNode) {
+export function processElements(root: ParentNode) {
   const selectors = new Set<string>();
 
   [...config.ahxAttrs, ...config.httpMethods].forEach((attr) => {
@@ -17,13 +17,13 @@ export function processTree(root: ParentNode) {
 
   const detail = { selectors };
 
-  if (dispatchBefore(root, "processTree", detail)) {
+  if (dispatchBefore(root, "processElements", detail)) {
     for (const selector of detail.selectors) {
       for (const elt of root.querySelectorAll(selector)) {
         processElement(elt);
       }
     }
 
-    dispatchAfter(root, "processTree", detail);
+    dispatchAfter(root, "processElements", detail);
   }
 }

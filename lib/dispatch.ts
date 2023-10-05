@@ -18,7 +18,12 @@ export function dispatchEvent<T>(
       new CustomEvent(config.prefix, {
         bubbles: false,
         cancelable: false,
-        detail: event,
+        detail: {
+          type: eventType,
+          target,
+          cancelable,
+          detail,
+        },
       }),
     );
   }
