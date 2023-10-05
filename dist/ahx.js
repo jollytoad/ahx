@@ -1099,6 +1099,34 @@ function processElement(elt) {
   }
 }
 
+// lib/process_elements.ts
+function processElements(root) {
+  const selectors = /* @__PURE__ */ new Set();
+  [...config.ahxAttrs, ...config.httpMethods].forEach((attr2) => {
+    selectors.add(`[${asAhxAttributeName(attr2)}]`);
+  });
+  for (const rule of getValueRules()) {
+    selectors.add(rule.selectorText);
+  }
+  const detail = { selectors };
+  if (dispatchBefore(root, "processElements", detail)) {
+    const processed = /* @__PURE__ */ new Set();
+    for (const selector of detail.selectors) {
+      if (!processed.has(root) && root instanceof Element && root.matches(selector)) {
+        processed.add(root);
+        processElement(root);
+      }
+      for (const elt of root.querySelectorAll(selector)) {
+        if (!processed.has(elt)) {
+          processed.add(elt);
+          processElement(elt);
+        }
+      }
+    }
+    dispatchAfter(root, "processElements", detail);
+  }
+}
+
 // lib/start_observer.ts
 function startObserver(root) {
   const observer = new MutationObserver((mutations) => {
@@ -1117,7 +1145,7 @@ function startObserver(root) {
         for (const node of mutation.addedNodes) {
           removedNodes.delete(node);
           if (node instanceof Element) {
-            processElement(node);
+            processElements(node);
             addedElements.push(node);
           }
         }
@@ -1186,26 +1214,6 @@ function shouldLog(type) {
     return false;
   }
   return true;
-}
-
-// lib/process_elements.ts
-function processElements(root) {
-  const selectors = /* @__PURE__ */ new Set();
-  [...config.ahxAttrs, ...config.httpMethods].forEach((attr2) => {
-    selectors.add(`[${asAhxAttributeName(attr2)}]`);
-  });
-  for (const rule of getValueRules()) {
-    selectors.add(rule.selectorText);
-  }
-  const detail = { selectors };
-  if (dispatchBefore(root, "processElements", detail)) {
-    for (const selector of detail.selectors) {
-      for (const elt of root.querySelectorAll(selector)) {
-        processElement(elt);
-      }
-    }
-    dispatchAfter(root, "processElements", detail);
-  }
 }
 
 // lib/find_rules.ts
