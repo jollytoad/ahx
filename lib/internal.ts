@@ -12,7 +12,7 @@ interface Props {
   // Element
   "triggeredOnce": true;
   "delayed": ReturnType<typeof setTimeout>;
-  "value": string;
+  "values": WeakMap<CSSStyleRule, string>;
   "formData": FormData;
 
   // Common

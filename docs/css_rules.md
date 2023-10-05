@@ -165,14 +165,10 @@ Declare that a value should be harvested from all matching elements. A
 `--prop()` or `attr()` function is usually used here to pick a value from the
 element.
 
-### --ahx-form
+### --ahx-target
 
-In combination with `--ahx-value`, this targets an element to hold form data,
-which may or may not be an actual form element. If it is a `<form>` then the
-value is set on the named input belonging to the form, a new hidden input is
-created if the named input does not exist. If it's another type of element then
-an internal `FormData` object is associated with the element and values are set
-in this.
+In combination with `--ahx-value`, this targets an element to receive the value.
+How the value is set depends upon `--ahx-input` or `--ahx-attr`.
 
 The value of this property can be:
 
@@ -186,16 +182,45 @@ The value of this property can be:
 - `previous <CSS selector>` to scan backwards for the previous element that
   matches the selector.
 
+_TODO: Support targetting of an element from a trigger rule (like htmx)._
+
 _TODO: Allow targetting of an input directly, in which case the `--ahx-input`
 should not be given._
 
-_TODO: Allow targetting of a named private form unique to the owner of the
-rule._
+_TODO: Allow targetting of a named private form unique to the owner of the rule
+(maybe target the stylesheet?)._
+
+_TODO: consider whether
+`--ahx-input`/`--ahx-attr`/`--ahx-modifier`/`--ahx-separator` could be replaced
+by new `--ahx-swap` options (eg: `--ahx-swap: attr "class" join`)_
 
 ### --ahx-input
 
-Declares the name of the input inside the `--ahx-form` form (or FormData) to
-received the value of `--ahx-value`.
+Declares the name of the input on the `--ahx-target` element to receive the
+`--ahx-value`. If the target is an actual `<form>` then the value is set on the
+named input belonging to the form, a new hidden input is created if the named
+input does not exist. If it's another type of element then an internal
+`FormData` object is associated with the element and the value is set in this.
+
+### --ahx-attr
+
+Declares an attribute on the `--ahx-target` element to receive the
+`--ahx-value`. This is ignored if `--ahx-input` is also present.
+
+### --ahx-modifier
+
+Indicate how the `--ahx-value` value modifies the target value. This may be
+
+- `replace` (default) just completely replaces the value
+- `join` joins the new value to the old value separated by `--ahx-separator`
+  (duplicate values are also removed)
+- `append` on `--ahx-input` will append a new input with the same name to the
+  form data, for `--ahx-attr` it acts exactly like `join`
+
+### --ahx-separator
+
+The string to separate values combined by `--ahx-modifier` of `"join"`, defaults
+to a single space.
 
 ### --ahx-include
 

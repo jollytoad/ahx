@@ -2,7 +2,7 @@ import { processElement } from "./process_element.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { config } from "./config.ts";
 import { asAhxAttributeName } from "./names.ts";
-import { getValueRules } from "./process_value.ts";
+import { getValueRules } from "./get_value_rules.ts";
 
 export function processTree(root: ParentNode) {
   const selectors = new Set<string>();

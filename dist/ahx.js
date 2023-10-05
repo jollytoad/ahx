@@ -216,8 +216,8 @@ function getAhxCSSPropertyNames(rule) {
   return names;
 }
 function hasAhxAttributes(elt) {
-  for (const attr of elt.attributes) {
-    if (isAhxAttributeName(attr.name)) {
+  for (const attr2 of elt.attributes) {
+    if (isAhxAttributeName(attr2.name)) {
       return true;
     }
   }
@@ -911,89 +911,7 @@ function processTriggers(origin, defaultEventType) {
   addTriggers(origin, triggers2, actions);
 }
 
-// lib/parse_input.ts
-var MODIFIERS = /* @__PURE__ */ new Set(
-  ["replace", "append", "join"]
-);
-function parseInput(elt) {
-  const inputName = parseCssValue({ elt, prop: "input" }).value;
-  if (inputName) {
-    const modifier = parseCssValue({ elt, prop: "input-modifier" }).value;
-    const inputSeparator = modifier === "join" ? parseCssValue({ elt, prop: "input-separator" }).value ?? " " : void 0;
-    return {
-      inputName,
-      inputModifier: isModifier(modifier) ? modifier : "replace",
-      inputSeparator
-    };
-  }
-}
-function isModifier(value) {
-  return !!value && MODIFIERS.has(value);
-}
-
-// lib/update_form.ts
-function updateForm(detail) {
-  const { target, inputName, inputModifier, inputSeparator } = detail;
-  if (target instanceof HTMLFormElement) {
-    detail.input = target.elements.namedItem(inputName) ?? void 0;
-    switch (inputModifier) {
-      case "append":
-        detail.input = createInput(inputName, target.ownerDocument);
-        break;
-      case "join":
-      case "replace":
-        if (!detail.input) {
-          detail.input = createInput(inputName, target.ownerDocument);
-        } else if ("value" in detail.input) {
-          detail.oldValue = detail.input.value;
-        }
-        break;
-    }
-  } else {
-    detail.formData = getInternal(target, "formData", () => new FormData());
-    detail.oldValue = detail.formData.get(inputName) ?? void 0;
-  }
-  if (inputModifier === "join") {
-    const values3 = new Set(
-      String(detail.oldValue ?? "").split(inputSeparator ?? " ")
-    );
-    values3.add(detail.newValue);
-    detail.newValue = [...values3].join(inputSeparator ?? " ");
-  }
-  if (dispatchBefore(target, "updateForm", detail)) {
-    const { target: target2, input, inputName: inputName2, inputModifier: inputModifier2, formData, newValue } = detail;
-    if (input && "value" in input) {
-      input.value = newValue;
-      if (input instanceof Element && !input.parentElement) {
-        target2.insertAdjacentElement("beforeend", input);
-      }
-    } else if (formData) {
-      if (inputModifier2 === "append") {
-        formData.append(inputName2, newValue);
-      } else {
-        formData.set(inputName2, newValue);
-      }
-    }
-    dispatchAfter(target2, "updateForm", detail);
-  }
-}
-function createInput(name, document2) {
-  const input = document2.createElement("input");
-  input.type = "hidden";
-  input.name = name;
-  return input;
-}
-
-// lib/process_value.ts
-function processValueRule(rule, props) {
-  if (props.has(asAhxCSSPropertyName("value"))) {
-    setInternal(rule, "isValueRule", true);
-    const document2 = resolveElement(rule)?.ownerDocument;
-    if (document2) {
-      applyValueRules(document2);
-    }
-  }
-}
+// lib/get_value_rules.ts
 function* getValueRules() {
   for (const [rule, isValueRule] of objectsWithInternal("isValueRule")) {
     if (rule instanceof CSSStyleRule && isValueRule) {
@@ -1001,23 +919,133 @@ function* getValueRules() {
     }
   }
 }
-function applyValueRules(root) {
-  for (const rule of getValueRules()) {
-    for (const elt of root.querySelectorAll(rule.selectorText)) {
-      applyValueRule(elt, rule);
-    }
+
+// lib/parse_target.ts
+var MODIFIERS = /* @__PURE__ */ new Set(
+  ["replace", "append", "join"]
+);
+var TARGET_TYPES = ["input", "attr"];
+function parseTarget(elt, rule) {
+  const query = parseCssValue({ elt, rule, prop: "target" }).value;
+  const [type, name] = parseTargetTypeAndName(elt, rule);
+  if (query && type && name) {
+    const modifier = parseCssValue({ elt, rule, prop: "modifier" }).value;
+    const separator = modifier === "join" ? parseCssValue({ elt, rule, prop: "separator" }).value ?? " " : void 0;
+    return {
+      query,
+      type,
+      name,
+      modifier: isModifier(modifier) ? modifier : void 0,
+      separator
+    };
   }
 }
+function parseTargetTypeAndName(elt, rule) {
+  for (const prop of TARGET_TYPES) {
+    const { value } = parseCssValue({ elt, rule, prop });
+    if (value) {
+      return [prop, value];
+    }
+  }
+  return [];
+}
+function isModifier(value) {
+  return !!value && MODIFIERS.has(value);
+}
+
+// lib/apply_value.ts
+function applyValue(detail) {
+  const { prepare, perform } = handlers[detail.type];
+  prepare(detail);
+  if (dispatchBefore(detail.target, "applyValue", detail)) {
+    perform(detail);
+    dispatchAfter(detail.target, "applyValue", detail);
+  }
+}
+var input = {
+  prepare(detail) {
+    const { target, name, modifier } = detail;
+    if (target instanceof HTMLFormElement) {
+      detail.input = target.elements.namedItem(name) ?? void 0;
+      switch (modifier) {
+        case "append":
+          detail.input = createInput(name, target.ownerDocument);
+          break;
+        case "join":
+        case "replace":
+          if (!detail.input) {
+            detail.input = createInput(name, target.ownerDocument);
+          } else if ("value" in detail.input) {
+            detail.oldValue = detail.input.value;
+          }
+          break;
+      }
+    } else {
+      detail.formData = getInternal(target, "formData", () => new FormData());
+      const oldValue = detail.formData.get(name);
+      if (typeof oldValue === "string") {
+        detail.oldValue = oldValue;
+      }
+    }
+    if (modifier === "join") {
+      detail.newValue = join(detail);
+    }
+  },
+  perform(detail) {
+    const { target, input: input2, name, modifier, formData, newValue } = detail;
+    if (input2 && "value" in input2) {
+      input2.value = newValue;
+      if (input2 instanceof Element && !input2.parentElement) {
+        target.insertAdjacentElement("beforeend", input2);
+      }
+    } else if (formData) {
+      if (modifier === "append") {
+        formData.append(name, newValue);
+      } else {
+        formData.set(name, newValue);
+      }
+    }
+  }
+};
+var attr = {
+  prepare(detail) {
+    const { target, name, modifier } = detail;
+    detail.oldValue = target.getAttribute(name) ?? void 0;
+    if (modifier === "append" || modifier === "join") {
+      detail.newValue = join(detail);
+    }
+  },
+  perform({ target, name, newValue }) {
+    target.setAttribute(name, newValue);
+  }
+};
+var handlers = {
+  input,
+  attr
+};
+function createInput(name, document2) {
+  const input2 = document2.createElement("input");
+  input2.type = "hidden";
+  input2.name = name;
+  return input2;
+}
+function join(detail) {
+  const { oldValue, newValue } = detail;
+  const sep = detail.separator ?? " ";
+  return [...new Set(`${oldValue ?? ""}${sep}${newValue ?? ""}`.split(sep))].join(sep);
+}
+
+// lib/apply_value_rule.ts
 function applyValueRule(elt, rule) {
   const newValue = parseCssValue({ elt, rule, prop: "value" }).value;
   if (newValue) {
-    const oldValue = getInternal(elt, "value");
-    const query = parseCssValue({ elt, rule, prop: "form" }).value;
-    const target = querySelectorExt(elt, query);
+    const oldValue = getInternal(elt, "values", () => /* @__PURE__ */ new WeakMap()).get(rule);
     if (newValue !== oldValue) {
+      const targetSpec = parseTarget(elt, rule);
+      const target = querySelectorExt(elt, targetSpec?.query);
       const detail = {
+        ...targetSpec,
         target,
-        ...parseInput(elt),
         oldValue,
         newValue,
         sourceOwner: getOwner(elt),
@@ -1025,21 +1053,20 @@ function applyValueRule(elt, rule) {
         ruleOwner: getOwner(rule)
       };
       if (dispatchBefore(elt, "applyValueRule", detail)) {
-        const { target: target2, inputName, inputModifier, inputSeparator, newValue: newValue2 } = detail;
-        setInternal(elt, "value", newValue2);
-        if (target2 && inputName) {
-          updateForm({
-            target: target2,
-            inputName,
-            inputModifier: inputModifier ?? "replace",
-            inputSeparator,
-            ...detail
-          });
+        getInternal(elt, "values", () => /* @__PURE__ */ new WeakMap()).set(
+          rule,
+          detail.newValue
+        );
+        if (hasTarget(detail)) {
+          applyValue({ ...detail });
         }
         dispatchAfter(elt, "applyValueRule", detail);
       }
     }
   }
+}
+function hasTarget(detail) {
+  return !!detail.query && !!detail.target && !!detail.type && !!detail.name;
 }
 
 // lib/process_element.ts
@@ -1163,8 +1190,8 @@ function shouldLog(type) {
 // lib/process_tree.ts
 function processTree(root) {
   const selectors = /* @__PURE__ */ new Set();
-  [...config.ahxAttrs, ...config.httpMethods].forEach((attr) => {
-    selectors.add(`[${asAhxAttributeName(attr)}]`);
+  [...config.ahxAttrs, ...config.httpMethods].forEach((attr2) => {
+    selectors.add(`[${asAhxAttributeName(attr2)}]`);
   });
   for (const rule of getValueRules()) {
     selectors.add(rule.selectorText);
@@ -1398,6 +1425,26 @@ function createPseudoRule(rule, pseudoId, place) {
           pseudoRule: pseudoRule2
         });
       }
+    }
+  }
+}
+
+// lib/apply_value_rules.ts
+function applyValueRules(root) {
+  for (const rule of getValueRules()) {
+    for (const elt of root.querySelectorAll(rule.selectorText)) {
+      applyValueRule(elt, rule);
+    }
+  }
+}
+
+// lib/process_value.ts
+function processValueRule(rule, props) {
+  if (props.has(asAhxCSSPropertyName("value"))) {
+    setInternal(rule, "isValueRule", true);
+    const document2 = resolveElement(rule)?.ownerDocument;
+    if (document2) {
+      applyValueRules(document2);
     }
   }
 }
@@ -1681,25 +1728,33 @@ function owners() {
 
 // lib/debug/values.ts
 function values2() {
-  console.group("AHX Values");
+  console.group("AHX Value mapping");
   for (const rule of getValueRules()) {
     console.group(rule.cssText);
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const query = parseCssValue({ elt, rule, prop: "form" }).value;
-      const form = querySelectorExt(elt, query);
-      const spec = parseInput(elt);
-      if (form && spec) {
-        const { inputName, inputModifier, inputSeparator } = spec;
+      const value = getInternal(elt, "values")?.get(rule);
+      const spec = parseTarget(elt, rule);
+      if (spec) {
+        const { query, type, name, modifier, separator } = spec;
+        const target = querySelectorExt(elt, query);
         console.log(
-          "%o -> %c%s%c -> %o %s.%s%s",
+          "%o -> %c%s%c -> %o %s:%s.%s%s",
           elt,
           "font-weight: bold",
-          getInternal(elt, "value"),
+          value,
           "font-weight: normal",
-          form,
-          inputName,
-          inputModifier,
-          inputSeparator ? `("${inputSeparator}")` : ""
+          target,
+          type,
+          name,
+          modifier ?? "default",
+          separator ? `("${separator}")` : ""
+        );
+      } else {
+        console.log(
+          "%o -> %c%s",
+          elt,
+          "font-weight: bold",
+          value
         );
       }
     }
@@ -1711,28 +1766,30 @@ function values2() {
 // lib/debug/forms.ts
 function forms() {
   console.group("AHX Forms");
-  const forms2 = /* @__PURE__ */ new Set();
-  for (const [form] of objectsWithInternal("formData")) {
-    if (form instanceof Element) {
-      forms2.add(form);
+  const elements2 = /* @__PURE__ */ new Set();
+  for (const [elt] of objectsWithInternal("formData")) {
+    if (elt instanceof Element) {
+      elements2.add(elt);
     }
   }
   for (const rule of getValueRules()) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const query = parseCssValue({ elt, rule, prop: "form" }).value;
-      const form = querySelectorExt(elt, query);
-      if (form) {
-        forms2.add(form);
+      const query = parseCssValue({ elt, rule, prop: "target" }).value;
+      const target = querySelectorExt(elt, query);
+      if (target) {
+        elements2.add(target);
       }
     }
   }
-  for (const form of [...forms2].sort(comparePosition)) {
-    console.group(form);
-    const formData = form instanceof HTMLFormElement ? new FormData(form) : getInternal(form, "formData");
-    for (const [name, value] of formData ?? []) {
-      console.log("%s: %c%s", name, "font-weight: bold", value);
+  for (const elt of [...elements2].sort(comparePosition)) {
+    const formData = elt instanceof HTMLFormElement ? new FormData(elt) : getInternal(elt, "formData");
+    if (formData) {
+      console.group(elt);
+      for (const [name, value] of formData ?? []) {
+        console.log("%s: %c%s", name, "font-weight: bold", value);
+      }
+      console.groupEnd();
     }
-    console.groupEnd();
   }
   console.groupEnd();
 }

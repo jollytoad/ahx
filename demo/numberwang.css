@@ -13,7 +13,7 @@
   --ahx-value: --prop(innerText);
 
   /* select the 'form' as the closest tr ancestor */
-  --ahx-form: closest tr;
+  --ahx-target: closest tr;
 
   /* set the value of the form input named "description" */
   --ahx-input: "description";
@@ -24,7 +24,13 @@
 
 .numberwang tbody tr {
   --ahx-value: attr(data-ref);
-  --ahx-form: #my-form;
+  --ahx-target: #my-form;
   --ahx-input: "refs";
-  --ahx-input-modifier: append;
+  --ahx-modifier: append;
+}
+
+.numberwang {
+  --ahx-value: "true";
+  --ahx-target: body;
+  --ahx-attr: "data-has-numberwang";
 }

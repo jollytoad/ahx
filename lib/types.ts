@@ -6,7 +6,8 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 export type Owner = string;
-export type InputModifier = "replace" | "append" | "join";
+export type TargetType = "input" | "attr";
+export type TargetModifier = "replace" | "append" | "join";
 
 export type AhxHttpMethod =
   | "get"
@@ -21,10 +22,10 @@ export type AhxName =
   | "trigger"
   | "swap"
   | "value"
-  | "form"
-  | "input"
-  | "input-modifier"
-  | "input-separator"
+  | "target"
+  | TargetType
+  | "modifier"
+  | "separator"
   | "include"
   | AhxHttpMethod;
 
@@ -68,10 +69,12 @@ export interface SwapSpec {
   settleDelay: number;
 }
 
-export interface InputSpec {
-  inputName: string;
-  inputModifier: InputModifier;
-  inputSeparator?: string;
+export interface TargetSpec {
+  query: string;
+  type: TargetType;
+  name: string;
+  modifier?: TargetModifier;
+  separator?: string;
 }
 
 export interface AhxEventMap {
@@ -100,7 +103,7 @@ export interface AhxEventMap {
   "handleAction": [HandleTriggerDetail, HandleTriggerDetail];
   "swap": [SwapDetail, SwapDetail];
   "applyValueRule": [ValueRuleDetail, ValueRuleDetail];
-  "updateForm": [UpdateFormDetail, UpdateFormDetail];
+  "applyValue": [ApplyValueDetail, ApplyValueDetail];
   "request": [RequestDetail, RequestDetail];
 }
 
@@ -199,20 +202,20 @@ export interface SwapDetail extends SwapSpec {
   owner?: Owner;
 }
 
-export interface ValueRuleDetail extends Partial<InputSpec> {
+export interface ValueRuleDetail extends Partial<TargetSpec> {
   target?: Element;
-  oldValue?: string | File;
+  oldValue?: string;
   newValue: string;
   ruleOwner?: Owner;
   sourceOwner?: Owner;
   targetOwner?: Owner;
 }
 
-export interface UpdateFormDetail extends InputSpec {
+export interface ApplyValueDetail extends TargetSpec {
   target: Element;
   input?: Element | RadioNodeList;
   formData?: FormData;
-  oldValue?: string | File;
+  oldValue?: string;
   newValue: string;
   ruleOwner?: Owner;
   sourceOwner?: Owner;

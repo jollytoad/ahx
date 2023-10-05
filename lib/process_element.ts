@@ -2,7 +2,8 @@ import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { hasAhxAttributes } from "./names.ts";
 import { getOwner, setOwner } from "./owner.ts";
 import { processTriggers } from "./process_triggers.ts";
-import { applyValueRule, getValueRules } from "./process_value.ts";
+import { getValueRules } from "./get_value_rules.ts";
+import { applyValueRule } from "./apply_value_rule.ts";
 
 export function processElement(elt: Element) {
   const valueRules: CSSStyleRule[] = [];
