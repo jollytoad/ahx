@@ -100,7 +100,7 @@ var config = {
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
   defaultSwapStyle: "outerhtml",
-  enableAhxCombinedEvent: false,
+  enableDebugEvent: false,
   // parent tag -> default child pseudo tag (or null if a child is not permitted)
   pseudoChildTags: {
     "article": "div",
@@ -162,47 +162,48 @@ var config = {
 };
 
 // lib/dispatch.ts
-function dispatchEvent(target, eventType, detail, cancelable = true) {
-  const event = new CustomEvent(eventType, {
-    bubbles: true,
-    cancelable,
-    detail
-  });
-  if (config.enableAhxCombinedEvent) {
-    document.dispatchEvent(
-      new CustomEvent(config.prefix, {
-        bubbles: false,
-        cancelable: false,
-        detail: {
-          type: eventType,
-          target,
-          cancelable,
-          detail
-        }
-      })
-    );
-  }
-  return target.dispatchEvent(event);
-}
-function dispatchBefore(target, name, detail) {
-  if (target) {
-    detail._before = true;
-    const permitted = dispatchEvent(target, `${config.prefix}:${name}`, detail);
-    delete detail._before;
-    if (!permitted) {
-      dispatchEvent(target, `${config.prefix}:${name}:veto`, detail, false);
+function dispatch(target, type, detail, cancelable = true) {
+  if (target !== null) {
+    const event = new CustomEvent(type, {
+      bubbles: !!target,
+      cancelable,
+      detail
+    });
+    if (config.enableDebugEvent) {
+      dispatchEvent(
+        new CustomEvent(config.prefix, {
+          bubbles: false,
+          cancelable: false,
+          detail: {
+            type: event.type,
+            target,
+            bubbles: event.bubbles,
+            cancelable: event.cancelable,
+            detail: event.detail
+          }
+        })
+      );
     }
-    return permitted;
+    return target && "dispatchEvent" in target ? target.dispatchEvent(event) : dispatchEvent(event);
   }
   return false;
 }
+function dispatchBefore(target, name, detail) {
+  detail._before = true;
+  const permitted = dispatch(target, `${config.prefix}:${name}`, detail);
+  delete detail._before;
+  if (!permitted) {
+    dispatch(target, `${config.prefix}:${name}:veto`, detail, false);
+  }
+  return permitted;
+}
 function dispatchAfter(target, name, detail) {
   detail._after = true;
-  dispatchEvent(target, `${config.prefix}:${name}:done`, detail, false);
+  dispatch(target, `${config.prefix}:${name}:done`, detail, false);
   delete detail._after;
 }
 function dispatchError(target, name, detail) {
-  dispatchEvent(target, `${config.prefix}:${name}:error`, {
+  dispatch(target, `${config.prefix}:${name}:error`, {
     error: name,
     ...detail
   }, false);
@@ -1180,17 +1181,13 @@ var loggerConfig = {
   group: false,
   include: []
 };
-var rootRef;
-function eventsAll(root = document) {
-  config.enableAhxCombinedEvent = true;
-  if (!rootRef) {
-    root.addEventListener(config.prefix, logger);
-    rootRef = new WeakRef(root);
-  }
+function eventsAll() {
+  config.enableDebugEvent = true;
+  addEventListener(config.prefix, logger);
 }
 function eventsNone() {
-  rootRef?.deref()?.removeEventListener(config.prefix, logger);
-  rootRef = void 0;
+  config.enableDebugEvent = false;
+  removeEventListener(config.prefix, logger);
 }
 function logger({ detail: event }) {
   const { type, target, detail } = event;
@@ -1883,7 +1880,7 @@ patchCSSOM({
   }
 });
 ready((document2) => {
-  eventsAll(document2);
+  eventsAll();
   initUrlAttrs(document2);
   initLoadTriggerHandling(document2);
   startObserver(document2);

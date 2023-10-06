@@ -9,7 +9,7 @@ interface Config {
   defaultSettleDelay: number;
   defaultSwapDelay: number;
   defaultSwapStyle: SwapStyle;
-  enableAhxCombinedEvent: boolean;
+  enableDebugEvent: boolean;
   pseudoChildTags: Record<string, string | null | undefined>;
 }
 
@@ -35,7 +35,7 @@ export const config: Config = {
   defaultSwapDelay: 0,
   defaultSwapStyle: "outerhtml",
 
-  enableAhxCombinedEvent: false,
+  enableDebugEvent: false,
 
   // parent tag -> default child pseudo tag (or null if a child is not permitted)
   pseudoChildTags: {

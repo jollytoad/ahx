@@ -249,40 +249,20 @@ type ErrorEventMap = {
   >;
 };
 
+type DebugEventMap = {
+  [K in Prefix]: CustomEvent<CustomEvent>;
+};
+
 type CustomEventMap =
   & BeforeEventMap
   & AfterEventMap
   & VetoEventMap
-  & ErrorEventMap
-  & {
-    [K in Prefix]: CustomEvent<CustomEvent>;
-  };
+  & ErrorEventMap;
 
 declare global {
-  interface EventTarget {
-    addEventListener<K extends keyof CustomEventMap>(
-      type: K,
-      listener: (this: Document, ev: CustomEventMap[K]) => void,
-      options?: AddEventListenerOptions | boolean,
-    ): void;
-    removeEventListener<K extends keyof CustomEventMap>(
-      type: K,
-      listener: (this: Document, ev: CustomEventMap[K]) => void,
-      options?: EventListenerOptions | boolean,
-    ): void;
-  }
-  // Document doesn't extend EventTarget, so we have to declare
-  // the event listener overrides again!...
-  interface Document {
-    addEventListener<K extends keyof CustomEventMap>(
-      type: K,
-      listener: (this: Document, ev: CustomEventMap[K]) => void,
-      options?: AddEventListenerOptions | boolean,
-    ): void;
-    removeEventListener<K extends keyof CustomEventMap>(
-      type: K,
-      listener: (this: Document, ev: CustomEventMap[K]) => void,
-      options?: EventListenerOptions | boolean,
-    ): void;
-  }
+  // deno-lint-ignore no-empty-interface
+  interface GlobalEventHandlersEventMap extends CustomEventMap {}
+
+  // deno-lint-ignore no-empty-interface
+  interface WindowEventMap extends DebugEventMap {}
 }

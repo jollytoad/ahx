@@ -27,7 +27,7 @@ patchCSSOM({
 });
 
 ready((document) => {
-  eventsAll(document);
+  eventsAll();
 
   initUrlAttrs(document);
 

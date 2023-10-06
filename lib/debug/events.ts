@@ -11,19 +11,14 @@ export const loggerConfig: LoggerConfig = {
   include: [],
 };
 
-let rootRef: WeakRef<EventTarget> | undefined;
-
-export function eventsAll(root: EventTarget = document) {
-  config.enableAhxCombinedEvent = true;
-  if (!rootRef) {
-    root.addEventListener(config.prefix, logger);
-    rootRef = new WeakRef(root);
-  }
+export function eventsAll() {
+  config.enableDebugEvent = true;
+  addEventListener(config.prefix, logger);
 }
 
 export function eventsNone() {
-  rootRef?.deref()?.removeEventListener(config.prefix, logger);
-  rootRef = undefined;
+  config.enableDebugEvent = false;
+  removeEventListener(config.prefix, logger);
 }
 
 export function logger({ detail: event }: CustomEvent<CustomEvent>) {
