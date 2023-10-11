@@ -1505,7 +1505,7 @@ function startObserver(root) {
         mutatedElements
       });
       for (const node of removedNodes) {
-        deleteInternal(node);
+        deleteInternalRecursive(node);
       }
     }
   });
@@ -1518,6 +1518,12 @@ function startObserver(root) {
   if (dispatchBefore(root, "startObserver", options)) {
     observer.observe(root, options);
     dispatchAfter(root, "startObserver", options);
+  }
+}
+function deleteInternalRecursive(node) {
+  deleteInternal(node);
+  for (const child of node.childNodes) {
+    deleteInternalRecursive(child);
   }
 }
 

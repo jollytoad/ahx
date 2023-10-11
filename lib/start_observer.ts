@@ -64,7 +64,7 @@ export function startObserver(root: Document) {
       });
 
       for (const node of removedNodes) {
-        deleteInternal(node);
+        deleteInternalRecursive(node);
       }
     }
   });
@@ -80,5 +80,12 @@ export function startObserver(root: Document) {
     observer.observe(root, options);
 
     dispatchAfter(root, "startObserver", options);
+  }
+}
+
+function deleteInternalRecursive(node: Node) {
+  deleteInternal(node);
+  for (const child of node.childNodes) {
+    deleteInternalRecursive(child);
   }
 }
