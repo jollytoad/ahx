@@ -1,4 +1,4 @@
-import { internalEntries } from "../internal.ts";
+import { internalEntries } from "../util/internal.ts";
 
 export function internals() {
   console.group("AHX Internal Properties");

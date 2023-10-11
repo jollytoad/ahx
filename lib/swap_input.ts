@@ -1,5 +1,5 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
-import { getInternal } from "./internal.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
+import { getInternal } from "./util/internal.ts";
 import type { SwapDetail, SwapTextProps } from "./types.ts";
 
 export function swapInput(props: SwapTextProps) {

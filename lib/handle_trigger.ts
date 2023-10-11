@@ -4,8 +4,12 @@ import {
   getInternal,
   hasInternal,
   setInternal,
-} from "./internal.ts";
-import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
+} from "./util/internal.ts";
+import {
+  dispatchAfter,
+  dispatchBefore,
+  dispatchError,
+} from "./util/dispatch.ts";
 import type { TriggerDetail } from "./types.ts";
 import { handleAction } from "./handle_action.ts";
 

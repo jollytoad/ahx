@@ -1,14 +1,14 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { AhxCSSPropertyName } from "./types.ts";
 import { processTriggers } from "./process_triggers.ts";
 import { processGuards } from "./process_guards.ts";
 import { processPseudoElements } from "./process_pseudo_elements.ts";
-import { getOwner, setOwner } from "./owner.ts";
-import { resolveElement } from "./resolve_element.ts";
+import { getOwner, setOwner } from "./util/owner.ts";
+import { resolveElement } from "./util/resolve_element.ts";
 import { processCssImports } from "./process_css_imports.ts";
 import { processRules } from "./process_rules.ts";
-import { hasInternal } from "./internal.ts";
-import { getAhxCSSPropertyNames } from "./names.ts";
+import { hasInternal } from "./util/internal.ts";
+import { getAhxCSSPropertyNames } from "./util/names.ts";
 import { triggerLoad } from "./trigger_load.ts";
 
 export function processRule(

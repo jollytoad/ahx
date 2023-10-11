@@ -1,4 +1,4 @@
-import type { CSSPropertyName, EventType, Owner, Trigger } from "./types.ts";
+import type { CSSPropertyName, EventType, Owner, Trigger } from "../types.ts";
 
 type Thing = Node | CSSRule | StyleSheet;
 

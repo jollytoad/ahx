@@ -1,7 +1,7 @@
 import { getTriggerRulesByAction } from "../util/rules.ts";
-import { getInternal, objectsWithInternal } from "../internal.ts";
+import { getInternal, objectsWithInternal } from "../util/internal.ts";
 import { parseCssValue } from "../parse_css_value.ts";
-import { querySelectorExt } from "../query_selector.ts";
+import { querySelectorExt } from "../util/query_selector.ts";
 import { comparePosition } from "./compare_position.ts";
 
 export function forms() {

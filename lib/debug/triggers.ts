@@ -1,5 +1,5 @@
 import { isDenied } from "../handle_trigger.ts";
-import { internalEntries } from "../internal.ts";
+import { internalEntries } from "../util/internal.ts";
 import type {
   ActionRequestSpec,
   EventType,

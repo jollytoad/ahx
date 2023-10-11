@@ -1,5 +1,5 @@
 import { parseAttrValue } from "../parse_attr_value.ts";
-import { internalEntries } from "../internal.ts";
+import { internalEntries } from "../util/internal.ts";
 import type { AhxName } from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
 

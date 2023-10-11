@@ -1,9 +1,9 @@
 import "../ext/polyfill/ReadableStream_asyncIterator.js";
 
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { SwapHtmlDetail, SwapHtmlProps, SwapHtmlStyle } from "./types.ts";
 import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
-import { setOwner } from "./owner.ts";
+import { setOwner } from "./util/owner.ts";
 
 export async function swapHtml(props: SwapHtmlProps) {
   const { response, target } = props;

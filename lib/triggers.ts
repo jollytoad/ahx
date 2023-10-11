@@ -1,5 +1,5 @@
-import { getInternal, setInternal } from "./internal.ts";
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { getInternal, setInternal } from "./util/internal.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { handleTrigger } from "./handle_trigger.ts";
 import type {
   ActionSpec,
@@ -10,9 +10,9 @@ import type {
   TriggerOrigin,
   TriggerSpec,
 } from "./types.ts";
-import { resolveElement } from "./resolve_element.ts";
-import { getOwner } from "./owner.ts";
-import { querySelectorExt } from "./query_selector.ts";
+import { resolveElement } from "./util/resolve_element.ts";
+import { getOwner } from "./util/owner.ts";
+import { querySelectorExt } from "./util/query_selector.ts";
 import { parseCssValue } from "./parse_css_value.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
 import { fromDOMEventType, toDOMEventType } from "./util/event.ts";

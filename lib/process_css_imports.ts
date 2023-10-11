@@ -1,9 +1,9 @@
-import { getInternal } from "./internal.ts";
+import { getInternal } from "./util/internal.ts";
 import { parseCssValue } from "./parse_css_value.ts";
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { AhxCSSPropertyName, CssImportDetail } from "./types.ts";
-import { asAhxCSSPropertyName } from "./names.ts";
-import { resolveElement } from "./resolve_element.ts";
+import { asAhxCSSPropertyName } from "./util/names.ts";
+import { resolveElement } from "./util/resolve_element.ts";
 
 export function processCssImports(
   rule: CSSStyleRule,

@@ -1,9 +1,9 @@
 // Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
 
 import { parseInterval } from "./parse_interval.ts";
-import { dispatchError } from "./dispatch.ts";
+import { dispatchError } from "./util/dispatch.ts";
 import type { TriggerOrigin, TriggerSpec } from "./types.ts";
-import { resolveElement } from "./resolve_element.ts";
+import { resolveElement } from "./util/resolve_element.ts";
 
 const WHITESPACE_OR_COMMA = /[\s,]/;
 const SYMBOL_START = /[_$a-zA-Z]/;

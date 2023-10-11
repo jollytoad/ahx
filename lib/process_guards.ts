@@ -1,8 +1,8 @@
-import { setInternal } from "./internal.ts";
+import { setInternal } from "./util/internal.ts";
 import { parseCssValue } from "./parse_css_value.ts";
-import { dispatchError } from "./dispatch.ts";
+import { dispatchError } from "./util/dispatch.ts";
 import type { AhxCSSPropertyName } from "./types.ts";
-import { asAhxCSSPropertyName } from "./names.ts";
+import { asAhxCSSPropertyName } from "./util/names.ts";
 
 export function processGuards(
   rule: CSSStyleRule,

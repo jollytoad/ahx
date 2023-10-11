@@ -1,4 +1,4 @@
-import { asAhxCSSPropertyName } from "./names.ts";
+import { asAhxCSSPropertyName } from "./util/names.ts";
 import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
 
 interface ParseValueProps {

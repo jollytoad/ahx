@@ -1,6 +1,6 @@
-import { deleteInternal } from "./internal.ts";
+import { deleteInternal } from "./util/internal.ts";
 import { processElement } from "./process_element.ts";
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { processElements } from "./process_elements.ts";
 import { triggerMutate } from "./trigger_mutate.ts";
 import { triggerLoad } from "./trigger_load.ts";

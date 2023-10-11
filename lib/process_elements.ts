@@ -1,7 +1,7 @@
 import { processElement } from "./process_element.ts";
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { config } from "./config.ts";
-import { asAhxAttributeName } from "./names.ts";
+import { asAhxAttributeName } from "./util/names.ts";
 
 export function processElements(
   root: ParentNode,

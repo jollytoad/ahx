@@ -1,5 +1,9 @@
-import { config } from "./config.ts";
-import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
+import { config } from "../config.ts";
+import type {
+  AhxAttributeName,
+  AhxCSSPropertyName,
+  AhxName,
+} from "../types.ts";
 
 export function getAhxCSSPropertyNames(
   rule: CSSStyleRule,

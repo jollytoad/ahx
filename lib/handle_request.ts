@@ -1,4 +1,4 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { handleSwap } from "./handle_swap.ts";
 import type { ActionDetail, ActionRequestSpec } from "./types.ts";
 

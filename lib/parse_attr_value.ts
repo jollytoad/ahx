@@ -1,4 +1,4 @@
-import { asAhxAttributeName } from "./names.ts";
+import { asAhxAttributeName } from "./util/names.ts";
 import { parseCssValue } from "./parse_css_value.ts";
 import type {
   AhxAttributeName,

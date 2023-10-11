@@ -1,7 +1,7 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
-import { querySelectorExt } from "./query_selector.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
+import { querySelectorExt } from "./util/query_selector.ts";
 import { handleRequest } from "./handle_request.ts";
-import { getInternal, hasInternal } from "./internal.ts";
+import { getInternal, hasInternal } from "./util/internal.ts";
 import type { ActionDetail } from "./types.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
 import { handleHarvest } from "./handle_harvest.ts";

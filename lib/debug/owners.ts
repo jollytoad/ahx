@@ -1,4 +1,4 @@
-import { getInternal, internalEntries } from "../internal.ts";
+import { getInternal, internalEntries } from "../util/internal.ts";
 import { comparePosition } from "./compare_position.ts";
 
 export function owners() {

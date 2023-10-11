@@ -1,9 +1,13 @@
 import { config } from "./config.ts";
-import { getInternal, hasInternal, setInternal } from "./internal.ts";
-import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
+import { getInternal, hasInternal, setInternal } from "./util/internal.ts";
+import {
+  dispatchAfter,
+  dispatchBefore,
+  dispatchError,
+} from "./util/dispatch.ts";
 import type { PseudoId, PseudoPlace } from "./types.ts";
-import { resolveElement } from "./resolve_element.ts";
-import { getOwner, setOwner } from "./owner.ts";
+import { resolveElement } from "./util/resolve_element.ts";
+import { getOwner, setOwner } from "./util/owner.ts";
 
 let nextPseudoId = 1;
 

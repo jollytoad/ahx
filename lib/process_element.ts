@@ -1,6 +1,6 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
-import { hasAhxAttributes } from "./names.ts";
-import { getOwner, setOwner } from "./owner.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
+import { hasAhxAttributes } from "./util/names.ts";
+import { getOwner, setOwner } from "./util/owner.ts";
 import { processTriggers } from "./process_triggers.ts";
 
 export function processElement(elt: Element) {

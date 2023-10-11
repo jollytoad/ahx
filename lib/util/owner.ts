@@ -1,5 +1,5 @@
 import { getInternal, hasInternal, setInternal } from "./internal.ts";
-import type { Owner } from "./types.ts";
+import type { Owner } from "../types.ts";
 
 export function getOwner(origin: CSSRule | StyleSheet | Element) {
   if (hasInternal(origin, "owner")) {

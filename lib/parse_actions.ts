@@ -1,7 +1,7 @@
 import { config } from "./config.ts";
-import { asAhxCSSPropertyName, getAhxCSSPropertyNames } from "./names.ts";
+import { asAhxCSSPropertyName, getAhxCSSPropertyNames } from "./util/names.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
-import { resolveElement } from "./resolve_element.ts";
+import { resolveElement } from "./util/resolve_element.ts";
 import type { ActionSpec, TriggerOrigin } from "./types.ts";
 
 export function parseActions(origin: TriggerOrigin): ActionSpec[] {

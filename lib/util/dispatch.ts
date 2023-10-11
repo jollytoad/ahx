@@ -1,5 +1,5 @@
-import { config } from "./config.ts";
-import type { AhxErrorMap, AhxEventMap, EventType } from "./types.ts";
+import { config } from "../config.ts";
+import type { AhxErrorMap, AhxEventMap, EventType } from "../types.ts";
 
 function dispatch<T>(
   target: EventTarget | undefined | null,

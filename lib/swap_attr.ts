@@ -1,4 +1,4 @@
-import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
+import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { SwapTextDetail, SwapTextProps } from "./types.ts";
 
 export function swapAttr(props: SwapTextProps) {

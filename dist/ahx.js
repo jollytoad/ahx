@@ -20,7 +20,7 @@ function ready(fn) {
   }
 }
 
-// lib/internal.ts
+// lib/util/internal.ts
 var values = /* @__PURE__ */ new Map();
 var weakRefs = /* @__PURE__ */ new Set();
 var toWeakRef = /* @__PURE__ */ new WeakMap();
@@ -161,7 +161,7 @@ var config = {
   }
 };
 
-// lib/dispatch.ts
+// lib/util/dispatch.ts
 function dispatch(target, type, detail, cancelable = true) {
   if (target !== null) {
     const event = new CustomEvent(type, {
@@ -212,7 +212,7 @@ function dispatchError(target, name, detail) {
   }, false);
 }
 
-// lib/names.ts
+// lib/util/names.ts
 function getAhxCSSPropertyNames(rule) {
   const names = /* @__PURE__ */ new Set();
   for (const name of rule.style) {
@@ -243,7 +243,7 @@ function asAhxAttributeName(name) {
   return isAhxAttributeName(name) ? name : isAhxCSSPropertyName(name) ? name.substring(2) : `${config.prefix}-${name}`;
 }
 
-// lib/owner.ts
+// lib/util/owner.ts
 function getOwner(origin) {
   if (hasInternal(origin, "owner")) {
     return getInternal(origin, "owner");
@@ -345,7 +345,7 @@ function parseAttrValue(origin, prop) {
   }
 }
 
-// lib/query_selector.ts
+// lib/util/query_selector.ts
 function querySelectorExt(elt, query) {
   return _query(elt, query, false);
 }
@@ -789,7 +789,7 @@ function isDenied(elt) {
   return parseAttrValue(elt, "deny-trigger").value === "true";
 }
 
-// lib/resolve_element.ts
+// lib/util/resolve_element.ts
 function resolveElement(origin) {
   if (origin instanceof Element) {
     return origin;
@@ -1289,44 +1289,6 @@ function shouldLog(type) {
   return true;
 }
 
-// lib/find_rules.ts
-function findRules(root) {
-  const rules = /* @__PURE__ */ new Map();
-  function fromStylesheet(stylesheet) {
-    if (!stylesheet.disabled) {
-      try {
-        fromRuleList(stylesheet.cssRules);
-      } catch {
-      }
-    }
-  }
-  function fromRuleList(rules2) {
-    for (const rule of rules2) {
-      if (rule instanceof CSSImportRule && rule.styleSheet) {
-        fromStylesheet(rule.styleSheet);
-      } else if (rule instanceof CSSGroupingRule) {
-        fromRuleList(rule.cssRules);
-      } else if (rule instanceof CSSStyleRule) {
-        fromStyleRule(rule);
-      }
-    }
-  }
-  function fromStyleRule(rule) {
-    const props = getAhxCSSPropertyNames(rule);
-    if (props.size > 0) {
-      rules.set(rule, props);
-    }
-  }
-  if ("sheet" in root && root.sheet) {
-    fromStylesheet(root.sheet);
-  } else if ("styleSheets" in root) {
-    for (const stylesheet of root.styleSheets) {
-      fromStylesheet(stylesheet);
-    }
-  }
-  return rules;
-}
-
 // lib/process_guards.ts
 function processGuards(rule, props) {
   const prop = asAhxCSSPropertyName("deny-trigger");
@@ -1547,14 +1509,50 @@ function processImportedRules(link) {
 }
 
 // lib/process_rules.ts
-function processRules(root, rules = findRules(root)) {
-  const detail = { rules };
+function processRules(root) {
+  const detail = { rules: findRules(root) };
   if (dispatchBefore(root, "processRules", detail)) {
     for (const [rule, props] of detail.rules) {
       processRule(rule, props);
     }
     dispatchAfter(root, "processRules", detail);
   }
+}
+function findRules(root) {
+  const rules = /* @__PURE__ */ new Map();
+  function fromStylesheet(stylesheet) {
+    if (!stylesheet.disabled) {
+      try {
+        fromRuleList(stylesheet.cssRules);
+      } catch {
+      }
+    }
+  }
+  function fromRuleList(rules2) {
+    for (const rule of rules2) {
+      if (rule instanceof CSSImportRule && rule.styleSheet) {
+        fromStylesheet(rule.styleSheet);
+      } else if (rule instanceof CSSGroupingRule) {
+        fromRuleList(rule.cssRules);
+      } else if (rule instanceof CSSStyleRule) {
+        fromStyleRule(rule);
+      }
+    }
+  }
+  function fromStyleRule(rule) {
+    const props = getAhxCSSPropertyNames(rule);
+    if (props.size > 0) {
+      rules.set(rule, props);
+    }
+  }
+  if ("sheet" in root && root.sheet) {
+    fromStylesheet(root.sheet);
+  } else if ("styleSheets" in root) {
+    for (const stylesheet of root.styleSheets) {
+      fromStylesheet(stylesheet);
+    }
+  }
+  return rules;
 }
 
 // lib/debug.ts

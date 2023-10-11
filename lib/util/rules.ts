@@ -1,4 +1,4 @@
-import { internalEntries, objectsWithInternal } from "../internal.ts";
+import { internalEntries, objectsWithInternal } from "./internal.ts";
 import type { ActionSpec, EventType, Trigger } from "../types.ts";
 
 export function* getTriggerRulesByEvent(
