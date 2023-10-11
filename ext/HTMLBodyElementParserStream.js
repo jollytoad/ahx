@@ -40,7 +40,7 @@ export class HTMLBodyElementParserStream extends TransformStream {
         parser.write(chunk);
 
         // Determine the container once the first element is written
-        if (!container && parser.body.childElementCount > 0) {
+        if (!container && parser.body?.childElementCount > 0) {
           const element = parser.body.children[0];
           if (template && element instanceof HTMLTemplateElement) {
             // Set the container to the DocumentFragment in the template
@@ -53,7 +53,7 @@ export class HTMLBodyElementParserStream extends TransformStream {
 
         // Once we have more than one element in the body we
         // assume that all but the last element are complete
-        while (container.childElementCount > 1) {
+        while (container?.childElementCount > 1) {
           // Get the first element from the body
           const element = container.children[0];
 
@@ -68,13 +68,14 @@ export class HTMLBodyElementParserStream extends TransformStream {
 
       flush(controller) {
         // Transfer and emit any remaining elements from the body
-        for (const element of [...container.children]) {
+        for (const element of [...container?.children ?? []]) {
           document.adoptNode(element);
           controller.enqueue(element);
         }
         // Close the document for writing
         parser.close();
         parser = undefined;
+        container = undefined;
       },
     });
   }

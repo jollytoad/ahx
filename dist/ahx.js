@@ -434,7 +434,7 @@ var HTMLBodyElementParserStream = class extends TransformStream {
       },
       transform(chunk, controller) {
         parser.write(chunk);
-        if (!container && parser.body.childElementCount > 0) {
+        if (!container && parser.body?.childElementCount > 0) {
           const element = parser.body.children[0];
           if (template && element instanceof HTMLTemplateElement) {
             container = element.content;
@@ -442,19 +442,20 @@ var HTMLBodyElementParserStream = class extends TransformStream {
             container = parser.body;
           }
         }
-        while (container.childElementCount > 1) {
+        while (container?.childElementCount > 1) {
           const element = container.children[0];
           document2.adoptNode(element);
           controller.enqueue(element);
         }
       },
       flush(controller) {
-        for (const element of [...container.children]) {
+        for (const element of [...container?.children ?? []]) {
           document2.adoptNode(element);
           controller.enqueue(element);
         }
         parser.close();
         parser = void 0;
+        container = void 0;
       }
     });
   }
