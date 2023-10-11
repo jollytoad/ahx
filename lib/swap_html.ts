@@ -4,6 +4,8 @@ import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { SwapHtmlDetail, SwapHtmlProps, SwapHtmlStyle } from "./types.ts";
 import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
 import { setOwner } from "./util/owner.ts";
+import { config } from "./config.ts";
+import { getInternal, setInternal } from "./util/internal.ts";
 
 export async function swapHtml(props: SwapHtmlProps) {
   const { response, target } = props;
@@ -17,7 +19,7 @@ export async function swapHtml(props: SwapHtmlProps) {
 
     const elements = response.body
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new HTMLBodyElementParserStream(document));
+      .pipeThrough(new HTMLBodyElementParserStream(document, true));
 
     for await (const element of elements) {
       const detail: SwapHtmlDetail = {
@@ -67,6 +69,19 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
     target.replaceChildren(element);
   },
   outerhtml(target, element) {
+    const pseudoPrefix = `${config.prefix}-pseudo`;
+
+    for (const cls of target.classList) {
+      if (cls.startsWith(pseudoPrefix)) {
+        element.classList.add(cls);
+      }
+    }
+
+    const triggeredOnce = getInternal(target, "triggeredOnce");
+    if (triggeredOnce) {
+      setInternal(element, "triggeredOnce", triggeredOnce);
+    }
+
     target.replaceWith(element);
   },
   beforebegin: swapAdjacent("beforebegin"),

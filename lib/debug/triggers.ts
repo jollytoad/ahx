@@ -1,11 +1,6 @@
 import { isDenied } from "../handle_trigger.ts";
 import { internalEntries } from "../util/internal.ts";
-import type {
-  ActionRequestSpec,
-  EventType,
-  Trigger,
-  TriggerOrigin,
-} from "../types.ts";
+import type { EventType, Trigger, TriggerOrigin } from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
 
 export function triggers(verbose = false) {
@@ -52,7 +47,7 @@ export function triggers(verbose = false) {
       [...events].join(", "),
     );
 
-    for (const [{ trigger, action }, origin] of triggers) {
+    for (const [{ trigger, action, swap }, origin] of triggers) {
       if (verbose) {
         console.log(
           "trigger:",
@@ -63,20 +58,29 @@ export function triggers(verbose = false) {
           origin,
         );
       } else {
-        // TODO: Adapt output for different action types
         const originRep = origin instanceof Element
           ? "element"
           : origin.cssText;
+
+        const actionRep = "method" in action
+          ? `${action.method.toUpperCase()} ${action.url}`
+          : action.type;
+
+        const swapRep = (swap.swapStyle ?? "default") +
+          (swap.itemName ? ` ${swap.itemName}` : "");
+
         console.log(
-          "%c%s%c -> %c%s %s%c from: %c%s%c",
+          "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",
           "color: red; font-weight: bold",
           trigger.eventType,
           "color: inherit; font-weight: normal",
           "color: green",
-          (action as ActionRequestSpec).method?.toUpperCase(),
-          (action as ActionRequestSpec).url,
+          actionRep,
           "color: inherit",
-          "color: lightblue",
+          "color: darkorange",
+          swapRep,
+          "color: inherit",
+          "color: hotpink",
           originRep,
           "color: inherit",
         );

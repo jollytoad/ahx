@@ -20,10 +20,14 @@
 export class HTMLBodyElementParserStream extends TransformStream {
   /**
    * @param {Document} document will own the emitted elements
+   * @param {boolean} [template] extract content out of a template element
    */
-  constructor(document) {
+  constructor(document, template) {
     /** @type {Document} */
     let parser;
+
+    /** @type {ParentNode} */
+    let container;
 
     super({
       start() {
@@ -35,11 +39,23 @@ export class HTMLBodyElementParserStream extends TransformStream {
         // Write each chunk into the document
         parser.write(chunk);
 
+        // Determine the container once the first element is written
+        if (!container && parser.body.childElementCount > 0) {
+          const element = parser.body.children[0];
+          if (template && element instanceof HTMLTemplateElement) {
+            // Set the container to the DocumentFragment in the template
+            container = element.content;
+          } else {
+            // Set the container to the body
+            container = parser.body;
+          }
+        }
+
         // Once we have more than one element in the body we
         // assume that all but the last element are complete
-        while (parser.body.childElementCount > 1) {
+        while (container.childElementCount > 1) {
           // Get the first element from the body
-          const element = parser.body.children[0];
+          const element = container.children[0];
 
           // Transfer the element ownership to the target document,
           // this will also remove it from the body of the parser document
@@ -52,7 +68,7 @@ export class HTMLBodyElementParserStream extends TransformStream {
 
       flush(controller) {
         // Transfer and emit any remaining elements from the body
-        for (const element of [...parser.body.children]) {
+        for (const element of [...container.children]) {
           document.adoptNode(element);
           controller.enqueue(element);
         }

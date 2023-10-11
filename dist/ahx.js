@@ -423,23 +423,33 @@ ReadableStream.prototype[Symbol.asyncIterator] ??= readableStreamIterator;
 var HTMLBodyElementParserStream = class extends TransformStream {
   /**
    * @param {Document} document will own the emitted elements
+   * @param {boolean} [template] extract content out of a template element
    */
-  constructor(document2) {
+  constructor(document2, template) {
     let parser;
+    let container;
     super({
       start() {
         parser = document2.implementation.createHTMLDocument();
       },
       transform(chunk, controller) {
         parser.write(chunk);
-        while (parser.body.childElementCount > 1) {
+        if (!container && parser.body.childElementCount > 0) {
           const element = parser.body.children[0];
+          if (template && element instanceof HTMLTemplateElement) {
+            container = element.content;
+          } else {
+            container = parser.body;
+          }
+        }
+        while (container.childElementCount > 1) {
+          const element = container.children[0];
           document2.adoptNode(element);
           controller.enqueue(element);
         }
       },
       flush(controller) {
-        for (const element of [...parser.body.children]) {
+        for (const element of [...container.children]) {
           document2.adoptNode(element);
           controller.enqueue(element);
         }
@@ -456,7 +466,7 @@ async function swapHtml(props) {
   if (response?.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
     let index = 0;
     let previous2;
-    const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document));
+    const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document, true));
     for await (const element of elements2) {
       const detail = {
         ...props,
@@ -490,6 +500,16 @@ var swapHandlers = {
     target.replaceChildren(element);
   },
   outerhtml(target, element) {
+    const pseudoPrefix = `${config.prefix}-pseudo`;
+    for (const cls of target.classList) {
+      if (cls.startsWith(pseudoPrefix)) {
+        element.classList.add(cls);
+      }
+    }
+    const triggeredOnce = getInternal(target, "triggeredOnce");
+    if (triggeredOnce) {
+      setInternal(element, "triggeredOnce", triggeredOnce);
+    }
     target.replaceWith(element);
   },
   beforebegin: swapAdjacent("beforebegin"),
@@ -822,29 +842,37 @@ function fromDOMEventType(type) {
 }
 
 // lib/util/rules.ts
-function* getTriggerRulesByEvent(type) {
-  for (const [rule, trigger] of objectsWithInternal(`trigger:${type}`)) {
-    if (trigger && rule instanceof CSSStyleRule && isRuleEnabled(rule)) {
-      yield [rule, trigger];
-    }
-  }
-}
-function* getTriggerElementsByEvent(type) {
-  for (const [elt, trigger] of objectsWithInternal(`trigger:${type}`)) {
-    if (elt instanceof Element) {
-      yield [elt, trigger];
-    }
-  }
-}
-function* getTriggerRulesByAction(type) {
-  for (const [rule, key, trigger] of internalEntries()) {
-    if (key.startsWith("trigger:") && rule instanceof CSSStyleRule && typeof trigger === "object" && "action" in trigger && trigger.action.type === type && isRuleEnabled(rule)) {
-      yield [rule, trigger];
-    }
-  }
-}
 function isRuleEnabled(rule) {
   return !!rule.parentStyleSheet && !rule.parentStyleSheet.disabled;
+}
+
+// lib/util/triggers.ts
+function* getTriggersFromElements(eventType, root, recursive) {
+  const trigger = getInternal(root, `trigger:${eventType}`);
+  if (trigger) {
+    yield [root, trigger];
+  }
+  if (recursive) {
+    for (const [elt, trigger2] of objectsWithInternal(`trigger:${eventType}`)) {
+      if (elt instanceof Element && root.compareDocumentPosition(elt) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+        yield [elt, trigger2];
+      }
+    }
+  }
+}
+function* getTriggersFromRules(eventType, root, recursive) {
+  for (const [rule, trigger] of objectsWithInternal(`trigger:${eventType}`)) {
+    if (trigger && rule instanceof CSSStyleRule && isRuleEnabled(rule)) {
+      if (root.matches(rule.selectorText)) {
+        yield [root, rule, trigger];
+      }
+      if (recursive) {
+        for (const elt of root.querySelectorAll(rule.selectorText)) {
+          yield [elt, rule, trigger];
+        }
+      }
+    }
+  }
 }
 
 // lib/triggers.ts
@@ -882,56 +910,43 @@ function addTrigger(origin, trigger, action, swap) {
 function* getTriggersForEvent(event) {
   if (event.target instanceof Element) {
     const eventType = fromDOMEventType(event.type);
-    const source = event.target;
+    const root = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    const found = [];
-    const trigger = getInternal(source, `trigger:${eventType}`);
-    if (trigger) {
-      found.push([source, trigger]);
-    }
-    if (recursive) {
-      for (const [elt, trigger2] of getTriggerElementsByEvent(eventType)) {
-        if (source.compareDocumentPosition(elt) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
-          found.push([elt, trigger2]);
-        }
-      }
-    }
-    for (const [source2, trigger2] of found) {
-      const sourceOwner = getOwner(source2);
-      const target = parseTarget(source2);
+    for (const [source, trigger] of getTriggersFromElements(
+      eventType,
+      root,
+      recursive
+    )) {
+      const sourceOwner = getOwner(source);
+      const target = parseTarget(source);
       const targetOwner = getOwner(target);
       yield {
-        ...trigger2,
+        ...trigger,
         event,
-        source: source2,
+        source,
         sourceOwner,
         target,
         targetOwner,
-        origin: source2,
+        origin: source,
         originOwner: sourceOwner
       };
     }
-    for (const [origin, trigger2] of getTriggerRulesByEvent(eventType)) {
-      const found2 = [];
-      if (source.matches(origin.selectorText)) {
-        found2.push(source);
-      }
-      if (recursive) {
-        found2.push(...source.querySelectorAll(origin.selectorText));
-      }
-      for (const source2 of found2) {
-        const target = parseTarget(source2, origin);
-        yield {
-          ...trigger2,
-          event,
-          source: source2,
-          sourceOwner: getOwner(source2),
-          target,
-          targetOwner: getOwner(target),
-          origin,
-          originOwner: getOwner(origin)
-        };
-      }
+    for (const [source, origin, trigger] of getTriggersFromRules(
+      eventType,
+      root,
+      recursive
+    )) {
+      const target = parseTarget(source, origin);
+      yield {
+        ...trigger,
+        event,
+        source,
+        sourceOwner: getOwner(source),
+        target,
+        targetOwner: getOwner(target),
+        origin,
+        originOwner: getOwner(origin)
+      };
     }
   }
 }
@@ -1694,7 +1709,7 @@ function triggers(verbose = false) {
       denied ? "text-decoration: line-through; color: grey" : "color: red",
       [...events].join(", ")
     );
-    for (const [{ trigger, action }, origin] of triggers2) {
+    for (const [{ trigger, action, swap }, origin] of triggers2) {
       if (verbose) {
         console.log(
           "trigger:",
@@ -1706,16 +1721,20 @@ function triggers(verbose = false) {
         );
       } else {
         const originRep = origin instanceof Element ? "element" : origin.cssText;
+        const actionRep = "method" in action ? `${action.method.toUpperCase()} ${action.url}` : action.type;
+        const swapRep = (swap.swapStyle ?? "default") + (swap.itemName ? ` ${swap.itemName}` : "");
         console.log(
-          "%c%s%c -> %c%s %s%c from: %c%s%c",
+          "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",
           "color: red; font-weight: bold",
           trigger.eventType,
           "color: inherit; font-weight: normal",
           "color: green",
-          action.method?.toUpperCase(),
-          action.url,
+          actionRep,
           "color: inherit",
-          "color: lightblue",
+          "color: darkorange",
+          swapRep,
+          "color: inherit",
+          "color: hotpink",
           originRep,
           "color: inherit"
         );
@@ -1777,6 +1796,13 @@ function forms() {
     }
   }
   console.groupEnd();
+}
+function* getTriggerRulesByAction(type) {
+  for (const [rule, key, trigger] of internalEntries()) {
+    if (key.startsWith("trigger:") && rule instanceof CSSStyleRule && typeof trigger === "object" && "action" in trigger && trigger.action.type === type && isRuleEnabled(rule)) {
+      yield [rule, trigger];
+    }
+  }
 }
 
 // lib/url_attrs.ts

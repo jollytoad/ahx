@@ -13,12 +13,17 @@
   --ahx-swap: input "description";
 }
 
-.numberwang tbody tr::after {
+/* .numberwang tbody tr::after {
   --ahx-trigger: load once;
   --ahx-get: url("./more.html");
-
-  /* use the harvested data from the 'form' of the closest tr ancestor element */
   --ahx-include: closest tr;
+} */
+
+.numberwang tbody tr {
+  --ahx-trigger: load once;
+  --ahx-get: url("./column.html");
+  --ahx-include: closest tr;
+  --ahx-swap: beforeEnd;
 }
 
 .numberwang tbody tr {

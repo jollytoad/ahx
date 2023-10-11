@@ -57,6 +57,8 @@ export interface ActionHarvestSpec {
 
 export type ActionSpec = ActionRequestSpec | ActionHarvestSpec;
 
+export type ActionType = ActionSpec["type"];
+
 export interface Owners {
   /** The owner of the source element (where the event occurred) */
   sourceOwner?: Owner;

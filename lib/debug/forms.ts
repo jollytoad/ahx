@@ -1,8 +1,13 @@
-import { getTriggerRulesByAction } from "../util/rules.ts";
-import { getInternal, objectsWithInternal } from "../util/internal.ts";
+import { isRuleEnabled } from "../util/rules.ts";
+import {
+  getInternal,
+  internalEntries,
+  objectsWithInternal,
+} from "../util/internal.ts";
 import { parseCssValue } from "../parse_css_value.ts";
 import { querySelectorExt } from "../util/query_selector.ts";
 import { comparePosition } from "./compare_position.ts";
+import type { ActionType, Trigger } from "../types.ts";
 
 export function forms() {
   console.group("AHX Forms");
@@ -43,4 +48,18 @@ export function forms() {
   }
 
   console.groupEnd();
+}
+
+function* getTriggerRulesByAction(
+  type: ActionType,
+): Iterable<[CSSStyleRule, Trigger]> {
+  for (const [rule, key, trigger] of internalEntries()) {
+    if (
+      key.startsWith("trigger:") && rule instanceof CSSStyleRule &&
+      typeof trigger === "object" && "action" in trigger &&
+      trigger.action.type === type && isRuleEnabled(rule)
+    ) {
+      yield [rule, trigger as Trigger];
+    }
+  }
 }

@@ -1,11 +1,10 @@
-import { getInternal, setInternal } from "./util/internal.ts";
+import { setInternal } from "./util/internal.ts";
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { handleTrigger } from "./handle_trigger.ts";
 import type {
   ActionSpec,
   EventType,
   SwapSpec,
-  Trigger,
   TriggerDetail,
   TriggerOrigin,
   TriggerSpec,
@@ -17,9 +16,9 @@ import { parseCssValue } from "./parse_css_value.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
 import { fromDOMEventType, toDOMEventType } from "./util/event.ts";
 import {
-  getTriggerElementsByEvent,
-  getTriggerRulesByEvent,
-} from "./util/rules.ts";
+  getTriggersFromElements,
+  getTriggersFromRules,
+} from "./util/triggers.ts";
 
 const eventTypes = new Set<EventType>();
 
@@ -61,6 +60,7 @@ export function addTrigger(
       const detail = { eventType };
       if (dispatchBefore(document, "addEventType", detail)) {
         eventTypes.add(eventType);
+
         document.addEventListener(toDOMEventType(eventType), eventListener);
 
         dispatchAfter(document, "addEventType", detail);
@@ -76,29 +76,16 @@ export function* getTriggersForEvent(
 ): Iterable<TriggerDetail> {
   if (event.target instanceof Element) {
     const eventType = fromDOMEventType(event.type);
-    const source = event.target;
+    const root = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
 
-    const found: [Element, Trigger][] = [];
-
-    const trigger = getInternal(source, `trigger:${eventType}`);
-
-    if (trigger) {
-      found.push([source, trigger]);
-    }
-
-    if (recursive) {
-      for (const [elt, trigger] of getTriggerElementsByEvent(eventType)) {
-        if (
-          source.compareDocumentPosition(elt) &
-          Node.DOCUMENT_POSITION_CONTAINED_BY
-        ) {
-          found.push([elt, trigger]);
-        }
-      }
-    }
-
-    for (const [source, trigger] of found) {
+    for (
+      const [source, trigger] of getTriggersFromElements(
+        eventType,
+        root,
+        recursive,
+      )
+    ) {
       const sourceOwner = getOwner(source);
       const target = parseTarget(source);
       const targetOwner = getOwner(target);
@@ -115,32 +102,24 @@ export function* getTriggersForEvent(
     }
 
     // Find css rules with triggers
-    for (const [origin, trigger] of getTriggerRulesByEvent(eventType)) {
-      const found = [];
-
-      // ... that match the element
-      if (source.matches(origin.selectorText)) {
-        found.push(source);
-      }
-
-      // ... on all sub-elements that match the selector
-      if (recursive) {
-        found.push(...source.querySelectorAll(origin.selectorText));
-      }
-
-      for (const source of found) {
-        const target = parseTarget(source, origin);
-        yield {
-          ...trigger,
-          event,
-          source,
-          sourceOwner: getOwner(source),
-          target,
-          targetOwner: getOwner(target),
-          origin,
-          originOwner: getOwner(origin),
-        };
-      }
+    for (
+      const [source, origin, trigger] of getTriggersFromRules(
+        eventType,
+        root,
+        recursive,
+      )
+    ) {
+      const target = parseTarget(source, origin);
+      yield {
+        ...trigger,
+        event,
+        source,
+        sourceOwner: getOwner(source),
+        target,
+        targetOwner: getOwner(target),
+        origin,
+        originOwner: getOwner(origin),
+      };
     }
   }
 }
