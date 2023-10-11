@@ -1,19 +1,19 @@
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import type { AhxCSSPropertyName } from "./types.ts";
-import { getAhxCSSPropertyNames } from "./names.ts";
 import { processTriggers } from "./process_triggers.ts";
 import { processGuards } from "./process_guards.ts";
-import { createPseudoElements } from "./create_pseudo_elements.ts";
-import { processValueRule } from "./process_value.ts";
+import { processPseudoElements } from "./process_pseudo_elements.ts";
 import { getOwner, setOwner } from "./owner.ts";
 import { resolveElement } from "./resolve_element.ts";
 import { processCssImports } from "./process_css_imports.ts";
 import { processRules } from "./process_rules.ts";
 import { hasInternal } from "./internal.ts";
+import { getAhxCSSPropertyNames } from "./names.ts";
+import { triggerLoad } from "./trigger_load.ts";
 
 export function processRule(
   rule: CSSStyleRule,
-  props: Set<AhxCSSPropertyName> = getAhxCSSPropertyNames(rule),
+  props: Set<AhxCSSPropertyName>,
 ) {
   if (rule.parentStyleSheet) {
     processStyleSheet(rule.parentStyleSheet);
@@ -33,10 +33,14 @@ export function processRule(
         setOwner(rule, detail.owner);
       }
 
-      processCssImports(rule, props, processRules);
+      processCssImports(rule, props, processImportedRules);
       processGuards(rule, props);
-      createPseudoElements(rule);
-      processValueRule(rule, props);
+
+      const pseudoRule = processPseudoElements(rule);
+      if (pseudoRule) {
+        processRule(pseudoRule, getAhxCSSPropertyNames(pseudoRule));
+      }
+
       processTriggers(rule, "default");
 
       dispatchAfter(target, "processRule", detail);
@@ -48,4 +52,9 @@ function processStyleSheet(stylesheet: CSSStyleSheet) {
   if (!hasInternal(stylesheet, "owner")) {
     setOwner(stylesheet, stylesheet.href ?? "unknown");
   }
+}
+
+function processImportedRules(link: HTMLLinkElement) {
+  processRules(link);
+  triggerLoad(link.ownerDocument.documentElement);
 }

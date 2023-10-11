@@ -1,22 +1,23 @@
-import type { AhxTrigger, CSSPropertyName, EventType, Owner } from "./types.ts";
+import type { CSSPropertyName, EventType, Owner, Trigger } from "./types.ts";
 
 type Thing = Node | CSSRule | StyleSheet;
 
-interface Props {
+type TriggerProps = {
+  [K in `trigger:${EventType}`]: Trigger;
+};
+
+interface Props extends TriggerProps {
   // CSSStyleRule
   "pseudoId": number | string;
   "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
-  "isValueRule": true;
 
   // Element
   "triggeredOnce": true;
   "delayed": ReturnType<typeof setTimeout>;
-  "values": WeakMap<CSSStyleRule, string>;
   "formData": FormData;
 
   // Common
-  "triggers": Map<EventType, AhxTrigger>;
   "owner": Owner;
 }
 

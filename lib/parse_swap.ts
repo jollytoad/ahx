@@ -1,35 +1,32 @@
-// Adapted from https://github.com/bigskysoftware/htmx/blob/master/src/htmx.js (see LICENSE_htmx)
-
-import { config } from "./config.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
 import { parseInterval } from "./parse_interval.ts";
-import type { SwapSpec, SwapStyle } from "./types.ts";
+import type { SwapSpec, SwapStyle, TriggerOrigin } from "./types.ts";
 
-export function parseSwap(elt: Element, swapInfoOverride?: string) {
-  const swapInfo = swapInfoOverride || parseAttrValue(elt, "swap").value;
+export function parseSwap(origin: TriggerOrigin) {
+  const tokens = parseAttrValue(origin, "swap").tokens;
 
-  const swapSpec: SwapSpec = {
-    swapStyle: config.defaultSwapStyle,
-    swapDelay: config.defaultSwapDelay,
-    settleDelay: config.defaultSettleDelay,
-  };
+  const swapSpec: SwapSpec = {};
 
-  if (swapInfo) {
-    const split = swapInfo.trim().split(/\s+/);
-    if (split[0] && !split[0].includes(":")) {
-      swapSpec.swapStyle = split[0].toLowerCase() as SwapStyle;
+  if (tokens?.length) {
+    swapSpec.swapStyle = tokens.shift()?.toLowerCase() as SwapStyle;
+
+    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
+      swapSpec.itemName = tokens.shift();
     }
-    for (const token of split) {
-      if (token.includes(":")) {
-        const [modifier, value] = token.split(":");
-        switch (modifier) {
-          case "swap":
-            swapSpec.swapDelay = parseInterval(value) ?? swapSpec.swapDelay;
-            break;
-          case "settle":
-            swapSpec.settleDelay = parseInterval(value) ?? swapSpec.settleDelay;
-            break;
-        }
+
+    for (const token of tokens) {
+      const [modifier, value] = token.split(":");
+      switch (modifier) {
+        case "swap":
+        case "delay":
+          swapSpec.delay = parseInterval(value);
+          break;
+        case "join":
+          swapSpec.merge = "join";
+          break;
+        case "append":
+          swapSpec.merge = "append";
+          break;
       }
     }
   }

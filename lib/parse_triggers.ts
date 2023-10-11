@@ -49,24 +49,6 @@ export function parseTriggers(
               triggerSpec.delay = parseInterval(
                 consumeUntil(tokens, WHITESPACE_OR_COMMA),
               );
-            } else if (token === "from" && tokens[0] === ":") {
-              tokens.shift();
-              let from_arg = consumeUntil(tokens, WHITESPACE_OR_COMMA);
-              if (
-                from_arg === "closest" || from_arg === "find" ||
-                from_arg === "next" || from_arg === "previous"
-              ) {
-                tokens.shift();
-                from_arg += " " +
-                  consumeUntil(
-                    tokens,
-                    WHITESPACE_OR_COMMA,
-                  );
-              }
-              triggerSpec.from = from_arg;
-            } else if (token === "target" && tokens[0] === ":") {
-              tokens.shift();
-              triggerSpec.target = consumeUntil(tokens, WHITESPACE_OR_COMMA);
             } else if (token === "throttle" && tokens[0] === ":") {
               tokens.shift();
               triggerSpec.throttle = parseInterval(

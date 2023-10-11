@@ -6,8 +6,6 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 export type Owner = string;
-export type TargetType = "input" | "attr";
-export type TargetModifier = "replace" | "append" | "join";
 
 export type AhxHttpMethod =
   | "get"
@@ -21,11 +19,8 @@ export type AhxName =
   | "deny-trigger"
   | "trigger"
   | "swap"
-  | "value"
+  | "harvest"
   | "target"
-  | TargetType
-  | "modifier"
-  | "separator"
   | "include"
   | AhxHttpMethod;
 
@@ -34,9 +29,10 @@ export type AhxAttributeName = `${Prefix}-${AhxName}`;
 
 export type TriggerOrigin = Element | CSSStyleRule;
 
-export interface AhxTrigger {
+export interface Trigger {
   trigger: TriggerSpec;
   action: ActionSpec;
+  swap: SwapSpec;
 }
 
 export interface TriggerSpec {
@@ -45,36 +41,77 @@ export interface TriggerSpec {
   changed?: boolean;
   once?: boolean;
   delay?: number;
-  from?: CSSSelector;
-  target?: CSSSelector;
   throttle?: number;
   queue?: "first" | "last" | "all" | "none";
 }
 
-export interface ActionSpec {
+export interface ActionRequestSpec {
   type: "request";
   method: string;
   url: URL;
 }
 
-export type SwapStyle =
-  | "none"
+export interface ActionHarvestSpec {
+  type: "harvest";
+}
+
+export type ActionSpec = ActionRequestSpec | ActionHarvestSpec;
+
+export interface Owners {
+  /** The owner of the source element (where the event occurred) */
+  sourceOwner?: Owner;
+  /** The owner of the target element for the swap */
+  targetOwner?: Owner;
+  /** The owner of the origin element or rule that declared the trigger */
+  originOwner?: Owner;
+}
+
+export type SwapHtmlStyle =
   | "innerhtml"
   | "outerhtml"
   | InsertPosition;
 
+export type SwapTextStyle =
+  | "attr"
+  | "input";
+
+export type SwapStyle =
+  | "none"
+  | SwapHtmlStyle
+  | SwapTextStyle;
+
+export type SwapMerge =
+  | "append"
+  | "join";
+
 export interface SwapSpec {
-  swapStyle: SwapStyle;
-  swapDelay: number;
-  settleDelay: number;
+  swapStyle?: SwapStyle;
+  delay?: number;
+  itemName?: string; // name of input or attribute
+  merge?: SwapMerge;
 }
 
 export interface TargetSpec {
   query: string;
-  type: TargetType;
-  name: string;
-  modifier?: TargetModifier;
-  separator?: string;
+}
+
+export interface SwapProps extends SwapSpec, Owners {
+  target: Element;
+  response?: Response;
+  value?: string;
+}
+
+export interface SwapHtmlProps extends SwapSpec, Owners {
+  swapStyle: SwapHtmlStyle;
+  target: Element;
+  response: Response;
+}
+
+export interface SwapTextProps extends SwapSpec, Owners {
+  swapStyle: SwapTextStyle;
+  target: Element;
+  itemName: string;
+  value?: string;
 }
 
 export interface AhxEventMap {
@@ -96,12 +133,13 @@ export interface AhxEventMap {
   ];
   "addTrigger": [AddTriggerDetail, AddTriggerDetail];
   "addEventType": [AddEventTypeDetail, AddEventTypeDetail];
-  "handleTrigger": [HandleTriggerDetail, HandleTriggerDetail];
-  "handleAction": [HandleTriggerDetail, HandleTriggerDetail];
+  "handleTrigger": [TriggerDetail, TriggerDetail];
+  "handleAction": [ActionDetail, ActionDetail];
   "swap": [SwapDetail, SwapDetail];
-  "applyValueRule": [ValueRuleDetail, ValueRuleDetail];
-  "applyValue": [ApplyValueDetail, ApplyValueDetail];
   "request": [RequestDetail, RequestDetail];
+  "harvest": [HarvestDetail, HarvestDetail];
+  "load": [LoadDetail];
+  "mutate": [MutateDetail];
 }
 
 export interface AhxErrorMap {
@@ -112,7 +150,7 @@ export interface AhxErrorMap {
     value?: string;
     rule: CSSStyleRule;
   };
-  "triggerDenied": HandleTriggerDetail;
+  "triggerDenied": TriggerDetail;
 }
 
 export interface MutationsDetail {
@@ -120,8 +158,9 @@ export interface MutationsDetail {
 }
 
 export interface ElementChanges {
-  removedElements: Element[];
-  addedElements: Element[];
+  removedElements: Set<Element>;
+  addedElements: Set<Element>;
+  mutatedElements: Set<Element>;
 }
 
 export interface ProcessElementsDetail {
@@ -171,20 +210,22 @@ export interface WithPseudoRule {
   pseudoRule: CSSStyleRule;
 }
 
-// TODO: could AddTriggerDetail & HandleTriggerDetail be combined?
-
-export interface AddTriggerDetail extends AhxTrigger {
+export interface AddTriggerDetail extends Trigger {
   origin: TriggerOrigin;
 }
 
-export interface HandleTriggerDetail extends AhxTrigger {
+export interface TriggerDetail extends Trigger, Owners {
+  /** The trigging event */
+  event?: Event;
+  /** The element on which the event was triggered */
+  source: Element;
+  /** The target for the swap */
   target: Element;
+  /** The origin of the trigger declaration */
   origin: TriggerOrigin;
-  targetOwner?: Owner;
-  originOwner?: Owner;
 }
 
-export interface HandleActionDetail extends HandleTriggerDetail {
+export interface ActionDetail extends TriggerDetail {
   formData?: FormData;
 }
 
@@ -192,37 +233,41 @@ export interface AddEventTypeDetail {
   eventType: EventType;
 }
 
-export interface SwapDetail extends SwapSpec {
+export interface SwapHtmlDetail extends SwapProps {
+  swapStyle: SwapHtmlStyle;
   element: Element;
   previous?: Element;
   index: number;
-  owner?: Owner;
 }
 
-export interface ValueRuleDetail extends Partial<TargetSpec> {
-  target?: Element;
-  oldValue?: string;
-  newValue: string;
-  ruleOwner?: Owner;
-  sourceOwner?: Owner;
-  targetOwner?: Owner;
-}
-
-export interface ApplyValueDetail extends TargetSpec {
-  target: Element;
+export interface SwapTextDetail extends SwapProps {
+  swapStyle: SwapTextStyle;
   input?: Element | RadioNodeList;
   formData?: FormData;
   oldValue?: string;
-  newValue: string;
-  ruleOwner?: Owner;
-  sourceOwner?: Owner;
-  targetOwner?: Owner;
 }
+
+export type SwapDetail = SwapHtmlDetail | SwapTextDetail;
 
 export interface RequestDetail {
   request: Request;
   response?: Response;
   error?: unknown;
+}
+
+export interface HarvestDetail extends Owners {
+  source: Element;
+  origin: CSSStyleRule;
+  newValue: string;
+  oldValue?: string;
+}
+
+export interface LoadDetail {
+  recursive?: boolean;
+}
+
+// deno-lint-ignore no-empty-interface
+export interface MutateDetail {
 }
 
 export type AhxEventType = keyof AhxEventMap | keyof AhxErrorMap;

@@ -12,6 +12,7 @@ export interface AttrValueSpec {
   elt?: Element;
   prop: AhxAttributeName | AhxCSSPropertyName;
   value?: string;
+  tokens?: string[];
   important?: boolean;
 }
 
@@ -21,14 +22,12 @@ export function parseAttrValue(
 ): AttrValueSpec {
   if (origin instanceof Element) {
     prop = asAhxAttributeName(prop);
-    const attrValue = origin.getAttribute(prop);
-    const { rule, value, important } = parseCssValue({ elt: origin, prop });
+    const value = origin.getAttribute(prop) ?? undefined;
     return {
       prop,
       elt: origin,
-      value: important && value ? value : (attrValue ?? value),
-      rule: important || !attrValue ? rule : undefined,
-      important: important || !attrValue ? important : undefined,
+      value,
+      tokens: value?.split(/\s+/),
     };
   } else {
     return parseCssValue({ rule: origin, prop });

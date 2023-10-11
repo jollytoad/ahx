@@ -1,37 +1,41 @@
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
-import { swap } from "./swap.ts";
-import type { ActionSpec, HandleActionDetail } from "./types.ts";
+import { handleSwap } from "./handle_swap.ts";
+import type { ActionDetail, ActionRequestSpec } from "./types.ts";
 
-export async function handleRequest(
-  detail: HandleActionDetail,
-  formData?: FormData,
-) {
-  const { target, action, originOwner } = detail;
+export async function handleRequest(props: ActionDetail) {
+  const { source, action, target, swap, formData, originOwner, targetOwner } =
+    props;
 
-  switch (action.type) {
-    case "request": {
-      const detail = {
-        request: prepareRequest(action, formData),
-      };
+  if (action.type !== "request") {
+    return;
+  }
 
-      if (dispatchBefore(target, "request", detail)) {
-        const { request } = detail;
+  const detail = {
+    request: prepareRequest(action, formData),
+  };
 
-        try {
-          const response = await fetch(request);
+  if (dispatchBefore(source, "request", detail)) {
+    const { request } = detail;
 
-          dispatchAfter(target, "request", { request, response });
+    try {
+      const response = await fetch(request);
 
-          await swap(target, response, originOwner);
-        } catch (error) {
-          dispatchAfter(target, "request", { request, error });
-        }
-      }
+      dispatchAfter(source, "request", { request, response });
+
+      await handleSwap({
+        ...swap,
+        target,
+        response,
+        originOwner,
+        targetOwner,
+      });
+    } catch (error) {
+      dispatchAfter(source, "request", { request, error });
     }
   }
 }
 
-function prepareRequest(action: ActionSpec, formData?: FormData) {
+function prepareRequest(action: ActionRequestSpec, formData?: FormData) {
   const url = new URL(action.url);
 
   const init: RequestInit = {

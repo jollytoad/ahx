@@ -93,6 +93,22 @@ Has no attribute equivalent.
 
 No equivalent in _htmx_.
 
+### --ahx-trigger
+
+Specify what triggers an HTTP request or other action. The value may be one, or
+many (comma-separated) of an event name (eg. "click" or "my-custom-event")
+followed by a set of event modifiers.
+
+This can also be specified directly on an element using the `ahx-trigger`
+attribute.
+
+There are several special events:
+
+- `load` triggered when an element is first loaded
+- `mutate` triggered when an element is mutated (attributes or content change)
+
+Equivalent of [hx-trigger](https://htmx.org/attributes/hx-trigger).
+
 ### --ahx-get/post/put/patch/delete
 
 Cause an element to issue a HTTP request to the specified URL on the trigger
@@ -110,65 +126,57 @@ Equivalent of [hx-get](https://htmx.org/attributes/hx-get),
 [hx-patch](https://htmx.org/attributes/hx-patch),
 [hx-delete](https://htmx.org/attributes/hx-delete).
 
-### --ahx-trigger
+### --ahx-harvest
 
-Specify what triggers an HTTP request. The value may be one, or many
-(comma-separated) of an event name (eg. "click" or "my-custom-event") followed
-by a set of event modifiers.
-
-This can also be specified directly on an element using the `ahx-trigger`
-attribute.
-
-Equivalent of [hx-trigger](https://htmx.org/attributes/hx-trigger).
+Cause the value of the property to be 'harvested' on the trigger event. This is
+similar to the request actions (eg. `--ahx-get`) except it gets data directly
+from the document. A `--prop()` or `attr()` function is usually used here to
+pick a value from the element. This is generally used in combination with a
+`load` or `mutate` trigger, and a `attr` or `input` swap style.
 
 ### --ahx-swap
 
-Specify how the response of a request (`--ahx-get` etc) will be swapped into the
-document relative to the target.
+Specify how the response of a request (`--ahx-get` etc) or a harvested value
+(`--ahx-value`) will be swapped into the document relative to the target.
 
 Possible values are:
 
-- `innerHTML` - Replace the inner html of the target element
-- `outerHTML` - Replace the entire target element with the response
-- `beforebegin` - Insert the response before the target element
-- `afterbegin` - Insert the response before the first child of the target
-  element
-- `beforeend` - Insert the response after the last child of the target element
-- `afterend` - Insert the response after the target element
-- `delete` - Deletes the target element regardless of the response
-- `none`- Does not append content from response
+- `innerHTML` to replace the inner content of the target element.
+- `outerHTML` to replace the entire target element with the response.
+- `beforebegin` to insert the response before the target element.
+- `afterbegin` to insert the response before the first child of the target
+  element.
+- `beforeend` to insert the response after the last child of the target element.
+- `afterend` to insert the response after the target element.
+- `delete` deletes the target element regardless of the response.
+- `none` does not append content from response.
+
+Also, not in _htmx_:
+
+- `attr <attribute-name>` to set the attribute of the target element.
+- `input <input-name>` if the target is a `<form>`, this will set the value of
+  the named input belonging to that form, or create a hidden input if it does
+  not exist. If the target is not a form an internal `FormData` object is
+  associated with the target and the value is set in this.
 
 This can also be specified directly on an element using the `ahx-swap`
 attribute.
 
 Equivalent of [hx-swap](https://htmx.org/attributes/hx-swap).
 
-### --ahx-deny-trigger
+#### swap modifiers
 
-Prevents triggering of requests on the selected elements. The only valid value
-for this is `true`, and invalid properties will be deleted. Once a rule has
-applied this, it is not possible to undo it via another rule.
-
-Has no attribute equivalent, although a CSS rule could be added to emulate it:
-
-```css
-[ahx-deny-trigger], [ahx-deny-trigger] * {
-  --ahx-deny-trigger: true;
-}
-```
-
-Nearest thing in _htmx_ is [hx-disable](https://htmx.org/attributes/hx-disable).
-
-### --ahx-value
-
-Declare that a value should be harvested from all matching elements of the rule.
-A `--prop()` or `attr()` function is usually used here to pick a value from the
-element.
+- `swap:<delay>` wait for the given amount of time before performing the swap
+  (not yet implemented).
+- `append` (for `input` swap only) causes the value to be appended to the form
+  (if the same value is not already present). Either via a new hidden `<input>`
+  element or just via `FormData.append`.
+- `join` (for `input`/`attr` swaps) causes the value to be joined to an existing
+  space-separator value (duplicate values will be removed).
 
 ### --ahx-target
 
-In combination with `--ahx-value`, this targets an element to receive the value.
-How the value is set depends upon `--ahx-input` or `--ahx-attr`.
+Allows you to target a different element for the swap than that of the rule.
 
 The value of this property can be:
 
@@ -184,47 +192,25 @@ The value of this property can be:
 
 Defaults to `this`.
 
-_TODO: Support targetting of an element from a trigger rule (like htmx)._
-
-_TODO: Allow targetting of an input directly, in which case the `--ahx-input`
-should not be given._
-
-_TODO: Allow targetting of a named private form unique to the owner of the rule
-(maybe target the stylesheet?)._
-
-_TODO: consider whether
-`--ahx-input`/`--ahx-attr`/`--ahx-modifier`/`--ahx-separator` could be replaced
-by new `--ahx-swap` options (eg: `--ahx-swap: attr "class" join`)_
-
-### --ahx-input
-
-Declares the name of the input on the `--ahx-target` element to receive the
-`--ahx-value`. If the target is an actual `<form>` then the value is set on the
-named input belonging to the form, a new hidden input is created if the named
-input does not exist. If it's another type of element then an internal
-`FormData` object is associated with the element and the value is set in this.
-
-### --ahx-attr
-
-Declares an attribute on the `--ahx-target` element to receive the
-`--ahx-value`. This is ignored if `--ahx-input` is also present.
-
-### --ahx-modifier
-
-Indicate how the `--ahx-value` value modifies the target value. This may be
-
-- `replace` (default) just completely replaces the value
-- `join` joins the new value to the old value separated by `--ahx-separator`
-  (duplicate values are also removed)
-- `append` on `--ahx-input` will append a new input with the same name to the
-  form data, for `--ahx-attr` it acts exactly like `join`
-
-### --ahx-separator
-
-The string to separate values combined by `--ahx-modifier` of `"join"`, defaults
-to a single space.
-
 ### --ahx-include
 
 Select a form (or element with an internal FormData) from which to include
 request data (params or body data depending on the request method and encoding).
+
+### --ahx-deny-trigger
+
+CURRENTLY BROKEN!
+
+Prevents triggering of requests on the selected elements. The only valid value
+for this is `true`, and invalid properties will be deleted. Once a rule has
+applied this, it is not possible to undo it via another rule.
+
+Has no attribute equivalent, although a CSS rule could be added to emulate it:
+
+```css
+[ahx-deny-trigger], [ahx-deny-trigger] * {
+  --ahx-deny-trigger: true;
+}
+```
+
+Nearest thing in _htmx_ is [hx-disable](https://htmx.org/attributes/hx-disable).

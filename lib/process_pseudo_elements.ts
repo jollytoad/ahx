@@ -7,7 +7,9 @@ import { getOwner, setOwner } from "./owner.ts";
 
 let nextPseudoId = 1;
 
-export function createPseudoElements(rule: CSSStyleRule) {
+export function processPseudoElements(
+  rule: CSSStyleRule,
+) {
   // TODO: better selectorText parsing
   const before = rule.selectorText.includes("::before");
   const after = before ? false : rule.selectorText.includes("::after");
@@ -22,7 +24,7 @@ export function createPseudoElements(rule: CSSStyleRule) {
       createPseudoElement(elt, pseudoId, place);
     }
 
-    createPseudoRule(rule, pseudoId, place);
+    return createPseudoRule(rule, pseudoId, place);
   }
 }
 
@@ -126,6 +128,8 @@ function createPseudoRule(
           ...detail,
           pseudoRule,
         });
+
+        return pseudoRule;
       }
     }
   }

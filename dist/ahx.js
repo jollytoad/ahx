@@ -93,13 +93,13 @@ var config = {
     "delete"
   ],
   ahxAttrs: [
-    "trigger"
+    "trigger",
+    "target"
   ],
   maxLoopCount: 10,
   defaultDelay: 20,
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
-  defaultSwapStyle: "outerhtml",
   enableDebugEvent: false,
   // parent tag -> default child pseudo tag (or null if a child is not permitted)
   pseudoChildTags: {
@@ -188,6 +188,9 @@ function dispatch(target, type, detail, cancelable = true) {
   }
   return false;
 }
+function dispatchOneShot(target, name, detail) {
+  dispatch(target, `${config.prefix}:${name}`, detail, false);
+}
 function dispatchBefore(target, name, detail) {
   detail._before = true;
   const permitted = dispatch(target, `${config.prefix}:${name}`, detail);
@@ -220,8 +223,8 @@ function getAhxCSSPropertyNames(rule) {
   return names;
 }
 function hasAhxAttributes(elt) {
-  for (const attr2 of elt.attributes) {
-    if (isAhxAttributeName(attr2.name)) {
+  for (const attr of elt.attributes) {
+    if (isAhxAttributeName(attr.name)) {
       return true;
     }
   }
@@ -312,7 +315,9 @@ function parseCssValue({ rule, style, prop, elt }) {
       } catch (e) {
         console.error(e, spec.value, baseURL);
       }
+      return spec;
     }
+    spec.tokens = spec.value.split(/\s+/).map(parseQuoted);
   }
   return spec;
 }
@@ -328,14 +333,12 @@ function parseQuoted(value) {
 function parseAttrValue(origin, prop) {
   if (origin instanceof Element) {
     prop = asAhxAttributeName(prop);
-    const attrValue = origin.getAttribute(prop);
-    const { rule, value, important } = parseCssValue({ elt: origin, prop });
+    const value = origin.getAttribute(prop) ?? void 0;
     return {
       prop,
       elt: origin,
-      value: important && value ? value : attrValue ?? value,
-      rule: important || !attrValue ? rule : void 0,
-      important: important || !attrValue ? important : void 0
+      value,
+      tokens: value?.split(/\s+/)
     };
   } else {
     return parseCssValue({ rule: origin, prop });
@@ -416,53 +419,6 @@ async function* readableStreamIterator() {
 }
 ReadableStream.prototype[Symbol.asyncIterator] ??= readableStreamIterator;
 
-// lib/parse_interval.ts
-function parseInterval(str) {
-  if (str == void 0) {
-    return void 0;
-  }
-  if (str.slice(-2) == "ms") {
-    return parseFloat(str.slice(0, -2)) || void 0;
-  }
-  if (str.slice(-1) == "s") {
-    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
-  }
-  if (str.slice(-1) == "m") {
-    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
-  }
-  return parseFloat(str) || void 0;
-}
-
-// lib/parse_swap.ts
-function parseSwap(elt, swapInfoOverride) {
-  const swapInfo = swapInfoOverride || parseAttrValue(elt, "swap").value;
-  const swapSpec = {
-    swapStyle: config.defaultSwapStyle,
-    swapDelay: config.defaultSwapDelay,
-    settleDelay: config.defaultSettleDelay
-  };
-  if (swapInfo) {
-    const split = swapInfo.trim().split(/\s+/);
-    if (split[0] && !split[0].includes(":")) {
-      swapSpec.swapStyle = split[0].toLowerCase();
-    }
-    for (const token of split) {
-      if (token.includes(":")) {
-        const [modifier, value] = token.split(":");
-        switch (modifier) {
-          case "swap":
-            swapSpec.swapDelay = parseInterval(value) ?? swapSpec.swapDelay;
-            break;
-          case "settle":
-            swapSpec.settleDelay = parseInterval(value) ?? swapSpec.settleDelay;
-            break;
-        }
-      }
-    }
-  }
-  return swapSpec;
-}
-
 // ext/HTMLBodyElementParserStream.js
 var HTMLBodyElementParserStream = class extends TransformStream {
   /**
@@ -494,34 +450,28 @@ var HTMLBodyElementParserStream = class extends TransformStream {
   }
 };
 
-// lib/swap.ts
-async function swap(target, response, owner) {
-  if (response.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
-    const swapSpec = parseSwap(target);
+// lib/swap_html.ts
+async function swapHtml(props) {
+  const { response, target } = props;
+  if (response?.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
     let index = 0;
     let previous2;
     const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document));
     for await (const element of elements2) {
       const detail = {
-        ...swapSpec,
+        ...props,
+        swapStyle: props.swapStyle ?? "outerhtml",
         element,
         previous: previous2,
-        index,
-        owner
+        index
       };
       if (dispatchBefore(target, "swap", detail)) {
-        const {
-          element: element2,
-          previous: _previous,
-          index: _index,
-          owner: owner2,
-          ...swapSpec2
-        } = detail;
-        if (owner2) {
-          setOwner(element2, owner2);
+        const { element: element2, originOwner, swapStyle } = detail;
+        if (originOwner) {
+          setOwner(element2, originOwner);
         }
         if (!previous2) {
-          swapHandlers[swapSpec2.swapStyle]?.(target, element2, swapSpec2);
+          swapHandlers[swapStyle]?.(target, element2);
         } else {
           previous2.after(element2);
         }
@@ -532,42 +482,184 @@ async function swap(target, response, owner) {
     }
   }
 }
-var swapAdjacent = (target, element, spec) => {
-  target.insertAdjacentElement(spec.swapStyle, element);
+var swapAdjacent = (pos) => (target, element) => {
+  target.insertAdjacentElement(pos, element);
 };
 var swapHandlers = {
-  none: () => {
-  },
   innerhtml(target, element) {
     target.replaceChildren(element);
   },
   outerhtml(target, element) {
     target.replaceWith(element);
   },
-  beforebegin: swapAdjacent,
-  afterbegin: swapAdjacent,
-  beforeend: swapAdjacent,
-  afterend: swapAdjacent
+  beforebegin: swapAdjacent("beforebegin"),
+  afterbegin: swapAdjacent("afterbegin"),
+  beforeend: swapAdjacent("beforeend"),
+  afterend: swapAdjacent("afterend")
 };
 
-// lib/handle_request.ts
-async function handleRequest(detail, formData) {
-  const { target, action, originOwner } = detail;
-  switch (action.type) {
-    case "request": {
-      const detail2 = {
-        request: prepareRequest(action, formData)
-      };
-      if (dispatchBefore(target, "request", detail2)) {
-        const { request } = detail2;
-        try {
-          const response = await fetch(request);
-          dispatchAfter(target, "request", { request, response });
-          await swap(target, response, originOwner);
-        } catch (error) {
-          dispatchAfter(target, "request", { request, error });
+// lib/swap_attr.ts
+function swapAttr(props) {
+  const { target, itemName, merge } = props;
+  const detail = {
+    ...props
+  };
+  detail.oldValue = target.getAttribute(itemName) ?? void 0;
+  if (merge === "join" && detail.oldValue && detail.value) {
+    detail.value = join(detail.oldValue, detail.value);
+  }
+  if (dispatchBefore(target, "swap", detail)) {
+    const { target: target2, itemName: itemName2, value } = detail;
+    if (itemName2 && value !== void 0) {
+      target2.setAttribute(itemName2, value);
+    }
+    dispatchAfter(target2, "swap", detail);
+  }
+}
+function join(oldValue, newValue) {
+  const sep = " ";
+  const values2 = new Set(`${oldValue}${sep}${newValue}`.split(sep));
+  values2.delete("");
+  return [...values2].join(sep);
+}
+
+// lib/swap_input.ts
+function swapInput(props) {
+  const { target, itemName, merge, value } = props;
+  if (!itemName || value === void 0) {
+    return;
+  }
+  const detail = {
+    ...props
+  };
+  if (target instanceof HTMLFormElement) {
+    detail.input = target.elements.namedItem(itemName) ?? void 0;
+    switch (merge) {
+      case "append":
+        detail.input = createInput(itemName, target.ownerDocument);
+        break;
+      default:
+        if (!detail.input) {
+          detail.input = createInput(itemName, target.ownerDocument);
+        } else if ("value" in detail.input) {
+          detail.oldValue = detail.input.value;
+        }
+        break;
+    }
+  } else {
+    detail.formData = getInternal(target, "formData", () => new FormData());
+    const oldValue = detail.formData.get(itemName);
+    if (typeof oldValue === "string") {
+      detail.oldValue = oldValue;
+    }
+  }
+  if (merge === "join") {
+    detail.value = join2(detail.oldValue, detail.value);
+  }
+  if (dispatchBefore(target, "swap", detail)) {
+    const { target: target2, input, itemName: itemName2, merge: merge2, formData, value: value2 } = detail;
+    if (itemName2 && value2 !== void 0) {
+      if (input && "value" in input) {
+        input.value = value2;
+        if (input instanceof Element && !input.parentElement) {
+          target2.insertAdjacentElement("beforeend", input);
+        }
+      } else if (formData) {
+        if (merge2 === "append") {
+          formData.append(itemName2, value2);
+        } else {
+          formData.set(itemName2, value2);
         }
       }
+    }
+    dispatchAfter(target2, "swap", detail);
+  }
+}
+function createInput(name, document2) {
+  const input = document2.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  return input;
+}
+function join2(oldValue = "", newValue = "") {
+  const sep = " ";
+  const values2 = new Set(`${oldValue}${sep}${newValue}`.split(sep));
+  values2.delete("");
+  return [...values2].join(sep);
+}
+
+// lib/swap_text.ts
+function swapText(props) {
+  const { swapStyle } = props;
+  switch (swapStyle) {
+    case "input":
+      return swapInput(props);
+    case "attr":
+      return swapAttr(props);
+  }
+}
+
+// lib/handle_swap.ts
+async function handleSwap(props) {
+  const { swapStyle, response, itemName } = props;
+  let { value } = props;
+  switch (swapStyle) {
+    case "none":
+      return swapNone(props);
+    case "input":
+    case "attr": {
+      if (!itemName) {
+        return;
+      }
+      if (value === void 0 && response) {
+        value = await response.text();
+      }
+      return swapText({
+        ...props,
+        swapStyle,
+        itemName,
+        value
+      });
+    }
+    default:
+      if (isHtmlResponse(response)) {
+        return swapHtml({
+          ...props,
+          swapStyle: swapStyle ?? "outerhtml",
+          response
+        });
+      }
+  }
+}
+function swapNone(_props) {
+}
+function isHtmlResponse(response) {
+  return !!response?.headers.get("Content-Type")?.startsWith("text/html") && !!response.body;
+}
+
+// lib/handle_request.ts
+async function handleRequest(props) {
+  const { source, action, target, swap, formData, originOwner, targetOwner } = props;
+  if (action.type !== "request") {
+    return;
+  }
+  const detail = {
+    request: prepareRequest(action, formData)
+  };
+  if (dispatchBefore(source, "request", detail)) {
+    const { request } = detail;
+    try {
+      const response = await fetch(request);
+      dispatchAfter(source, "request", { request, response });
+      await handleSwap({
+        ...swap,
+        target,
+        response,
+        originOwner,
+        targetOwner
+      });
+    } catch (error) {
+      dispatchAfter(source, "request", { request, error });
     }
   }
 }
@@ -594,23 +686,65 @@ function prepareRequest(action, formData) {
   return new Request(url, init);
 }
 
-// lib/handle_action.ts
-async function handleAction(triggered) {
-  const { target } = triggered;
-  const query = parseAttrValue(target, "include").value;
-  const include = querySelectorExt(target, query);
-  const formData = include ? getFormData(include) : void 0;
+// lib/handle_harvest.ts
+async function handleHarvest(props) {
+  const {
+    event,
+    source,
+    action,
+    target,
+    swap,
+    origin,
+    originOwner,
+    targetOwner
+  } = props;
+  if (!(origin instanceof CSSStyleRule) || action.type !== "harvest") {
+    return;
+  }
+  const newValue = parseCssValue({ elt: source, rule: origin, prop: "harvest" }).value;
+  if (newValue === void 0) {
+    return;
+  }
+  const oldValue = getOldValue(event);
   const detail = {
-    ...triggered,
-    formData
+    source,
+    oldValue,
+    newValue,
+    origin,
+    targetOwner,
+    originOwner
   };
-  if (dispatchBefore(target, "handleAction", detail)) {
+  if (dispatchBefore(source, "harvest", detail)) {
+    await handleSwap({
+      ...swap,
+      target,
+      value: detail.newValue
+    });
+    dispatchAfter(source, "harvest", detail);
+  }
+}
+function getOldValue(event) {
+  if (event instanceof CustomEvent && "oldValue" in event.detail) {
+    return event.detail.oldValue;
+  }
+}
+
+// lib/handle_action.ts
+async function handleAction(detail) {
+  const { source, origin } = detail;
+  const query = parseAttrValue(origin, "include").value;
+  const include = querySelectorExt(source, query);
+  detail.formData = include ? getFormData(include) : void 0;
+  if (dispatchBefore(source, "handleAction", detail)) {
     switch (detail.action.type) {
       case "request":
-        await handleRequest(detail, formData);
+        await handleRequest(detail);
+        break;
+      case "harvest":
+        await handleHarvest(detail);
         break;
     }
-    dispatchAfter(target, "handleAction", triggered);
+    dispatchAfter(source, "handleAction", detail);
   }
 }
 function getFormData(elt) {
@@ -623,37 +757,32 @@ function getFormData(elt) {
 }
 
 // lib/handle_trigger.ts
-function handleTrigger(triggered) {
-  const { trigger, target } = triggered;
-  if (isDenied(target)) {
-    dispatchError(target, "triggerDenied", triggered);
+function handleTrigger(detail) {
+  const { trigger, source } = detail;
+  if (isDenied(source)) {
+    dispatchError(source, "triggerDenied", detail);
     return;
   }
-  if (dispatchBefore(target, "handleTrigger", triggered)) {
-    if (trigger.target) {
-      if (!target.matches(trigger.target)) {
-        return;
-      }
-    }
-    if (trigger.once) {
-      if (hasInternal(target, "triggeredOnce")) {
+  if (dispatchBefore(source, "handleTrigger", detail)) {
+    if (trigger?.once) {
+      if (hasInternal(source, "triggeredOnce")) {
         return;
       } else {
-        setInternal(target, "triggeredOnce", true);
+        setInternal(source, "triggeredOnce", true);
       }
     }
-    if (trigger.changed) {
+    if (trigger?.changed) {
     }
-    if (hasInternal(target, "delayed")) {
-      clearTimeout(getInternal(target, "delayed"));
-      deleteInternal(target, "delayed");
+    if (hasInternal(source, "delayed")) {
+      clearTimeout(getInternal(source, "delayed"));
+      deleteInternal(source, "delayed");
     }
-    if (trigger.throttle) {
-    } else if (trigger.delay) {
+    if (trigger?.throttle) {
+    } else if (trigger?.delay) {
     } else {
-      handleAction(triggered);
+      handleAction(detail);
     }
-    dispatchAfter(target, "handleTrigger", triggered);
+    dispatchAfter(source, "handleTrigger", detail);
   }
 }
 function isDenied(elt) {
@@ -676,31 +805,74 @@ function resolveElement(origin) {
   }
 }
 
-// lib/triggers.ts
-var eventTypes = /* @__PURE__ */ new Set();
-function addTriggers(origin, triggers2, actions) {
-  for (const trigger of triggers2) {
-    for (const action of actions) {
-      addTrigger(origin, trigger, action);
+// lib/util/event.ts
+var AHX_EVENTS = /* @__PURE__ */ new Set(["load", "watch"]);
+function toDOMEventType(type) {
+  if (AHX_EVENTS.has(type)) {
+    return `${config.prefix}:${type}`;
+  }
+  return type;
+}
+function fromDOMEventType(type) {
+  const prefix = `${config.prefix}:`;
+  if (type.startsWith(prefix)) {
+    return type.substring(prefix.length);
+  }
+  return type;
+}
+
+// lib/util/rules.ts
+function* getTriggerRulesByEvent(type) {
+  for (const [rule, trigger] of objectsWithInternal(`trigger:${type}`)) {
+    if (trigger && rule instanceof CSSStyleRule && isRuleEnabled(rule)) {
+      yield [rule, trigger];
     }
   }
 }
-function addTrigger(origin, trigger, action) {
+function* getTriggerElementsByEvent(type) {
+  for (const [elt, trigger] of objectsWithInternal(`trigger:${type}`)) {
+    if (elt instanceof Element) {
+      yield [elt, trigger];
+    }
+  }
+}
+function* getTriggerRulesByAction(type) {
+  for (const [rule, key, trigger] of internalEntries()) {
+    if (key.startsWith("trigger:") && rule instanceof CSSStyleRule && typeof trigger === "object" && "action" in trigger && trigger.action.type === type && isRuleEnabled(rule)) {
+      yield [rule, trigger];
+    }
+  }
+}
+function isRuleEnabled(rule) {
+  return !!rule.parentStyleSheet && !rule.parentStyleSheet.disabled;
+}
+
+// lib/triggers.ts
+var eventTypes = /* @__PURE__ */ new Set();
+function addTriggers(origin, triggers2, actions, swap) {
+  for (const trigger of triggers2) {
+    for (const action of actions) {
+      addTrigger(origin, trigger, action, swap);
+    }
+  }
+}
+function addTrigger(origin, trigger, action, swap) {
   const detail = {
     origin,
     trigger,
-    action
+    action,
+    swap
   };
   const target = resolveElement(origin) ?? document;
   if (dispatchBefore(target, "addTrigger", detail)) {
     const { trigger: trigger2, action: action2 } = detail;
     const { eventType } = trigger2;
-    getInternal(origin, "triggers", () => /* @__PURE__ */ new Map()).set(eventType, { trigger: trigger2, action: action2 });
+    setInternal(origin, `trigger:${eventType}`, { trigger: trigger2, action: action2, swap });
     if (!eventTypes.has(eventType)) {
       const detail2 = { eventType };
       if (dispatchBefore(document, "addEventType", detail2)) {
         eventTypes.add(eventType);
-        document.addEventListener(eventType, eventListener);
+        document.addEventListener(toDOMEventType(eventType), eventListener);
         dispatchAfter(document, "addEventType", detail2);
       }
     }
@@ -709,56 +881,85 @@ function addTrigger(origin, trigger, action) {
 }
 function* getTriggersForEvent(event) {
   if (event.target instanceof Element) {
-    const target = event.target;
+    const eventType = fromDOMEventType(event.type);
+    const source = event.target;
     const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    const trigger = getInternal(target, "triggers")?.get(event.type);
+    const found = [];
+    const trigger = getInternal(source, `trigger:${eventType}`);
     if (trigger) {
-      const targetOwner = getOwner(target);
-      yield {
-        ...trigger,
-        target,
-        targetOwner,
-        origin: target,
-        originOwner: targetOwner
-      };
+      found.push([source, trigger]);
     }
-    for (const [origin, triggers2] of objectsWithInternal("triggers")) {
-      if (origin instanceof CSSStyleRule) {
-        const trigger2 = triggers2.get(event.type);
-        if (trigger2 && isEnabled(origin)) {
-          if (trigger2 && target.matches(origin.selectorText)) {
-            yield {
-              ...trigger2,
-              target,
-              targetOwner: getOwner(target),
-              origin,
-              originOwner: getOwner(origin)
-            };
-          }
-          if (recursive) {
-            const found = target.querySelectorAll(origin.selectorText);
-            for (const target2 of found) {
-              yield {
-                ...trigger2,
-                target: target2,
-                targetOwner: getOwner(target2),
-                origin,
-                originOwner: getOwner(origin)
-              };
-            }
-          }
+    if (recursive) {
+      for (const [elt, trigger2] of getTriggerElementsByEvent(eventType)) {
+        if (source.compareDocumentPosition(elt) & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+          found.push([elt, trigger2]);
         }
       }
     }
+    for (const [source2, trigger2] of found) {
+      const sourceOwner = getOwner(source2);
+      const target = parseTarget(source2);
+      const targetOwner = getOwner(target);
+      yield {
+        ...trigger2,
+        event,
+        source: source2,
+        sourceOwner,
+        target,
+        targetOwner,
+        origin: source2,
+        originOwner: sourceOwner
+      };
+    }
+    for (const [origin, trigger2] of getTriggerRulesByEvent(eventType)) {
+      const found2 = [];
+      if (source.matches(origin.selectorText)) {
+        found2.push(source);
+      }
+      if (recursive) {
+        found2.push(...source.querySelectorAll(origin.selectorText));
+      }
+      for (const source2 of found2) {
+        const target = parseTarget(source2, origin);
+        yield {
+          ...trigger2,
+          event,
+          source: source2,
+          sourceOwner: getOwner(source2),
+          target,
+          targetOwner: getOwner(target),
+          origin,
+          originOwner: getOwner(origin)
+        };
+      }
+    }
   }
+}
+function parseTarget(elt, rule) {
+  const targetQuery = (rule ? parseCssValue({ elt, rule, prop: "target" }).value : parseAttrValue(elt, "target").value) || "this";
+  return querySelectorExt(elt, targetQuery) ?? elt;
 }
 function eventListener(event) {
   for (const triggered of getTriggersForEvent(event)) {
     handleTrigger(triggered);
   }
 }
-function isEnabled(styleRule) {
-  return !!styleRule.parentStyleSheet && !styleRule.parentStyleSheet.disabled;
+
+// lib/parse_interval.ts
+function parseInterval(str) {
+  if (str == void 0) {
+    return void 0;
+  }
+  if (str.slice(-2) == "ms") {
+    return parseFloat(str.slice(0, -2)) || void 0;
+  }
+  if (str.slice(-1) == "s") {
+    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
+  }
+  if (str.slice(-1) == "m") {
+    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
+  }
+  return parseFloat(str) || void 0;
 }
 
 // lib/parse_triggers.ts
@@ -799,20 +1000,6 @@ function parseTriggers(origin, triggerValue, defaultEventType = "click") {
               triggerSpec.delay = parseInterval(
                 consumeUntil(tokens, WHITESPACE_OR_COMMA)
               );
-            } else if (token === "from" && tokens[0] === ":") {
-              tokens.shift();
-              let from_arg = consumeUntil(tokens, WHITESPACE_OR_COMMA);
-              if (from_arg === "closest" || from_arg === "find" || from_arg === "next" || from_arg === "previous") {
-                tokens.shift();
-                from_arg += " " + consumeUntil(
-                  tokens,
-                  WHITESPACE_OR_COMMA
-                );
-              }
-              triggerSpec.from = from_arg;
-            } else if (token === "target" && tokens[0] === ":") {
-              tokens.shift();
-              triggerSpec.target = consumeUntil(tokens, WHITESPACE_OR_COMMA);
             } else if (token === "throttle" && tokens[0] === ":") {
               tokens.shift();
               triggerSpec.throttle = parseInterval(
@@ -904,7 +1091,42 @@ function parseActions(origin) {
       });
     }
   }
+  if (origin instanceof CSSStyleRule) {
+    if (getAhxCSSPropertyNames(origin).has(asAhxCSSPropertyName("harvest"))) {
+      actionSpecs.push({
+        type: "harvest"
+      });
+    }
+  }
   return actionSpecs;
+}
+
+// lib/parse_swap.ts
+function parseSwap(origin) {
+  const tokens = parseAttrValue(origin, "swap").tokens;
+  const swapSpec = {};
+  if (tokens?.length) {
+    swapSpec.swapStyle = tokens.shift()?.toLowerCase();
+    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
+      swapSpec.itemName = tokens.shift();
+    }
+    for (const token of tokens) {
+      const [modifier, value] = token.split(":");
+      switch (modifier) {
+        case "swap":
+        case "delay":
+          swapSpec.delay = parseInterval(value);
+          break;
+        case "join":
+          swapSpec.merge = "join";
+          break;
+        case "append":
+          swapSpec.merge = "append";
+          break;
+      }
+    }
+  }
+  return swapSpec;
 }
 
 // lib/process_triggers.ts
@@ -912,187 +1134,19 @@ function processTriggers(origin, defaultEventType) {
   const triggerValue = parseAttrValue(origin, "trigger").value;
   const triggers2 = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
-  addTriggers(origin, triggers2, actions);
-}
-
-// lib/get_value_rules.ts
-function* getValueRules() {
-  for (const [rule, isValueRule] of objectsWithInternal("isValueRule")) {
-    if (rule instanceof CSSStyleRule && isValueRule) {
-      yield rule;
-    }
-  }
-}
-
-// lib/parse_target.ts
-var MODIFIERS = /* @__PURE__ */ new Set(
-  ["replace", "append", "join"]
-);
-var TARGET_TYPES = ["input", "attr"];
-function parseTarget(elt, rule) {
-  const query = parseCssValue({ elt, rule, prop: "target" }).value || "this";
-  const [type, name] = parseTargetTypeAndName(elt, rule);
-  if (type && name) {
-    const modifier = parseCssValue({ elt, rule, prop: "modifier" }).value;
-    const separator = modifier === "join" ? parseCssValue({ elt, rule, prop: "separator" }).value || " " : void 0;
-    return {
-      query,
-      type,
-      name,
-      modifier: isModifier(modifier) ? modifier : void 0,
-      separator
-    };
-  }
-}
-function parseTargetTypeAndName(elt, rule) {
-  for (const prop of TARGET_TYPES) {
-    const { value } = parseCssValue({ elt, rule, prop });
-    if (value) {
-      return [prop, value];
-    }
-  }
-  return [];
-}
-function isModifier(value) {
-  return !!value && MODIFIERS.has(value);
-}
-
-// lib/apply_value.ts
-function applyValue(detail) {
-  const { prepare, perform } = handlers[detail.type];
-  prepare(detail);
-  if (dispatchBefore(detail.target, "applyValue", detail)) {
-    perform(detail);
-    dispatchAfter(detail.target, "applyValue", detail);
-  }
-}
-var input = {
-  prepare(detail) {
-    const { target, name, modifier } = detail;
-    if (target instanceof HTMLFormElement) {
-      detail.input = target.elements.namedItem(name) ?? void 0;
-      switch (modifier) {
-        case "append":
-          detail.input = createInput(name, target.ownerDocument);
-          break;
-        case "join":
-        case "replace":
-          if (!detail.input) {
-            detail.input = createInput(name, target.ownerDocument);
-          } else if ("value" in detail.input) {
-            detail.oldValue = detail.input.value;
-          }
-          break;
-      }
-    } else {
-      detail.formData = getInternal(target, "formData", () => new FormData());
-      const oldValue = detail.formData.get(name);
-      if (typeof oldValue === "string") {
-        detail.oldValue = oldValue;
-      }
-    }
-    if (modifier === "join") {
-      detail.newValue = join(detail);
-    }
-  },
-  perform(detail) {
-    const { target, input: input2, name, modifier, formData, newValue } = detail;
-    if (input2 && "value" in input2) {
-      input2.value = newValue;
-      if (input2 instanceof Element && !input2.parentElement) {
-        target.insertAdjacentElement("beforeend", input2);
-      }
-    } else if (formData) {
-      if (modifier === "append") {
-        formData.append(name, newValue);
-      } else {
-        formData.set(name, newValue);
-      }
-    }
-  }
-};
-var attr = {
-  prepare(detail) {
-    const { target, name, modifier } = detail;
-    detail.oldValue = target.getAttribute(name) ?? void 0;
-    if (modifier === "append" || modifier === "join") {
-      detail.newValue = join(detail);
-    }
-  },
-  perform({ target, name, newValue }) {
-    target.setAttribute(name, newValue);
-  }
-};
-var handlers = {
-  input,
-  attr
-};
-function createInput(name, document2) {
-  const input2 = document2.createElement("input");
-  input2.type = "hidden";
-  input2.name = name;
-  return input2;
-}
-function join(detail) {
-  const { oldValue, newValue } = detail;
-  const sep = detail.separator ?? " ";
-  const values3 = new Set(`${oldValue ?? ""}${sep}${newValue ?? ""}`.split(sep));
-  values3.delete("");
-  return [...values3].join(sep);
-}
-
-// lib/apply_value_rule.ts
-function applyValueRule(elt, rule) {
-  const newValue = parseCssValue({ elt, rule, prop: "value" }).value;
-  if (newValue) {
-    const oldValue = getInternal(elt, "values", () => /* @__PURE__ */ new WeakMap()).get(rule);
-    if (newValue !== oldValue) {
-      const targetSpec = parseTarget(elt, rule);
-      const target = querySelectorExt(elt, targetSpec?.query);
-      const detail = {
-        ...targetSpec,
-        target,
-        oldValue,
-        newValue,
-        sourceOwner: getOwner(elt),
-        targetOwner: target ? getOwner(target) : void 0,
-        ruleOwner: getOwner(rule)
-      };
-      if (dispatchBefore(elt, "applyValueRule", detail)) {
-        getInternal(elt, "values", () => /* @__PURE__ */ new WeakMap()).set(
-          rule,
-          detail.newValue
-        );
-        if (hasTarget(detail)) {
-          applyValue({ ...detail });
-        }
-        dispatchAfter(elt, "applyValueRule", detail);
-      }
-    }
-  }
-}
-function hasTarget(detail) {
-  return !!detail.query && !!detail.target && !!detail.type && !!detail.name;
+  const swap = parseSwap(origin);
+  addTriggers(origin, triggers2, actions, swap);
 }
 
 // lib/process_element.ts
 function processElement(elt) {
-  const valueRules = [];
-  for (const rule of getValueRules()) {
-    if (elt.matches(rule.selectorText)) {
-      valueRules.push(rule);
-    }
-  }
-  if (valueRules.length || hasAhxAttributes(elt)) {
+  if (hasAhxAttributes(elt)) {
     const detail = {
       owner: getOwner(elt)
     };
     if (dispatchBefore(elt, "processElement", detail)) {
       if (detail.owner) {
         setOwner(elt, detail.owner);
-      }
-      for (const rule of valueRules) {
-        applyValueRule(elt, rule);
       }
       processTriggers(elt, "click");
       dispatchAfter(elt, "processElement", detail);
@@ -1103,12 +1157,9 @@ function processElement(elt) {
 // lib/process_elements.ts
 function processElements(root) {
   const selectors = /* @__PURE__ */ new Set();
-  [...config.ahxAttrs, ...config.httpMethods].forEach((attr2) => {
-    selectors.add(`[${asAhxAttributeName(attr2)}]`);
+  [...config.ahxAttrs, ...config.httpMethods].forEach((attr) => {
+    selectors.add(`[${asAhxAttributeName(attr)}]`);
   });
-  for (const rule of getValueRules()) {
-    selectors.add(rule.selectorText);
-  }
   const detail = { selectors };
   if (dispatchBefore(root, "processElements", detail)) {
     const processed = /* @__PURE__ */ new Set();
@@ -1128,40 +1179,65 @@ function processElements(root) {
   }
 }
 
+// lib/trigger_mutate.ts
+function triggerMutate(elt) {
+  dispatchOneShot(elt, "mutate", {});
+}
+
+// lib/trigger_load.ts
+function triggerLoad(elt) {
+  dispatchOneShot(elt, "load", { recursive: true });
+}
+
 // lib/start_observer.ts
 function startObserver(root) {
   const observer = new MutationObserver((mutations) => {
     const detail = { mutations };
     if (dispatchBefore(root, "mutations", detail)) {
       const removedNodes = /* @__PURE__ */ new Set();
-      const removedElements = [];
-      const addedElements = [];
+      const removedElements = /* @__PURE__ */ new Set();
+      const addedElements = /* @__PURE__ */ new Set();
+      const mutatedElements = /* @__PURE__ */ new Set();
       for (const mutation of detail.mutations) {
         for (const node of mutation.removedNodes) {
           removedNodes.add(node);
           if (node instanceof Element) {
-            removedElements.push(node);
+            removedElements.add(node);
           }
         }
         for (const node of mutation.addedNodes) {
           removedNodes.delete(node);
           if (node instanceof Element) {
             processElements(node);
-            addedElements.push(node);
+            addedElements.add(node);
           }
         }
         if (mutation.type === "attributes" && mutation.target instanceof Element) {
           processElement(mutation.target);
         }
+        if (mutation.target instanceof Element) {
+          mutatedElements.add(mutation.target);
+        }
       }
       dispatchAfter(root, "mutations", {
         ...detail,
         removedElements,
-        addedElements
+        addedElements,
+        mutatedElements
       });
       for (const node of removedNodes) {
         deleteInternal(node);
       }
+      setTimeout(() => {
+        for (const elt of mutatedElements) {
+          triggerMutate(elt);
+        }
+      }, 0);
+      setTimeout(() => {
+        for (const elt of addedElements) {
+          triggerLoad(elt);
+        }
+      });
     }
   });
   const options = {
@@ -1274,9 +1350,9 @@ function processGuards(rule, props) {
   return [];
 }
 
-// lib/create_pseudo_elements.ts
+// lib/process_pseudo_elements.ts
 var nextPseudoId = 1;
-function createPseudoElements(rule) {
+function processPseudoElements(rule) {
   const before = rule.selectorText.includes("::before");
   const after = before ? false : rule.selectorText.includes("::after");
   if (before || after) {
@@ -1286,7 +1362,7 @@ function createPseudoElements(rule) {
     for (const elt of document.querySelectorAll(parentSelector)) {
       createPseudoElement(elt, pseudoId, place);
     }
-    createPseudoRule(rule, pseudoId, place);
+    return createPseudoRule(rule, pseudoId, place);
   }
 }
 function createPseudoElement(elt, pseudoId, place) {
@@ -1356,27 +1432,8 @@ function createPseudoRule(rule, pseudoId, place) {
           ...detail,
           pseudoRule: pseudoRule2
         });
+        return pseudoRule2;
       }
-    }
-  }
-}
-
-// lib/apply_value_rules.ts
-function applyValueRules(root) {
-  for (const rule of getValueRules()) {
-    for (const elt of root.querySelectorAll(rule.selectorText)) {
-      applyValueRule(elt, rule);
-    }
-  }
-}
-
-// lib/process_value.ts
-function processValueRule(rule, props) {
-  if (props.has(asAhxCSSPropertyName("value"))) {
-    setInternal(rule, "isValueRule", true);
-    const document2 = resolveElement(rule)?.ownerDocument;
-    if (document2) {
-      applyValueRules(document2);
     }
   }
 }
@@ -1456,7 +1513,7 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
 }
 
 // lib/process_rule.ts
-function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
+function processRule(rule, props) {
   if (rule.parentStyleSheet) {
     processStyleSheet(rule.parentStyleSheet);
   }
@@ -1468,10 +1525,12 @@ function processRule(rule, props = getAhxCSSPropertyNames(rule)) {
       if (detail.owner) {
         setOwner(rule, detail.owner);
       }
-      processCssImports(rule, props, processRules);
+      processCssImports(rule, props, processImportedRules);
       processGuards(rule, props);
-      createPseudoElements(rule);
-      processValueRule(rule, props);
+      const pseudoRule = processPseudoElements(rule);
+      if (pseudoRule) {
+        processRule(pseudoRule, getAhxCSSPropertyNames(pseudoRule));
+      }
       processTriggers(rule, "default");
       dispatchAfter(target, "processRule", detail);
     }
@@ -1482,6 +1541,10 @@ function processStyleSheet(stylesheet) {
     setOwner(stylesheet, stylesheet.href ?? "unknown");
   }
 }
+function processImportedRules(link) {
+  processRules(link);
+  triggerLoad(link.ownerDocument.documentElement);
+}
 
 // lib/process_rules.ts
 function processRules(root, rules = findRules(root)) {
@@ -1491,62 +1554,6 @@ function processRules(root, rules = findRules(root)) {
       processRule(rule, props);
     }
     dispatchAfter(root, "processRules", detail);
-  }
-}
-
-// lib/trigger_load.ts
-function initLoadTriggerHandling(document2) {
-  document2.addEventListener(`${config.prefix}:addEventType`, (event) => {
-    if (event.detail.eventType === "load") {
-      document2.addEventListener(`${config.prefix}:addTrigger:done`, (event2) => {
-        console.log("HERE1", event2);
-        const { trigger, origin } = event2.detail;
-        if (trigger.eventType === "load") {
-          dispatchLoad(resolveTargets(origin), { triggerEvent: event2.type });
-        }
-      });
-      document2.addEventListener(
-        `${config.prefix}:processElements:done`,
-        (event2) => {
-          console.log("HERE2", event2);
-          if (event2.target) {
-            const target = event2.target instanceof Document ? event2.target.documentElement : event2.target;
-            dispatchLoad([target], {
-              triggerEvent: event2.type,
-              recursive: true
-            });
-          }
-        }
-      );
-      document2.addEventListener(`${config.prefix}:mutations:done`, (event2) => {
-        console.log("HERE3", event2);
-        dispatchLoad([...event2.detail.addedElements], {
-          triggerEvent: event2.type
-        });
-      });
-    }
-  });
-}
-function resolveTargets(origin) {
-  if (origin instanceof Element) {
-    return [origin];
-  } else if (origin instanceof CSSStyleRule) {
-    return [...document.querySelectorAll(origin.selectorText)];
-  }
-  return [];
-}
-function dispatchLoad(targets, detail) {
-  if (targets.length) {
-    setTimeout(() => {
-      for (const elt of targets) {
-        elt.dispatchEvent(
-          new CustomEvent("load", {
-            bubbles: true,
-            detail
-          })
-        );
-      }
-    }, 0);
   }
 }
 
@@ -1561,8 +1568,7 @@ __export(debug_exports, {
   logger: () => logger,
   loggerConfig: () => loggerConfig,
   owners: () => owners,
-  triggers: () => triggers,
-  values: () => values2
+  triggers: () => triggers
 });
 
 // lib/debug/internals.ts
@@ -1648,33 +1654,32 @@ function elements(ahxProp) {
 function triggers(verbose = false) {
   console.group("AHX Triggers");
   const elements2 = /* @__PURE__ */ new Map();
-  function addOrigin(elt, origin) {
+  function addOrigin(elt, origin, trigger) {
     if (!elements2.has(elt)) {
-      elements2.set(elt, /* @__PURE__ */ new Set());
+      elements2.set(elt, /* @__PURE__ */ new Map());
     }
-    elements2.get(elt).add(origin);
+    elements2.get(elt).set(trigger, origin);
   }
-  for (const [origin] of objectsWithInternal("triggers")) {
-    if (origin instanceof Element) {
-      addOrigin(origin, origin);
-    } else if (origin instanceof CSSStyleRule) {
-      for (const node of document.querySelectorAll(origin.selectorText)) {
-        if (node instanceof Element) {
-          addOrigin(node, origin);
+  for (const [origin, key, trigger] of internalEntries()) {
+    if (key.startsWith("trigger:")) {
+      if (origin instanceof Element) {
+        addOrigin(origin, origin, trigger);
+      } else if (origin instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(origin.selectorText)) {
+          if (node instanceof Element) {
+            addOrigin(node, origin, trigger);
+          }
         }
       }
     }
   }
   const orderedElements = [...elements2.keys()].sort(comparePosition);
   for (const elt of orderedElements) {
-    const origins = elements2.get(elt) ?? [];
+    const triggers2 = elements2.get(elt) ?? [];
     const events = /* @__PURE__ */ new Set();
     const denied = isDenied(elt);
-    for (const origin of origins) {
-      const triggers2 = getInternal(origin, "triggers");
-      for (const eventType of triggers2.keys()) {
-        events.add(eventType);
-      }
+    for (const [{ trigger }] of triggers2) {
+      events.add(trigger.eventType);
     }
     console.groupCollapsed(
       "%o : %c%s",
@@ -1682,34 +1687,31 @@ function triggers(verbose = false) {
       denied ? "text-decoration: line-through; color: grey" : "color: red",
       [...events].join(", ")
     );
-    for (const origin of origins) {
-      const triggers2 = getInternal(origin, "triggers");
-      for (const { trigger, action } of triggers2.values()) {
-        if (verbose) {
-          console.log(
-            "trigger:",
-            trigger,
-            "action:",
-            action,
-            "origin:",
-            origin
-          );
-        } else {
-          const originRep = origin instanceof Element ? "element" : origin.cssText;
-          console.log(
-            "%c%s%c -> %c%s %s%c from: %c%s%c",
-            "color: red; font-weight: bold",
-            trigger.eventType,
-            "color: inherit; font-weight: normal",
-            "color: green",
-            action.method.toUpperCase(),
-            action.url,
-            "color: inherit",
-            "color: lightblue",
-            originRep,
-            "color: inherit"
-          );
-        }
+    for (const [{ trigger, action }, origin] of triggers2) {
+      if (verbose) {
+        console.log(
+          "trigger:",
+          trigger,
+          "action:",
+          action,
+          "origin:",
+          origin
+        );
+      } else {
+        const originRep = origin instanceof Element ? "element" : origin.cssText;
+        console.log(
+          "%c%s%c -> %c%s %s%c from: %c%s%c",
+          "color: red; font-weight: bold",
+          trigger.eventType,
+          "color: inherit; font-weight: normal",
+          "color: green",
+          action.method?.toUpperCase(),
+          action.url,
+          "color: inherit",
+          "color: lightblue",
+          originRep,
+          "color: inherit"
+        );
       }
     }
     console.groupEnd();
@@ -1739,43 +1741,6 @@ function owners() {
   console.groupEnd();
 }
 
-// lib/debug/values.ts
-function values2() {
-  console.group("AHX Value mapping");
-  for (const rule of getValueRules()) {
-    console.group(rule.cssText);
-    for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const value = getInternal(elt, "values")?.get(rule);
-      const spec = parseTarget(elt, rule);
-      if (spec) {
-        const { query, type, name, modifier, separator } = spec;
-        const target = querySelectorExt(elt, query);
-        console.log(
-          "%o -> %c%s%c -> %o %s:%s.%s%s",
-          elt,
-          "font-weight: bold",
-          value,
-          "font-weight: normal",
-          target === elt ? "this" : target,
-          type,
-          name,
-          modifier ?? "default",
-          separator ? `("${separator}")` : ""
-        );
-      } else {
-        console.log(
-          "%o -> %c%s",
-          elt,
-          "font-weight: bold",
-          value
-        );
-      }
-    }
-    console.groupEnd();
-  }
-  console.groupEnd();
-}
-
 // lib/debug/forms.ts
 function forms() {
   console.group("AHX Forms");
@@ -1785,10 +1750,10 @@ function forms() {
       elements2.add(elt);
     }
   }
-  for (const rule of getValueRules()) {
+  for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetSpec = parseTarget(elt, rule);
-      const target = querySelectorExt(elt, targetSpec?.query);
+      const targetQuery = parseCssValue({ elt, rule, prop: "target" }).value ?? "this";
+      const target = querySelectorExt(elt, targetQuery);
       if (target) {
         elements2.add(target);
       }
@@ -1807,35 +1772,6 @@ function forms() {
   console.groupEnd();
 }
 
-// lib/cssom_patch.ts
-function patchCSSOM({ onInsertRule, onDeleteRule }) {
-  if (onInsertRule) {
-    patchInsertRule(CSSStyleSheet.prototype, onInsertRule);
-    patchInsertRule(CSSGroupingRule.prototype, onInsertRule);
-  }
-  if (onDeleteRule) {
-    patchDeleteRule(CSSStyleSheet.prototype, onDeleteRule);
-    patchDeleteRule(CSSGroupingRule.prototype, onDeleteRule);
-  }
-}
-function patchInsertRule(proto, onInsertRule) {
-  const originalInsertRule = proto.insertRule;
-  proto.insertRule = function insertRule(rule, index) {
-    const newIndex = originalInsertRule.call(this, rule, index);
-    const newRule = this.cssRules[newIndex];
-    onInsertRule(this, newRule);
-    return newIndex;
-  };
-}
-function patchDeleteRule(proto, onDeleteRule) {
-  const originalDeleteRule = proto.deleteRule;
-  proto.deleteRule = function deleteRule(index) {
-    const oldRule = this.cssRules[index];
-    originalDeleteRule.call(this, index);
-    onDeleteRule(this, oldRule);
-  };
-}
-
 // lib/url_attrs.ts
 function applyUrlAttrs(elt, loc) {
   if (elt && elt.getAttribute(`${config.prefix}-url-href`) !== loc.href) {
@@ -1846,11 +1782,11 @@ function applyUrlAttrs(elt, loc) {
     setAttr("hash", loc.hash);
   }
   function setAttr(prop, value) {
-    const attr2 = `${config.prefix}-url-${prop}`;
+    const attr = `${config.prefix}-url-${prop}`;
     if (value) {
-      elt.setAttribute(attr2, value);
+      elt.setAttribute(attr, value);
     } else {
-      elt.removeAttribute(attr2);
+      elt.removeAttribute(attr);
     }
   }
 }
@@ -1870,21 +1806,12 @@ function initUrlAttrs(document2) {
 }
 
 // lib/ahx.ts
-patchCSSOM({
-  onInsertRule(_parent, rule) {
-    if (rule instanceof CSSStyleRule) {
-      setTimeout(() => {
-        processRule(rule);
-      }, 1);
-    }
-  }
-});
 ready((document2) => {
   eventsAll();
   initUrlAttrs(document2);
-  initLoadTriggerHandling(document2);
   startObserver(document2);
   processRules(document2);
   processElements(document2);
+  triggerLoad(document2.documentElement);
 });
 window.ahx = debug_exports;

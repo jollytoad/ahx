@@ -10,27 +10,27 @@
   outline: 1px dotted red;
 
   /* get the value of innerText of the element that matches this rule */
-  --ahx-value: --prop(innerText);
+  --ahx-trigger: load, mutate;
+
+  --ahx-harvest: --prop(innerText);
 
   /* select the 'form' as the closest tr ancestor */
   --ahx-target: closest tr;
 
   /* set the value of the form input named "description" */
-  --ahx-input: "description";
+  --ahx-swap: input "description";
 }
 
-/* if the --ahx-form is not an actual form, an internal hidden form is created */
-/* if the --ahx-input does not reference a form input then a hidden input if created for it */
-
 .numberwang tbody tr {
-  --ahx-value: attr(data-ref);
+  --ahx-trigger: load, mutate;
+  --ahx-harvest: attr(data-ref);
   --ahx-target: #my-form;
-  --ahx-input: "refs";
-  --ahx-modifier: append;
+  --ahx-swap: input "refs" append;
 }
 
 .numberwang {
-  --ahx-value: "true";
+  --ahx-trigger: load;
+  --ahx-harvest: "true";
   --ahx-target: body;
-  --ahx-attr: "data-has-numberwang";
+  --ahx-swap: attr "data-has-numberwang";
 }

@@ -1,27 +1,34 @@
 import { isDenied } from "../handle_trigger.ts";
-import { getInternal, objectsWithInternal } from "../internal.ts";
-import type { EventType, TriggerOrigin } from "../types.ts";
+import { internalEntries } from "../internal.ts";
+import type {
+  ActionRequestSpec,
+  EventType,
+  Trigger,
+  TriggerOrigin,
+} from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
 
 export function triggers(verbose = false) {
   console.group("AHX Triggers");
 
-  const elements = new Map<Element, Set<TriggerOrigin>>();
+  const elements = new Map<Element, Map<Trigger, TriggerOrigin>>();
 
-  function addOrigin(elt: Element, origin: TriggerOrigin) {
+  function addOrigin(elt: Element, origin: TriggerOrigin, trigger: Trigger) {
     if (!elements.has(elt)) {
-      elements.set(elt, new Set());
+      elements.set(elt, new Map());
     }
-    elements.get(elt)!.add(origin);
+    elements.get(elt)!.set(trigger, origin);
   }
 
-  for (const [origin] of objectsWithInternal("triggers")) {
-    if (origin instanceof Element) {
-      addOrigin(origin, origin);
-    } else if (origin instanceof CSSStyleRule) {
-      for (const node of document.querySelectorAll(origin.selectorText)) {
-        if (node instanceof Element) {
-          addOrigin(node, origin);
+  for (const [origin, key, trigger] of internalEntries()) {
+    if (key.startsWith("trigger:")) {
+      if (origin instanceof Element) {
+        addOrigin(origin, origin, trigger as Trigger);
+      } else if (origin instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(origin.selectorText)) {
+          if (node instanceof Element) {
+            addOrigin(node, origin, trigger as Trigger);
+          }
         }
       }
     }
@@ -30,15 +37,12 @@ export function triggers(verbose = false) {
   const orderedElements = [...elements.keys()].sort(comparePosition);
 
   for (const elt of orderedElements) {
-    const origins = elements.get(elt) ?? [];
+    const triggers = elements.get(elt) ?? [];
     const events = new Set<EventType>();
     const denied = isDenied(elt);
 
-    for (const origin of origins) {
-      const triggers = getInternal(origin, "triggers")!;
-      for (const eventType of triggers.keys()) {
-        events.add(eventType);
-      }
+    for (const [{ trigger }] of triggers) {
+      events.add(trigger.eventType);
     }
 
     console.groupCollapsed(
@@ -48,36 +52,34 @@ export function triggers(verbose = false) {
       [...events].join(", "),
     );
 
-    for (const origin of origins) {
-      const triggers = getInternal(origin, "triggers")!;
-      for (const { trigger, action } of triggers.values()) {
-        if (verbose) {
-          console.log(
-            "trigger:",
-            trigger,
-            "action:",
-            action,
-            "origin:",
-            origin,
-          );
-        } else {
-          const originRep = origin instanceof Element
-            ? "element"
-            : origin.cssText;
-          console.log(
-            "%c%s%c -> %c%s %s%c from: %c%s%c",
-            "color: red; font-weight: bold",
-            trigger.eventType,
-            "color: inherit; font-weight: normal",
-            "color: green",
-            action.method.toUpperCase(),
-            action.url,
-            "color: inherit",
-            "color: lightblue",
-            originRep,
-            "color: inherit",
-          );
-        }
+    for (const [{ trigger, action }, origin] of triggers) {
+      if (verbose) {
+        console.log(
+          "trigger:",
+          trigger,
+          "action:",
+          action,
+          "origin:",
+          origin,
+        );
+      } else {
+        // TODO: Adapt output for different action types
+        const originRep = origin instanceof Element
+          ? "element"
+          : origin.cssText;
+        console.log(
+          "%c%s%c -> %c%s %s%c from: %c%s%c",
+          "color: red; font-weight: bold",
+          trigger.eventType,
+          "color: inherit; font-weight: normal",
+          "color: green",
+          (action as ActionRequestSpec).method?.toUpperCase(),
+          (action as ActionRequestSpec).url,
+          "color: inherit",
+          "color: lightblue",
+          originRep,
+          "color: inherit",
+        );
       }
     }
 

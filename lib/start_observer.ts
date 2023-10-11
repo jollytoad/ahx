@@ -2,20 +2,23 @@ import { deleteInternal } from "./internal.ts";
 import { processElement } from "./process_element.ts";
 import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { processElements } from "./process_elements.ts";
+import { triggerMutate } from "./trigger_mutate.ts";
+import { triggerLoad } from "./trigger_load.ts";
 
 export function startObserver(root: ParentNode) {
   const observer = new MutationObserver((mutations) => {
     const detail = { mutations };
     if (dispatchBefore(root, "mutations", detail)) {
       const removedNodes = new Set<Node>();
-      const removedElements: Element[] = [];
-      const addedElements: Element[] = [];
+      const removedElements = new Set<Element>();
+      const addedElements = new Set<Element>();
+      const mutatedElements = new Set<Element>();
 
       for (const mutation of detail.mutations) {
         for (const node of mutation.removedNodes) {
           removedNodes.add(node);
           if (node instanceof Element) {
-            removedElements.push(node);
+            removedElements.add(node);
           }
         }
 
@@ -23,7 +26,7 @@ export function startObserver(root: ParentNode) {
           removedNodes.delete(node);
           if (node instanceof Element) {
             processElements(node);
-            addedElements.push(node);
+            addedElements.add(node);
           }
         }
 
@@ -32,17 +35,34 @@ export function startObserver(root: ParentNode) {
         ) {
           processElement(mutation.target);
         }
+
+        if (mutation.target instanceof Element) {
+          mutatedElements.add(mutation.target);
+        }
       }
 
       dispatchAfter(root, "mutations", {
         ...detail,
         removedElements,
         addedElements,
+        mutatedElements,
       });
 
       for (const node of removedNodes) {
         deleteInternal(node);
       }
+
+      setTimeout(() => {
+        for (const elt of mutatedElements) {
+          triggerMutate(elt);
+        }
+      }, 0);
+
+      setTimeout(() => {
+        for (const elt of addedElements) {
+          triggerLoad(elt);
+        }
+      });
     }
   });
 

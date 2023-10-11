@@ -1,6 +1,6 @@
-import { getValueRules } from "../get_value_rules.ts";
+import { getTriggerRulesByAction } from "../util/rules.ts";
 import { getInternal, objectsWithInternal } from "../internal.ts";
-import { parseTarget } from "../parse_target.ts";
+import { parseCssValue } from "../parse_css_value.ts";
 import { querySelectorExt } from "../query_selector.ts";
 import { comparePosition } from "./compare_position.ts";
 
@@ -15,10 +15,11 @@ export function forms() {
     }
   }
 
-  for (const rule of getValueRules()) {
+  for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetSpec = parseTarget(elt, rule);
-      const target = querySelectorExt(elt, targetSpec?.query);
+      const targetQuery = parseCssValue({ elt, rule, prop: "target" }).value ??
+        "this";
+      const target = querySelectorExt(elt, targetQuery);
       if (target) {
         elements.add(target);
       }

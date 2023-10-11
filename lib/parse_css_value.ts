@@ -12,6 +12,7 @@ export interface CSSValueSpec extends ParseValueProps {
   rule?: CSSStyleRule;
   prop: AhxCSSPropertyName;
   value?: string;
+  tokens?: string[];
   important?: boolean;
 }
 
@@ -81,7 +82,10 @@ export function parseCssValue(
       } catch (e) {
         console.error(e, spec.value, baseURL);
       }
+      return spec;
     }
+
+    spec.tokens = spec.value.split(/\s+/).map(parseQuoted);
   }
 
   return spec;

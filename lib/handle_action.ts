@@ -2,29 +2,30 @@ import { dispatchAfter, dispatchBefore } from "./dispatch.ts";
 import { querySelectorExt } from "./query_selector.ts";
 import { handleRequest } from "./handle_request.ts";
 import { getInternal, hasInternal } from "./internal.ts";
-import type { HandleActionDetail, HandleTriggerDetail } from "./types.ts";
+import type { ActionDetail } from "./types.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
+import { handleHarvest } from "./handle_harvest.ts";
 
-export async function handleAction(triggered: HandleTriggerDetail) {
-  const { target } = triggered;
+export async function handleAction(detail: ActionDetail) {
+  const { source, origin } = detail;
 
-  const query = parseAttrValue(target, "include").value;
-  const include = querySelectorExt(target, query);
-  const formData = include ? getFormData(include) : undefined;
+  const query = parseAttrValue(origin, "include").value;
+  const include = querySelectorExt(source, query);
 
-  const detail: HandleActionDetail = {
-    ...triggered,
-    formData,
-  };
+  detail.formData = include ? getFormData(include) : undefined;
 
-  if (dispatchBefore(target, "handleAction", detail)) {
+  if (dispatchBefore(source, "handleAction", detail)) {
     switch (detail.action.type) {
       case "request":
-        await handleRequest(detail, formData);
+        await handleRequest(detail);
+        break;
+
+      case "harvest":
+        await handleHarvest(detail);
         break;
     }
 
-    dispatchAfter(target, "handleAction", triggered);
+    dispatchAfter(source, "handleAction", detail);
   }
 }
 

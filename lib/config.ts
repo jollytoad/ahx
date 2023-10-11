@@ -1,4 +1,4 @@
-import type { AhxHttpMethod, AhxName, Prefix, SwapStyle } from "./types.ts";
+import type { AhxHttpMethod, AhxName, Prefix } from "./types.ts";
 
 interface Config {
   prefix: Prefix;
@@ -8,7 +8,6 @@ interface Config {
   defaultDelay: number;
   defaultSettleDelay: number;
   defaultSwapDelay: number;
-  defaultSwapStyle: SwapStyle;
   enableDebugEvent: boolean;
   pseudoChildTags: Record<string, string | null | undefined>;
 }
@@ -26,6 +25,7 @@ export const config: Config = {
 
   ahxAttrs: [
     "trigger",
+    "target",
   ],
 
   maxLoopCount: 10,
@@ -33,7 +33,6 @@ export const config: Config = {
   defaultDelay: 20,
   defaultSettleDelay: 20,
   defaultSwapDelay: 0,
-  defaultSwapStyle: "outerhtml",
 
   enableDebugEvent: false,
 

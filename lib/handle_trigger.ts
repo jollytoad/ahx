@@ -6,52 +6,46 @@ import {
   setInternal,
 } from "./internal.ts";
 import { dispatchAfter, dispatchBefore, dispatchError } from "./dispatch.ts";
-import type { HandleTriggerDetail } from "./types.ts";
+import type { TriggerDetail } from "./types.ts";
 import { handleAction } from "./handle_action.ts";
 
-export function handleTrigger(triggered: HandleTriggerDetail) {
-  const { trigger, target } = triggered;
+export function handleTrigger(detail: TriggerDetail) {
+  const { trigger, source } = detail;
 
-  if (isDenied(target)) {
-    dispatchError(target, "triggerDenied", triggered);
+  if (isDenied(source)) {
+    dispatchError(source, "triggerDenied", detail);
     return;
   }
 
-  if (dispatchBefore(target, "handleTrigger", triggered)) {
-    if (trigger.target) {
-      if (!target.matches(trigger.target)) {
-        return;
-      }
-    }
-
-    if (trigger.once) {
-      if (hasInternal(target, "triggeredOnce")) {
+  if (dispatchBefore(source, "handleTrigger", detail)) {
+    if (trigger?.once) {
+      if (hasInternal(source, "triggeredOnce")) {
         return;
       } else {
-        setInternal(target, "triggeredOnce", true);
+        setInternal(source, "triggeredOnce", true);
       }
     }
 
-    if (trigger.changed) {
+    if (trigger?.changed) {
       // TODO: return if value hasn't changed
     }
 
-    if (hasInternal(target, "delayed")) {
-      clearTimeout(getInternal(target, "delayed"));
-      deleteInternal(target, "delayed");
+    if (hasInternal(source, "delayed")) {
+      clearTimeout(getInternal(source, "delayed"));
+      deleteInternal(source, "delayed");
     }
 
     // TODO: throttle
 
-    if (trigger.throttle) {
+    if (trigger?.throttle) {
       // TODO
-    } else if (trigger.delay) {
+    } else if (trigger?.delay) {
       // TODO
     } else {
-      handleAction(triggered);
+      handleAction(detail);
     }
 
-    dispatchAfter(target, "handleTrigger", triggered);
+    dispatchAfter(source, "handleTrigger", detail);
   }
 }
 
