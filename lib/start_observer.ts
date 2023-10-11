@@ -4,8 +4,9 @@ import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { processElements } from "./process_elements.ts";
 import { triggerMutate } from "./trigger_mutate.ts";
 import { triggerLoad } from "./trigger_load.ts";
+import { processRules } from "./process_rules.ts";
 
-export function startObserver(root: ParentNode) {
+export function startObserver(root: Document) {
   const observer = new MutationObserver((mutations) => {
     const detail = { mutations };
     if (dispatchBefore(root, "mutations", detail)) {
@@ -41,17 +42,6 @@ export function startObserver(root: ParentNode) {
         }
       }
 
-      dispatchAfter(root, "mutations", {
-        ...detail,
-        removedElements,
-        addedElements,
-        mutatedElements,
-      });
-
-      for (const node of removedNodes) {
-        deleteInternal(node);
-      }
-
       setTimeout(() => {
         for (const elt of mutatedElements) {
           triggerMutate(elt);
@@ -63,6 +53,19 @@ export function startObserver(root: ParentNode) {
           triggerLoad(elt);
         }
       });
+
+      processRules(root);
+
+      dispatchAfter(root, "mutations", {
+        ...detail,
+        removedElements,
+        addedElements,
+        mutatedElements,
+      });
+
+      for (const node of removedNodes) {
+        deleteInternal(node);
+      }
     }
   });
 

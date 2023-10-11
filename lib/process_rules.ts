@@ -6,7 +6,9 @@ import type { AhxCSSPropertyName } from "./types.ts";
 export function processRules(
   root: (DocumentOrShadowRoot | LinkStyle) & EventTarget,
 ) {
-  const detail = { rules: findRules(root) };
+  const detail = {
+    rules: findRules(root),
+  };
 
   if (dispatchBefore(root, "processRules", detail)) {
     for (const [rule, props] of detail.rules) {

@@ -1189,106 +1189,6 @@ function triggerLoad(elt) {
   dispatchOneShot(elt, "load", { recursive: true });
 }
 
-// lib/start_observer.ts
-function startObserver(root) {
-  const observer = new MutationObserver((mutations) => {
-    const detail = { mutations };
-    if (dispatchBefore(root, "mutations", detail)) {
-      const removedNodes = /* @__PURE__ */ new Set();
-      const removedElements = /* @__PURE__ */ new Set();
-      const addedElements = /* @__PURE__ */ new Set();
-      const mutatedElements = /* @__PURE__ */ new Set();
-      for (const mutation of detail.mutations) {
-        for (const node of mutation.removedNodes) {
-          removedNodes.add(node);
-          if (node instanceof Element) {
-            removedElements.add(node);
-          }
-        }
-        for (const node of mutation.addedNodes) {
-          removedNodes.delete(node);
-          if (node instanceof Element) {
-            processElements(node);
-            addedElements.add(node);
-          }
-        }
-        if (mutation.type === "attributes" && mutation.target instanceof Element) {
-          processElement(mutation.target);
-        }
-        if (mutation.target instanceof Element) {
-          mutatedElements.add(mutation.target);
-        }
-      }
-      dispatchAfter(root, "mutations", {
-        ...detail,
-        removedElements,
-        addedElements,
-        mutatedElements
-      });
-      for (const node of removedNodes) {
-        deleteInternal(node);
-      }
-      setTimeout(() => {
-        for (const elt of mutatedElements) {
-          triggerMutate(elt);
-        }
-      }, 0);
-      setTimeout(() => {
-        for (const elt of addedElements) {
-          triggerLoad(elt);
-        }
-      });
-    }
-  });
-  const options = {
-    subtree: true,
-    childList: true,
-    attributes: true,
-    attributeOldValue: true
-  };
-  if (dispatchBefore(root, "startObserver", options)) {
-    observer.observe(root, options);
-    dispatchAfter(root, "startObserver", options);
-  }
-}
-
-// lib/debug/events.ts
-var loggerConfig = {
-  group: false,
-  include: []
-};
-function eventsAll() {
-  config.enableDebugEvent = true;
-  addEventListener(config.prefix, logger);
-}
-function eventsNone() {
-  config.enableDebugEvent = false;
-  removeEventListener(config.prefix, logger);
-}
-function logger({ detail: event }) {
-  const { type, target, detail } = event;
-  if (shouldLog(type)) {
-    if (detail?._after && loggerConfig.group) {
-      console.groupEnd();
-    }
-    if (detail?._before) {
-      const method = loggerConfig.group ? loggerConfig.group === true ? "group" : "groupCollapsed" : "debug";
-      console[method]("%s -> %o %o", type, target, detail);
-    } else {
-      console.debug("%s -> %o %o", type, target, detail);
-    }
-  }
-}
-function shouldLog(type) {
-  if (loggerConfig.include?.length) {
-    if (loggerConfig.include.some((v) => type.includes(`:${v}`))) {
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
-
 // lib/process_guards.ts
 function processGuards(rule, props) {
   const prop = asAhxCSSPropertyName("deny-trigger");
@@ -1510,7 +1410,9 @@ function processImportedRules(link) {
 
 // lib/process_rules.ts
 function processRules(root) {
-  const detail = { rules: findRules(root) };
+  const detail = {
+    rules: findRules(root)
+  };
   if (dispatchBefore(root, "processRules", detail)) {
     for (const [rule, props] of detail.rules) {
       processRule(rule, props);
@@ -1553,6 +1455,107 @@ function findRules(root) {
     }
   }
   return rules;
+}
+
+// lib/start_observer.ts
+function startObserver(root) {
+  const observer = new MutationObserver((mutations) => {
+    const detail = { mutations };
+    if (dispatchBefore(root, "mutations", detail)) {
+      const removedNodes = /* @__PURE__ */ new Set();
+      const removedElements = /* @__PURE__ */ new Set();
+      const addedElements = /* @__PURE__ */ new Set();
+      const mutatedElements = /* @__PURE__ */ new Set();
+      for (const mutation of detail.mutations) {
+        for (const node of mutation.removedNodes) {
+          removedNodes.add(node);
+          if (node instanceof Element) {
+            removedElements.add(node);
+          }
+        }
+        for (const node of mutation.addedNodes) {
+          removedNodes.delete(node);
+          if (node instanceof Element) {
+            processElements(node);
+            addedElements.add(node);
+          }
+        }
+        if (mutation.type === "attributes" && mutation.target instanceof Element) {
+          processElement(mutation.target);
+        }
+        if (mutation.target instanceof Element) {
+          mutatedElements.add(mutation.target);
+        }
+      }
+      setTimeout(() => {
+        for (const elt of mutatedElements) {
+          triggerMutate(elt);
+        }
+      }, 0);
+      setTimeout(() => {
+        for (const elt of addedElements) {
+          triggerLoad(elt);
+        }
+      });
+      processRules(root);
+      dispatchAfter(root, "mutations", {
+        ...detail,
+        removedElements,
+        addedElements,
+        mutatedElements
+      });
+      for (const node of removedNodes) {
+        deleteInternal(node);
+      }
+    }
+  });
+  const options = {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeOldValue: true
+  };
+  if (dispatchBefore(root, "startObserver", options)) {
+    observer.observe(root, options);
+    dispatchAfter(root, "startObserver", options);
+  }
+}
+
+// lib/debug/events.ts
+var loggerConfig = {
+  group: false,
+  include: []
+};
+function eventsAll() {
+  config.enableDebugEvent = true;
+  addEventListener(config.prefix, logger);
+}
+function eventsNone() {
+  config.enableDebugEvent = false;
+  removeEventListener(config.prefix, logger);
+}
+function logger({ detail: event }) {
+  const { type, target, detail } = event;
+  if (shouldLog(type)) {
+    if (detail?._after && loggerConfig.group) {
+      console.groupEnd();
+    }
+    if (detail?._before) {
+      const method = loggerConfig.group ? loggerConfig.group === true ? "group" : "groupCollapsed" : "debug";
+      console[method]("%s -> %o %o", type, target, detail);
+    } else {
+      console.debug("%s -> %o %o", type, target, detail);
+    }
+  }
+}
+function shouldLog(type) {
+  if (loggerConfig.include?.length) {
+    if (loggerConfig.include.some((v) => type.includes(`:${v}`))) {
+      return true;
+    }
+    return false;
+  }
+  return true;
 }
 
 // lib/debug.ts
