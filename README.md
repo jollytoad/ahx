@@ -35,7 +35,7 @@ content appended into the table row.
 table.stuff tbody tr {
   --ahx-trigger: load once;
   --ahx-get: url("./extra-stuff-td");
-  --ahx-swap: beforeend;
+  --ahx-swap: beforeEnd;
 }
 ```
 
@@ -62,3 +62,11 @@ adapted to our codebase. This has been noted in the modules concerned, and the
 [htmx license](./LICENSE_htmx) is included.
 
 _ahx_ is written in modular TypeScript, and uses Deno for tooling.
+
+## More documentation
+
+- [Comparison to htmx features](./docs/htmx_comparison.md)
+- [CSS properties](./docs/css_rules.md)
+- [Element attributes](./docs/attributes.md)
+- [Custom events](./docs/events.md)
+- [Debugging and inspection tools](./docs/debugging.md)

@@ -65,7 +65,7 @@ Imports the given CSS stylesheet if the rule matches once.
 Example:
 
 ```css
-[data-host-app="foo"] [data-page="projects"] {
+[ahx-host~="foo"] [data-page="projects"] {
   --ahx-import: url("foo-projects.css");
 }
 ```
@@ -75,16 +75,6 @@ The `url()` CSS function must be used.
 This will actually insert a `<link>` element into the `document.head` when the
 rule first matches at least one element. The property is removed from the
 stylesheet once processed so that it doesn't get applied again.
-
-As CSS only allows a single instance of a prop per rule, you can append an
-arbitrary extension to the property name to allow importing of multiple sheets:
-
-```css
-.selector {
-  --ahx-import-common-styles: url("style.css");
-  --ahx-import-foo: url("foo.css");
-}
-```
 
 NOTE: The stylesheet is not removed or disabled later should the rule no longer
 match any element (this behaviour may get implemented in the future).
