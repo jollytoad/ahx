@@ -1,4 +1,4 @@
-import { parseAttrValue } from "./parse_attr_value.ts";
+import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import {
   deleteInternal,
   getInternal,
@@ -54,5 +54,7 @@ export function handleTrigger(detail: TriggerDetail) {
 }
 
 export function isDenied(elt: Element) {
-  return parseAttrValue("deny-trigger", elt)[0] === "true";
+  // TODO: Should get calculated CSS value
+  const [deny] = parseAttrOrCssValue("deny-trigger", elt);
+  return deny === "true";
 }

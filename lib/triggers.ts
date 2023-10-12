@@ -11,14 +11,12 @@ import type {
 } from "./types.ts";
 import { resolveElement } from "./util/resolve_element.ts";
 import { getOwner } from "./util/owner.ts";
-import { querySelectorExt } from "./util/query_selector.ts";
-import { parseCssValue } from "./parse_css_value.ts";
-import { parseAttrValue } from "./parse_attr_value.ts";
 import { fromDOMEventType, toDOMEventType } from "./util/event.ts";
 import {
   getTriggersFromElements,
   getTriggersFromRules,
 } from "./util/triggers.ts";
+import { parseTarget } from "./parse_target.ts";
 
 const eventTypes = new Set<EventType>();
 
@@ -122,13 +120,6 @@ export function* getTriggersForEvent(
       };
     }
   }
-}
-
-function parseTarget(elt: Element, rule?: CSSStyleRule) {
-  const targetQuery =
-    (rule ? parseCssValue("target", rule, elt) : parseAttrValue("target", elt))
-      .join(" ") || "this";
-  return querySelectorExt(elt, targetQuery) ?? elt;
 }
 
 function eventListener(event: Event) {

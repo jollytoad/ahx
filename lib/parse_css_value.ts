@@ -1,10 +1,16 @@
 import { asAhxCSSPropertyName } from "./util/names.ts";
-import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
+import type {
+  AhxAttributeName,
+  AhxCSSPropertyName,
+  AhxName,
+  ValueType,
+} from "./types.ts";
 
 export function parseCssValue(
   prop: AhxName | AhxCSSPropertyName | AhxAttributeName,
   rule: CSSStyleRule,
   elt?: Element,
+  expect: ValueType = "tokens",
 ): string[] {
   prop = asAhxCSSPropertyName(prop);
 
@@ -54,11 +60,11 @@ export function parseCssValue(
       value = parseURL(value, baseURL);
       return value ? [value] : [];
     }
-
-    return value.split(/\s+/).map(parseQuoted);
   }
 
-  return [];
+  return value
+    ? (expect === "tokens" ? value.split(/\s+/).map(parseQuoted) : [value])
+    : [];
 
   function parseURL(value: string, baseURL?: string) {
     try {

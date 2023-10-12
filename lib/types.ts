@@ -6,6 +6,7 @@ export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
 export type Owner = string;
+export type ValueType = "tokens" | "whole";
 
 export type AhxHttpMethod =
   | "get"

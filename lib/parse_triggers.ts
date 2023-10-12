@@ -4,6 +4,7 @@ import { parseInterval } from "./parse_interval.ts";
 import { dispatchError } from "./util/dispatch.ts";
 import type { TriggerOrigin, TriggerSpec } from "./types.ts";
 import { resolveElement } from "./util/resolve_element.ts";
+import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 
 const WHITESPACE_OR_COMMA = /[\s,]/;
 const SYMBOL_START = /[_$a-zA-Z]/;
@@ -15,9 +16,9 @@ const INPUT_SELECTOR = "input, textarea, select";
 
 export function parseTriggers(
   origin: TriggerOrigin,
-  triggerValue?: string,
   defaultEventType = "click",
 ): TriggerSpec[] {
+  const [triggerValue] = parseAttrOrCssValue("trigger", origin, "whole");
   const triggerSpecs: TriggerSpec[] = [];
   const elt = origin instanceof Element ? origin : undefined;
   const target = resolveElement(origin) ?? document;

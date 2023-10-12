@@ -3,13 +3,13 @@ import { querySelectorExt } from "./util/query_selector.ts";
 import { handleRequest } from "./handle_request.ts";
 import { getInternal, hasInternal } from "./util/internal.ts";
 import type { ActionDetail } from "./types.ts";
-import { parseAttrValue } from "./parse_attr_value.ts";
+import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { handleHarvest } from "./handle_harvest.ts";
 
 export async function handleAction(detail: ActionDetail) {
   const { source, origin } = detail;
 
-  const query = parseAttrValue("include", origin).join(" ");
+  const [query] = parseAttrOrCssValue("include", origin, "whole");
   const include = querySelectorExt(source, query);
 
   detail.formData = include ? getFormData(include) : undefined;

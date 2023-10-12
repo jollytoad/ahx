@@ -4,10 +4,9 @@ import {
   internalEntries,
   objectsWithInternal,
 } from "../util/internal.ts";
-import { parseCssValue } from "../parse_css_value.ts";
-import { querySelectorExt } from "../util/query_selector.ts";
 import { comparePosition } from "./compare_position.ts";
 import type { ActionType, Trigger } from "../types.ts";
+import { parseTarget } from "../parse_target.ts";
 
 export function forms() {
   console.group("AHX Forms");
@@ -22,12 +21,7 @@ export function forms() {
 
   for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetQuery = parseCssValue("target", rule, elt).join(" ") ||
-        "this";
-      const target = querySelectorExt(elt, targetQuery);
-      if (target) {
-        elements.add(target);
-      }
+      elements.add(parseTarget(elt, rule));
     }
   }
 
