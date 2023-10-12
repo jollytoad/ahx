@@ -10,6 +10,7 @@ import { processRules } from "./process_rules.ts";
 import { hasInternal } from "./util/internal.ts";
 import { getAhxCSSPropertyNames } from "./util/names.ts";
 import { triggerLoad } from "./trigger_load.ts";
+import { processSlot } from "./process_slot.ts";
 
 export function processRule(
   rule: CSSStyleRule,
@@ -42,6 +43,7 @@ export function processRule(
       }
 
       processTriggers(rule);
+      processSlot(rule);
 
       dispatchAfter(target, "processRule", detail);
     }

@@ -6,9 +6,12 @@ import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.
 import { setOwner } from "./util/owner.ts";
 import { config } from "./config.ts";
 import { getInternal, setInternal } from "./util/internal.ts";
+import { parseAttrValue } from "./parse_attr_value.ts";
+import { findSlot } from "./util/slots.ts";
 
 export async function swapHtml(props: SwapHtmlProps) {
   const { response, target } = props;
+  const document = target.ownerDocument;
   if (
     response?.ok &&
     response.headers.get("Content-Type")?.startsWith("text/html") &&
@@ -24,26 +27,42 @@ export async function swapHtml(props: SwapHtmlProps) {
     for await (const element of elements) {
       const detail: SwapHtmlDetail = {
         ...props,
-        swapStyle: props.swapStyle ?? "outerhtml",
+        swapStyle: props.swapStyle ?? "outerhtml", // TODO: consider making the default "none"
         element,
         previous,
         index,
       };
 
+      const [slot] = parseAttrValue("slot", element);
+
+      if (slot) {
+        detail.slot = slot;
+        const slotTarget = findSlot(slot, document);
+
+        if (slotTarget) {
+          detail.target = slotTarget;
+          detail.swapStyle = "innerhtml";
+        } else {
+          detail.swapStyle = "none";
+        }
+      }
+
       if (dispatchBefore(target, "swap", detail)) {
-        const { element, originOwner, swapStyle } = detail;
+        const { target, element, originOwner, swapStyle, slot } = detail;
 
         if (originOwner) {
           setOwner(element, originOwner);
         }
 
-        if (!previous) {
+        if (slot || !previous) {
           swapHandlers[swapStyle]?.(target, element);
         } else {
           previous.after(element);
         }
 
-        previous = element;
+        if (!slot) {
+          previous = element;
+        }
 
         dispatchAfter(target, "swap", detail);
       }
@@ -65,6 +84,9 @@ const swapAdjacent =
   };
 
 const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
+  none() {
+    // no-op
+  },
   innerhtml(target, element) {
     target.replaceChildren(element);
   },

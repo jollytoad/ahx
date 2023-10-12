@@ -33,23 +33,27 @@ Key:
 
 ## Core Attributes
 
-| Attribute     | ahx           | Notes             |
-| ------------- | ------------- | ----------------- |
-| hx-boost      | N             |                   |
-| hx-get        | ahx-get       |                   |
-| hx-post       | ahx-post      |                   |
-| hx-on         | N             | no scripting      |
-| hx-push-url   | N             |                   |
-| hx-select     | W             |                   |
-| hx-select-oob | W             |                   |
-| hx-swap       | ahx-swap      |                   |
-| hx-swap-oob   | W             |                   |
-| hx-target     | ahx-target    |                   |
-| hx-trigger    | ahx-trigger   | see below         |
-| hx-vals       | ?             |                   |
-|               | --ahx-import  | import stylesheet |
-|               | --ahx-harvest | harvest a value   |
+| Attribute     | ahx             | Notes             |
+| ------------- | --------------- | ----------------- |
+| hx-boost      | N               |                   |
+| hx-get        | ahx-get         |                   |
+| hx-post       | ahx-post        |                   |
+| hx-on         | N               | no scripting      |
+| hx-push-url   | N               |                   |
+| hx-select     | ?               |                   |
+| hx-select-oob | N               |                   |
+| hx-swap       | ahx-swap        |                   |
+|               | --ahx-swap-name | name a slot       |
+| hx-swap-oob   | ahx-slot        | see below         |
+| hx-target     | ahx-target      |                   |
+| hx-trigger    | ahx-trigger     | see below         |
+| hx-vals       | ?               |                   |
+|               | --ahx-import    | import stylesheet |
+|               | --ahx-harvest   | harvest a value   |
 
+- **ahx-slot** - this is an alternative to _hx-swap-oob_ that restrains the
+  ability to just inject content anyway. The named slot must have been declared
+  via `<slot>` element or `--ahx-slot-name` property in a CSS rule.
 - **ahx-trigger** - this is explicitly required, so that the behaviour is clear
   to an auditor.
 
@@ -125,8 +129,7 @@ Key:
 - View transitions (?)
 - Synchronization (?)
 - CSS transitions (and settling) (?)
-- Out of Band Swaps (W) - I want to consider an implicit alternative (maybe a
-  new swap style)
+- Out of Band Swaps (with arbitrary selectors) - use named slots instead
 - Attribute inheritance (N) - makes auditing difficult
 - Boosting (N)
 - Web Sockets & SSE (?) - maybe desirable

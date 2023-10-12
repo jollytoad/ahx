@@ -209,6 +209,14 @@ Similar to [hx-include](https://htmx.org/attributes/hx-include).
 
 (NOTE: This cannot yet target individual inputs)
 
+### --ahx-slot-name
+
+Assign a slot name to the first matched element, this will be the target of any
+top-level elements with an `ahx-slot` attribute from a response.
+
+This is an alternative to
+[hx-swap-oob](https://htmx.org/attributes/hx-swap-oob).
+
 ### --ahx-deny-trigger
 
 CURRENTLY BROKEN!

@@ -23,6 +23,8 @@ export type AhxName =
   | "harvest"
   | "target"
   | "include"
+  | "slot"
+  | "slot-name"
   | AhxHttpMethod;
 
 export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;
@@ -70,6 +72,7 @@ export interface Owners {
 }
 
 export type SwapHtmlStyle =
+  | "none"
   | "innerhtml"
   | "outerhtml"
   | InsertPosition;
@@ -241,6 +244,7 @@ export interface SwapHtmlDetail extends SwapProps {
   element: Element;
   previous?: Element;
   index: number;
+  slot?: string;
 }
 
 export interface SwapTextDetail extends SwapProps {

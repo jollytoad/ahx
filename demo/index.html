@@ -37,7 +37,15 @@
 
       <hr/>
 
-      <div ahx-deny-trigger>
+      <slot name="alice">This is the slot named "alice"</slot>
+
+      <div class="bob-slot">This is the slot named "bob"</div>
+
+      <button ahx-trigger="click" ahx-get="/slotted.html">Load slots</button>
+
+      <hr/>
+
+      <!-- <div ahx-deny-trigger>
         <a ahx-get="/more.html" ahx-trigger="click">Load me</a>
         <br/>
         <a class="load-on-click">Load me too</a>
@@ -47,7 +55,7 @@
         <span class="load-on-load">Load me on load via CSS rule</span>
       </div>
 
-      <hr/>
+      <hr/> -->
 
       <slot ahx-get="/numberwang.html" ahx-trigger="load once"></slot>
 

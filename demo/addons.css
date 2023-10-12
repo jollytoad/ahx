@@ -22,3 +22,7 @@ a.load-on-click {
   --ahx-get: url('/huge');
   --ahx-swap: innerHTML;
 }
+
+.bob-slot {
+  --ahx-slot-name: "bob";
+}

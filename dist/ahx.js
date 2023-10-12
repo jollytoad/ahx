@@ -449,33 +449,67 @@ var HTMLBodyElementParserStream = class extends TransformStream {
   }
 };
 
+// lib/util/slots.ts
+function findSlot(name, root) {
+  for (const [rule, slotNames] of objectsWithInternal("slotName")) {
+    if (rule instanceof CSSStyleRule) {
+      if (slotNames.has(name)) {
+        const slot = root.querySelector(rule.selectorText);
+        if (slot) {
+          return slot;
+        }
+      }
+    }
+  }
+  for (const slot of root.querySelectorAll(`slot[name]`)) {
+    if (name === slot.getAttribute("name")) {
+      return slot;
+    }
+  }
+}
+
 // lib/swap_html.ts
 async function swapHtml(props) {
   const { response, target } = props;
+  const document2 = target.ownerDocument;
   if (response?.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
     let index = 0;
     let previous2;
-    const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document, true));
+    const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document2, true));
     for await (const element of elements2) {
       const detail = {
         ...props,
         swapStyle: props.swapStyle ?? "outerhtml",
+        // TODO: consider making the default "none"
         element,
         previous: previous2,
         index
       };
+      const [slot] = parseAttrValue("slot", element);
+      if (slot) {
+        detail.slot = slot;
+        const slotTarget = findSlot(slot, document2);
+        if (slotTarget) {
+          detail.target = slotTarget;
+          detail.swapStyle = "innerhtml";
+        } else {
+          detail.swapStyle = "none";
+        }
+      }
       if (dispatchBefore(target, "swap", detail)) {
-        const { element: element2, originOwner, swapStyle } = detail;
+        const { target: target2, element: element2, originOwner, swapStyle, slot: slot2 } = detail;
         if (originOwner) {
           setOwner(element2, originOwner);
         }
-        if (!previous2) {
-          swapHandlers[swapStyle]?.(target, element2);
+        if (slot2 || !previous2) {
+          swapHandlers[swapStyle]?.(target2, element2);
         } else {
           previous2.after(element2);
         }
-        previous2 = element2;
-        dispatchAfter(target, "swap", detail);
+        if (!slot2) {
+          previous2 = element2;
+        }
+        dispatchAfter(target2, "swap", detail);
       }
       index++;
     }
@@ -485,6 +519,8 @@ var swapAdjacent = (pos) => (target, element) => {
   target.insertAdjacentElement(pos, element);
 };
 var swapHandlers = {
+  none() {
+  },
   innerhtml(target, element) {
     target.replaceChildren(element);
   },
@@ -1369,6 +1405,15 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
   }
 }
 
+// lib/process_slot.ts
+function processSlot(rule) {
+  const slotNames = parseCssValue("slot-name", rule);
+  if (slotNames.length) {
+    const names = getInternal(rule, "slotName", () => /* @__PURE__ */ new Set());
+    slotNames.forEach((name) => names.add(name));
+  }
+}
+
 // lib/process_rule.ts
 function processRule(rule, props) {
   if (rule.parentStyleSheet) {
@@ -1389,6 +1434,7 @@ function processRule(rule, props) {
         processRule(pseudoRule, getAhxCSSPropertyNames(pseudoRule));
       }
       processTriggers(rule);
+      processSlot(rule);
       dispatchAfter(target, "processRule", detail);
     }
   }

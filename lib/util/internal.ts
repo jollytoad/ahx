@@ -17,6 +17,7 @@ interface Props extends TriggerProps {
   "pseudoId": PseudoId;
   "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
+  "slotName": Set<string>;
 
   // Element
   "triggeredOnce": true;

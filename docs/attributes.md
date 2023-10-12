@@ -47,22 +47,28 @@ used, this just prevents collisions with existing data attributes.
 
 ## Active
 
-### ahx-get/post/put/patch/delete
-
-See equivalent `--ahx-*` CSS properties.
-
 ### ahx-trigger
 
 See equivalent `--ahx-trigger` CSS property.
 
-### ahx-swap
+### ahx-get/post/put/patch/delete
 
-See equivalent `--ahx-swap` CSS property.
+See equivalent `--ahx-*` CSS properties.
+
+### ahx-include
+
+See equivalent `--ahx-include` CSS property.
 
 ### ahx-target
 
 See equivalent `--ahx-target` CSS property.
 
-### ahx-include
+### ahx-swap
 
-See equivalent `--ahx-include` CSS property.
+See equivalent `--ahx-swap` CSS property.
+
+### ahx-slot
+
+Allow some content in a response to be swapped into a named slot in the
+document. The slots in the document are declared and named using `<slot>`
+elements or the `--ahx-slot-name` property in a CSS rule.
