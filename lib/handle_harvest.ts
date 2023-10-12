@@ -19,8 +19,7 @@ export async function handleHarvest(props: ActionDetail) {
     return;
   }
 
-  const newValue =
-    parseCssValue({ elt: source, rule: origin, prop: "harvest" }).value;
+  const newValue = parseCssValue("harvest", origin, source).value;
 
   if (newValue === undefined) {
     return;

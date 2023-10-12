@@ -265,16 +265,14 @@ function setOwner(origin, owner) {
 }
 
 // lib/parse_css_value.ts
-function parseCssValue({ rule, style, prop, elt }) {
-  style ??= rule?.style ?? (elt && getComputedStyle(elt));
+function parseCssValue(prop, rule, elt) {
   prop = asAhxCSSPropertyName(prop);
   const spec = {
     rule,
-    style,
     prop,
     elt,
-    value: style?.getPropertyValue(prop)?.trim(),
-    important: style?.getPropertyPriority(prop) === "important"
+    value: rule.style.getPropertyValue(prop)?.trim(),
+    important: rule.style.getPropertyPriority(prop) === "important"
   };
   if (spec.value) {
     if (elt) {
@@ -309,7 +307,7 @@ function parseCssValue({ rule, style, prop, elt }) {
     }
     spec.value = parseQuoted(spec.value);
     if (isURL) {
-      const baseURL = rule?.parentStyleSheet?.href ?? style?.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
+      const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
       try {
         spec.value = new URL(spec.value, baseURL).href;
       } catch (e) {
@@ -330,7 +328,7 @@ function parseQuoted(value) {
 }
 
 // lib/parse_attr_value.ts
-function parseAttrValue(origin, prop) {
+function parseAttrValue(prop, origin) {
   if (origin instanceof Element) {
     prop = asAhxAttributeName(prop);
     const value = origin.getAttribute(prop) ?? void 0;
@@ -341,7 +339,7 @@ function parseAttrValue(origin, prop) {
       tokens: value?.split(/\s+/)
     };
   } else {
-    return parseCssValue({ rule: origin, prop });
+    return parseCssValue(prop, origin);
   }
 }
 
@@ -722,7 +720,7 @@ async function handleHarvest(props) {
   if (!(origin instanceof CSSStyleRule) || action.type !== "harvest") {
     return;
   }
-  const newValue = parseCssValue({ elt: source, rule: origin, prop: "harvest" }).value;
+  const newValue = parseCssValue("harvest", origin, source).value;
   if (newValue === void 0) {
     return;
   }
@@ -753,7 +751,7 @@ function getOldValue(event) {
 // lib/handle_action.ts
 async function handleAction(detail) {
   const { source, origin } = detail;
-  const query = parseAttrValue(origin, "include").value;
+  const query = parseAttrValue("include", origin).value;
   const include = querySelectorExt(source, query);
   detail.formData = include ? getFormData(include) : void 0;
   if (dispatchBefore(source, "handleAction", detail)) {
@@ -807,7 +805,7 @@ function handleTrigger(detail) {
   }
 }
 function isDenied(elt) {
-  return parseAttrValue(elt, "deny-trigger").value === "true";
+  return parseAttrValue("deny-trigger", elt).value === "true";
 }
 
 // lib/util/resolve_element.ts
@@ -952,7 +950,7 @@ function* getTriggersForEvent(event) {
   }
 }
 function parseTarget(elt, rule) {
-  const targetQuery = (rule ? parseCssValue({ elt, rule, prop: "target" }).value : parseAttrValue(elt, "target").value) || "this";
+  const targetQuery = (rule ? parseCssValue("target", rule, elt).value : parseAttrValue("target", elt).value) || "this";
   return querySelectorExt(elt, targetQuery) ?? elt;
 }
 function eventListener(event) {
@@ -1097,7 +1095,7 @@ function consumeUntil(tokens, match) {
 function parseActions(origin) {
   const actionSpecs = [];
   for (const method of config.httpMethods) {
-    const url = parseAttrValue(origin, method).value;
+    const url = parseAttrValue(method, origin).value;
     if (url) {
       const baseURL = (resolveElement(origin) ?? document).baseURI;
       actionSpecs.push({
@@ -1119,7 +1117,7 @@ function parseActions(origin) {
 
 // lib/parse_swap.ts
 function parseSwap(origin) {
-  const tokens = parseAttrValue(origin, "swap").tokens;
+  const tokens = parseAttrValue("swap", origin).tokens;
   const swapSpec = {};
   if (tokens?.length) {
     swapSpec.swapStyle = tokens.shift()?.toLowerCase();
@@ -1147,7 +1145,7 @@ function parseSwap(origin) {
 
 // lib/process_triggers.ts
 function processTriggers(origin, defaultEventType) {
-  const triggerValue = parseAttrValue(origin, "trigger").value;
+  const triggerValue = parseAttrValue("trigger", origin).value;
   const triggers2 = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
   const swap = parseSwap(origin);
@@ -1209,7 +1207,7 @@ function triggerLoad(elt) {
 function processGuards(rule, props) {
   const prop = asAhxCSSPropertyName("deny-trigger");
   if (props.has(prop)) {
-    const { value } = parseCssValue({ rule, prop });
+    const { value } = parseCssValue(prop, rule);
     if (value === "true") {
       setInternal(rule, "denyTrigger", true);
     } else {
@@ -1324,7 +1322,7 @@ function processCssImports(rule, props, onReady) {
       let link = getInternal(rule, "importLinks")?.get(prop)?.deref();
       let ruleApplies = false;
       for (const elt of document.querySelectorAll(rule.selectorText)) {
-        const url = parseCssValue({ rule, prop, elt }).value;
+        const url = parseCssValue(prop, rule, elt).value;
         if (url) {
           ruleApplies = true;
           if (link) {
@@ -1662,7 +1660,7 @@ function elements(ahxProp) {
   }
   for (const elt of [...elements2].sort(comparePosition)) {
     if (ahxProp) {
-      const { value } = parseAttrValue(elt, ahxProp);
+      const { value } = parseAttrValue(ahxProp, elt);
       if (value) {
         console.log(elt, value);
       }
@@ -1779,7 +1777,7 @@ function forms() {
   }
   for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetQuery = parseCssValue({ elt, rule, prop: "target" }).value ?? "this";
+      const targetQuery = parseCssValue("target", rule, elt).value ?? "this";
       const target = querySelectorExt(elt, targetQuery);
       if (target) {
         elements2.add(target);

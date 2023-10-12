@@ -1,35 +1,28 @@
 import { asAhxCSSPropertyName } from "./util/names.ts";
 import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
 
-interface ParseValueProps {
-  rule?: CSSStyleRule;
-  style?: CSSStyleDeclaration;
-  prop: AhxName | AhxCSSPropertyName | AhxAttributeName;
-  elt?: Element;
-}
-
-export interface CSSValueSpec extends ParseValueProps {
+export interface CSSValueSpec {
   rule?: CSSStyleRule;
   prop: AhxCSSPropertyName;
+  elt?: Element;
   value?: string;
   tokens?: string[];
   important?: boolean;
 }
 
 export function parseCssValue(
-  { rule, style, prop, elt }: ParseValueProps,
+  prop: AhxName | AhxCSSPropertyName | AhxAttributeName,
+  rule: CSSStyleRule,
+  elt?: Element,
 ): CSSValueSpec {
-  style ??= rule?.style ?? (elt && getComputedStyle(elt));
-
   prop = asAhxCSSPropertyName(prop);
 
   const spec: CSSValueSpec = {
     rule,
-    style,
     prop,
     elt,
-    value: style?.getPropertyValue(prop)?.trim(),
-    important: style?.getPropertyPriority(prop) === "important",
+    value: rule.style.getPropertyValue(prop)?.trim(),
+    important: rule.style.getPropertyPriority(prop) === "important",
   };
 
   if (spec.value) {
@@ -74,8 +67,8 @@ export function parseCssValue(
     spec.value = parseQuoted(spec.value);
 
     if (isURL) {
-      const baseURL = rule?.parentStyleSheet?.href ??
-        style?.parentRule?.parentStyleSheet?.href ??
+      const baseURL = rule.parentStyleSheet?.href ??
+        rule.style.parentRule?.parentStyleSheet?.href ??
         elt?.baseURI;
       try {
         spec.value = new URL(spec.value, baseURL).href;

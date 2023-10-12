@@ -9,7 +9,7 @@ export function processTriggers(
   origin: TriggerOrigin,
   defaultEventType: EventType,
 ) {
-  const triggerValue = parseAttrValue(origin, "trigger").value;
+  const triggerValue = parseAttrValue("trigger", origin).value;
   const triggers = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
   const swap = parseSwap(origin);

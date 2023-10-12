@@ -22,7 +22,7 @@ export function forms() {
 
   for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetQuery = parseCssValue({ elt, rule, prop: "target" }).value ??
+      const targetQuery = parseCssValue("target", rule, elt).value ??
         "this";
       const target = querySelectorExt(elt, targetQuery);
       if (target) {

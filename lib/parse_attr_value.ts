@@ -17,8 +17,8 @@ export interface AttrValueSpec {
 }
 
 export function parseAttrValue(
-  origin: TriggerOrigin,
   prop: AhxName | AhxAttributeName | AhxCSSPropertyName,
+  origin: TriggerOrigin,
 ): AttrValueSpec {
   if (origin instanceof Element) {
     prop = asAhxAttributeName(prop);
@@ -30,6 +30,6 @@ export function parseAttrValue(
       tokens: value?.split(/\s+/),
     };
   } else {
-    return parseCssValue({ rule: origin, prop });
+    return parseCssValue(prop, origin);
   }
 }

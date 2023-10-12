@@ -27,7 +27,7 @@ export function elements(ahxProp?: AhxName) {
 
   for (const elt of [...elements].sort(comparePosition)) {
     if (ahxProp) {
-      const { value } = parseAttrValue(elt, ahxProp);
+      const { value } = parseAttrValue(ahxProp, elt);
       if (value) {
         console.log(elt, value);
       }
