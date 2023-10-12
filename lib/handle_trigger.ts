@@ -54,5 +54,5 @@ export function handleTrigger(detail: TriggerDetail) {
 }
 
 export function isDenied(elt: Element) {
-  return parseAttrValue("deny-trigger", elt).value === "true";
+  return parseAttrValue("deny-trigger", elt)[0] === "true";
 }

@@ -8,7 +8,7 @@ export function parseActions(origin: TriggerOrigin): ActionSpec[] {
   const actionSpecs: ActionSpec[] = [];
 
   for (const method of config.httpMethods) {
-    const url = parseAttrValue(method, origin).value;
+    const [url] = parseAttrValue(method, origin);
     if (url) {
       const baseURL = (resolveElement(origin) ?? document).baseURI;
 

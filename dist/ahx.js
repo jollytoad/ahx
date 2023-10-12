@@ -267,57 +267,50 @@ function setOwner(origin, owner) {
 // lib/parse_css_value.ts
 function parseCssValue(prop, rule, elt) {
   prop = asAhxCSSPropertyName(prop);
-  const spec = {
-    rule,
-    prop,
-    elt,
-    value: rule.style.getPropertyValue(prop)?.trim(),
-    important: rule.style.getPropertyPriority(prop) === "important"
-  };
-  if (spec.value) {
+  let value = rule.style.getPropertyValue(prop)?.trim();
+  if (value) {
     if (elt) {
-      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
-        spec.value
-      );
+      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
       if (isAttr) {
-        spec.value = elt.getAttribute(isAttr[1]) ?? void 0;
-        if (spec.value && isAttr[2] === "url") {
-          spec.value = new URL(spec.value, elt.baseURI).href;
+        value = elt.getAttribute(isAttr[1]) ?? void 0;
+        if (value && isAttr[2] === "url") {
+          value = parseURL(value, elt.baseURI);
         }
-        return spec;
+        return value ? [value] : [];
       } else {
-        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
-          spec.value
-        );
+        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
         if (isProp) {
-          spec.value = void 0;
+          value = void 0;
           const propValue = elt[isProp[1]];
           if (isProp[2] === "url" && typeof propValue === "string") {
-            spec.value = new URL(propValue, elt.baseURI).href;
+            value = parseURL(propValue, elt.baseURI);
           } else if (typeof propValue === "string" || typeof propValue === "number" || typeof propValue === "boolean") {
-            spec.value = String(propValue);
+            value = String(propValue);
           }
-          return spec;
+          return value ? [value] : [];
         }
       }
     }
-    const isURL = /^url\(([^\)]*)\)$/.exec(spec.value);
+    const isURL = /^url\(([^\)]*)\)$/.exec(value);
     if (isURL) {
-      spec.value = isURL[1];
+      value = isURL[1];
     }
-    spec.value = parseQuoted(spec.value);
+    value = parseQuoted(value);
     if (isURL) {
       const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
-      try {
-        spec.value = new URL(spec.value, baseURL).href;
-      } catch (e) {
-        console.error(e, spec.value, baseURL);
-      }
-      return spec;
+      value = parseURL(value, baseURL);
+      return value ? [value] : [];
     }
-    spec.tokens = spec.value.split(/\s+/).map(parseQuoted);
+    return value.split(/\s+/).map(parseQuoted);
   }
-  return spec;
+  return [];
+  function parseURL(value2, baseURL) {
+    try {
+      return new URL(value2, baseURL).href;
+    } catch (e) {
+      console.error(e, value2, baseURL);
+    }
+  }
 }
 function parseQuoted(value) {
   const isQuoted = /^\"([^\"]*)\"$/.exec(value) ?? /^\'([^\']*)\'$/.exec(value);
@@ -332,12 +325,7 @@ function parseAttrValue(prop, origin) {
   if (origin instanceof Element) {
     prop = asAhxAttributeName(prop);
     const value = origin.getAttribute(prop) ?? void 0;
-    return {
-      prop,
-      elt: origin,
-      value,
-      tokens: value?.split(/\s+/)
-    };
+    return value?.split(/\s+/) ?? [];
   } else {
     return parseCssValue(prop, origin);
   }
@@ -720,7 +708,7 @@ async function handleHarvest(props) {
   if (!(origin instanceof CSSStyleRule) || action.type !== "harvest") {
     return;
   }
-  const newValue = parseCssValue("harvest", origin, source).value;
+  const [newValue] = parseCssValue("harvest", origin, source);
   if (newValue === void 0) {
     return;
   }
@@ -751,7 +739,7 @@ function getOldValue(event) {
 // lib/handle_action.ts
 async function handleAction(detail) {
   const { source, origin } = detail;
-  const query = parseAttrValue("include", origin).value;
+  const query = parseAttrValue("include", origin).join(" ");
   const include = querySelectorExt(source, query);
   detail.formData = include ? getFormData(include) : void 0;
   if (dispatchBefore(source, "handleAction", detail)) {
@@ -805,7 +793,7 @@ function handleTrigger(detail) {
   }
 }
 function isDenied(elt) {
-  return parseAttrValue("deny-trigger", elt).value === "true";
+  return parseAttrValue("deny-trigger", elt)[0] === "true";
 }
 
 // lib/util/resolve_element.ts
@@ -950,7 +938,7 @@ function* getTriggersForEvent(event) {
   }
 }
 function parseTarget(elt, rule) {
-  const targetQuery = (rule ? parseCssValue("target", rule, elt).value : parseAttrValue("target", elt).value) || "this";
+  const targetQuery = (rule ? parseCssValue("target", rule, elt) : parseAttrValue("target", elt)).join(" ") || "this";
   return querySelectorExt(elt, targetQuery) ?? elt;
 }
 function eventListener(event) {
@@ -1095,7 +1083,7 @@ function consumeUntil(tokens, match) {
 function parseActions(origin) {
   const actionSpecs = [];
   for (const method of config.httpMethods) {
-    const url = parseAttrValue(method, origin).value;
+    const [url] = parseAttrValue(method, origin);
     if (url) {
       const baseURL = (resolveElement(origin) ?? document).baseURI;
       actionSpecs.push({
@@ -1117,7 +1105,7 @@ function parseActions(origin) {
 
 // lib/parse_swap.ts
 function parseSwap(origin) {
-  const tokens = parseAttrValue("swap", origin).tokens;
+  const tokens = parseAttrValue("swap", origin);
   const swapSpec = {};
   if (tokens?.length) {
     swapSpec.swapStyle = tokens.shift()?.toLowerCase();
@@ -1145,7 +1133,7 @@ function parseSwap(origin) {
 
 // lib/process_triggers.ts
 function processTriggers(origin, defaultEventType) {
-  const triggerValue = parseAttrValue("trigger", origin).value;
+  const triggerValue = parseAttrValue("trigger", origin).join(" ");
   const triggers2 = parseTriggers(origin, triggerValue, defaultEventType);
   const actions = parseActions(origin);
   const swap = parseSwap(origin);
@@ -1207,7 +1195,7 @@ function triggerLoad(elt) {
 function processGuards(rule, props) {
   const prop = asAhxCSSPropertyName("deny-trigger");
   if (props.has(prop)) {
-    const { value } = parseCssValue(prop, rule);
+    const [value] = parseCssValue(prop, rule);
     if (value === "true") {
       setInternal(rule, "denyTrigger", true);
     } else {
@@ -1322,7 +1310,7 @@ function processCssImports(rule, props, onReady) {
       let link = getInternal(rule, "importLinks")?.get(prop)?.deref();
       let ruleApplies = false;
       for (const elt of document.querySelectorAll(rule.selectorText)) {
-        const url = parseCssValue(prop, rule, elt).value;
+        const [url] = parseCssValue(prop, rule, elt);
         if (url) {
           ruleApplies = true;
           if (link) {
@@ -1660,7 +1648,7 @@ function elements(ahxProp) {
   }
   for (const elt of [...elements2].sort(comparePosition)) {
     if (ahxProp) {
-      const { value } = parseAttrValue(ahxProp, elt);
+      const [value] = parseAttrValue(ahxProp, elt);
       if (value) {
         console.log(elt, value);
       }
@@ -1777,7 +1765,7 @@ function forms() {
   }
   for (const [rule] of getTriggerRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const targetQuery = parseCssValue("target", rule, elt).value ?? "this";
+      const targetQuery = parseCssValue("target", rule, elt).join(" ") || "this";
       const target = querySelectorExt(elt, targetQuery);
       if (target) {
         elements2.add(target);

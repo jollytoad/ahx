@@ -3,7 +3,7 @@ import { parseInterval } from "./parse_interval.ts";
 import type { SwapSpec, SwapStyle, TriggerOrigin } from "./types.ts";
 
 export function parseSwap(origin: TriggerOrigin) {
-  const tokens = parseAttrValue("swap", origin).tokens;
+  const tokens = parseAttrValue("swap", origin);
 
   const swapSpec: SwapSpec = {};
 

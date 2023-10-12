@@ -22,7 +22,7 @@ export function processCssImports(
         // TODO: consider getting computed style so that media queries are applied
         // and/or allow media-queries to be appended to the prop value, like `@import`
 
-        const url = parseCssValue(prop, rule, elt).value;
+        const [url] = parseCssValue(prop, rule, elt);
 
         if (url) {
           ruleApplies = true;

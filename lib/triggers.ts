@@ -126,9 +126,8 @@ export function* getTriggersForEvent(
 
 function parseTarget(elt: Element, rule?: CSSStyleRule) {
   const targetQuery =
-    (rule
-      ? parseCssValue("target", rule, elt).value
-      : parseAttrValue("target", elt).value) || "this";
+    (rule ? parseCssValue("target", rule, elt) : parseAttrValue("target", elt))
+      .join(" ") || "this";
   return querySelectorExt(elt, targetQuery) ?? elt;
 }
 

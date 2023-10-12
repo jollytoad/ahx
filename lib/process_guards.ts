@@ -11,7 +11,7 @@ export function processGuards(
   const prop = asAhxCSSPropertyName("deny-trigger");
 
   if (props.has(prop)) {
-    const { value } = parseCssValue(prop, rule);
+    const [value] = parseCssValue(prop, rule);
     if (value === "true") {
       setInternal(rule, "denyTrigger", true);
     } else {

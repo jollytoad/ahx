@@ -1,87 +1,72 @@
 import { asAhxCSSPropertyName } from "./util/names.ts";
 import type { AhxAttributeName, AhxCSSPropertyName, AhxName } from "./types.ts";
 
-export interface CSSValueSpec {
-  rule?: CSSStyleRule;
-  prop: AhxCSSPropertyName;
-  elt?: Element;
-  value?: string;
-  tokens?: string[];
-  important?: boolean;
-}
-
 export function parseCssValue(
   prop: AhxName | AhxCSSPropertyName | AhxAttributeName,
   rule: CSSStyleRule,
   elt?: Element,
-): CSSValueSpec {
+): string[] {
   prop = asAhxCSSPropertyName(prop);
 
-  const spec: CSSValueSpec = {
-    rule,
-    prop,
-    elt,
-    value: rule.style.getPropertyValue(prop)?.trim(),
-    important: rule.style.getPropertyPriority(prop) === "important",
-  };
+  let value: string | undefined = rule.style.getPropertyValue(prop)?.trim();
 
-  if (spec.value) {
+  if (value) {
     // match: attr(<name> <type?>)
     if (elt) {
-      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
-        spec.value,
-      );
+      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
       if (isAttr) {
-        spec.value = elt.getAttribute(isAttr[1]) ?? undefined;
-        if (spec.value && isAttr[2] === "url") {
-          spec.value = new URL(spec.value, elt.baseURI).href;
+        value = elt.getAttribute(isAttr[1]) ?? undefined;
+        if (value && isAttr[2] === "url") {
+          value = parseURL(value, elt.baseURI);
         }
-        return spec;
+        return value ? [value] : [];
       } else {
         // match: --prop(<name> <type?>)
-        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(
-          spec.value,
-        );
+        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
         if (isProp) {
-          spec.value = undefined;
+          value = undefined;
           const propValue = elt[isProp[1] as keyof Element];
           if (isProp[2] === "url" && typeof propValue === "string") {
-            spec.value = new URL(propValue, elt.baseURI).href;
+            value = parseURL(propValue, elt.baseURI);
           } else if (
             typeof propValue === "string" || typeof propValue === "number" ||
             typeof propValue === "boolean"
           ) {
-            spec.value = String(propValue);
+            value = String(propValue);
           }
-          return spec;
+          return value ? [value] : [];
         }
       }
     }
 
     // match: url(<url?>)
-    const isURL = /^url\(([^\)]*)\)$/.exec(spec.value);
+    const isURL = /^url\(([^\)]*)\)$/.exec(value);
     if (isURL) {
-      spec.value = isURL[1];
+      value = isURL[1];
     }
 
-    spec.value = parseQuoted(spec.value);
+    value = parseQuoted(value);
 
     if (isURL) {
       const baseURL = rule.parentStyleSheet?.href ??
         rule.style.parentRule?.parentStyleSheet?.href ??
         elt?.baseURI;
-      try {
-        spec.value = new URL(spec.value, baseURL).href;
-      } catch (e) {
-        console.error(e, spec.value, baseURL);
-      }
-      return spec;
+      value = parseURL(value, baseURL);
+      return value ? [value] : [];
     }
 
-    spec.tokens = spec.value.split(/\s+/).map(parseQuoted);
+    return value.split(/\s+/).map(parseQuoted);
   }
 
-  return spec;
+  return [];
+
+  function parseURL(value: string, baseURL?: string) {
+    try {
+      return new URL(value, baseURL).href;
+    } catch (e) {
+      console.error(e, value, baseURL);
+    }
+  }
 }
 
 function parseQuoted(value: string): string {

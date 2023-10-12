@@ -9,7 +9,7 @@ import { handleHarvest } from "./handle_harvest.ts";
 export async function handleAction(detail: ActionDetail) {
   const { source, origin } = detail;
 
-  const query = parseAttrValue("include", origin).value;
+  const query = parseAttrValue("include", origin).join(" ");
   const include = querySelectorExt(source, query);
 
   detail.formData = include ? getFormData(include) : undefined;
