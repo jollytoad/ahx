@@ -192,10 +192,22 @@ The value of this property can be:
 
 Defaults to `this`.
 
+This can also be specified directly on an element using the `ahx-target`
+attribute.
+
+Equivalent of [hx-target](https://htmx.org/attributes/hx-target).
+
 ### --ahx-include
 
-Select a form (or element with an internal FormData) from which to include
+Select a form (or element with an internal `FormData`) from which to include
 request data (params or body data depending on the request method and encoding).
+
+This can also be specified directly on an element using the `ahx-include`
+attribute.
+
+Similar to [hx-include](https://htmx.org/attributes/hx-include).
+
+(NOTE: This cannot yet target individual inputs)
 
 ### --ahx-deny-trigger
 

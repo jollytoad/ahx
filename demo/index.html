@@ -17,7 +17,7 @@
         <h1>Augmented Hypermedia Extensions</h1>
       </header>
 
-      <a ahx-get="/more.html">Load me</a>
+      <a ahx-get="/more.html" ahx-trigger="click">Load me</a>
 
       <br/>
 
@@ -31,10 +31,14 @@
 
       <span class="load-on-load">Load me on load via CSS rule</span>
 
+      <br/>
+
+      <a ahx-get="/more.html">This does nothing as it has no explicit trigger</a>
+
       <hr/>
 
       <div ahx-deny-trigger>
-        <a ahx-get="/more.html">Load me</a>
+        <a ahx-get="/more.html" ahx-trigger="click">Load me</a>
         <br/>
         <a class="load-on-click">Load me too</a>
         <br/>
@@ -52,7 +56,7 @@
       <form id="my-form">
       </form>
 
-      <span ahx-get="/loaded.html" ahx-include="#my-form">Click Me</span>
+      <span ahx-trigger="click" ahx-get="/loaded.html" ahx-include="#my-form">Click Me</span>
 
       <hr/>
 

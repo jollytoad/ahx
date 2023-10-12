@@ -14,7 +14,7 @@ export function processElement(elt: Element) {
         setOwner(elt, detail.owner);
       }
 
-      processTriggers(elt, "click");
+      processTriggers(elt);
 
       dispatchAfter(elt, "processElement", detail);
     }

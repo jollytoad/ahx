@@ -12,16 +12,12 @@ const SYMBOL_CONT = /[_$a-zA-Z0-9]/;
 const STRINGISH_START = ['"', "'", "/"];
 const NOT_WHITESPACE = /[^\s]/;
 
-const INPUT_SELECTOR = "input, textarea, select";
-
 export function parseTriggers(
   origin: TriggerOrigin,
-  defaultEventType = "click",
 ): TriggerSpec[] {
   const [triggerValue] = parseAttrOrCssValue("trigger", origin, "whole");
   const triggerSpecs: TriggerSpec[] = [];
-  const elt = origin instanceof Element ? origin : undefined;
-  const target = resolveElement(origin) ?? document;
+  const target = resolveElement(origin);
 
   if (triggerValue) {
     const tokens = tokenizeString(triggerValue);
@@ -80,17 +76,7 @@ export function parseTriggers(
     } while (tokens[0] === "," && tokens.shift());
   }
 
-  if (triggerSpecs.length > 0) {
-    return triggerSpecs;
-  } else if (elt?.matches("form")) {
-    return [{ eventType: "submit" }];
-  } else if (elt?.matches('input[type="button"], input[type="submit"]')) {
-    return [{ eventType: "click" }];
-  } else if (elt?.matches(INPUT_SELECTOR)) {
-    return [{ eventType: "change" }];
-  } else {
-    return [{ eventType: defaultEventType }];
-  }
+  return triggerSpecs;
 }
 
 function tokenizeString(str: string): string[] {

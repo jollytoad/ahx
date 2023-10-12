@@ -41,7 +41,7 @@ export function processRule(
         processRule(pseudoRule, getAhxCSSPropertyNames(pseudoRule));
       }
 
-      processTriggers(rule, "default");
+      processTriggers(rule);
 
       dispatchAfter(target, "processRule", detail);
     }

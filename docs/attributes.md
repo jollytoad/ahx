@@ -58,3 +58,11 @@ See equivalent `--ahx-trigger` CSS property.
 ### ahx-swap
 
 See equivalent `--ahx-swap` CSS property.
+
+### ahx-target
+
+See equivalent `--ahx-target` CSS property.
+
+### ahx-include
+
+See equivalent `--ahx-include` CSS property.
