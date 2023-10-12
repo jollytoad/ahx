@@ -73,8 +73,8 @@ export interface Owners {
 
 export type SwapHtmlStyle =
   | "none"
-  | "innerhtml"
-  | "outerhtml"
+  | "inner"
+  | "outer"
   | InsertPosition;
 
 export type SwapTextStyle =

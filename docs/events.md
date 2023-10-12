@@ -37,8 +37,10 @@ Dispatched when mutations from the observer have been detected.
   document
 - _:done_ `detail.addedElements` - an array of all Elements added to the
   document
+- _:done_ `detail.mutatedElements` - an array of all Elements mutated in the
+  document (ie. attributes or descendants changed)
 
-## `ahx:processTree`
+## `ahx:processElements`
 
 Dispatched before the initial document tree processing, this only happens once
 on a page, all other processing will be performed in response to mutation
@@ -46,8 +48,8 @@ observations.
 
 **Details**
 
-- `detail.selector` - the CSS selector used to find all elements to be
-  processed. The event handler may modify this to use a different selector.
+- `detail.selectors` - the CSS selectors used to find all elements to be
+  processed. The event handler may modify this to use different selectors.
 
 ## `ahx:processElement`
 
@@ -59,15 +61,15 @@ Dispatched on an `Element` before being processed for `ahx-*` attributes.
   the stylesheet responsible for the existence of the element. This may be
   changed by the handler.
 
-## `ahx:processStyleSheets`
+## `ahx:processRules`
 
 Dispatched before processing of all CSS rules that exhibit an `--ahx-*`
 property.
 
 **Details**
 
-- `detail.cssRules` - a map of style rules to the set of ahx property names
-  present in the rule, the map and/or sets of properties may be modified to skip
+- `detail.rules` - a map of style rules to the set of ahx property names present
+  in the rule, the map and/or sets of properties may be modified to skip
   processing.
 
 ## `ahx:processRule`
@@ -111,8 +113,10 @@ Dispatched before a _pseudo_ element is added to the document as a result of a
 - `detail.pseudoId` - a unique identifier to link the element to the css rule
   (`rule.pseudoId`)
 - `detail.place` - the literal `"before"` or `"after"`
+- `detail.owner` - the _owner_ of the created pseudo element, it defaults to the
+  rule owner but may be changed by the event handler.
 
-The `detail.pseudoElt` and `detail.place` may be modified.
+The `detail.pseudoElt`, `detail.place` and `detail.owner` may be modified.
 
 ## `ahx:pseudoRule`
 
@@ -144,6 +148,7 @@ rule.
 - `detail.origin` - the Element or CSS rule from which the rule originated
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
+- `detail.swap` - the swap spec
 - `detail.owner` - the _owner_ of the trigger, obtained from the originating
   element or rule, may be changed by the event handler
 
@@ -160,30 +165,77 @@ Dispatched when the first listener for a type of event is added.
 Dispatched when an event is handled by an ahx trigger (and not denied). Maybe
 cancelled to prevent the action.
 
+- `detail.origin` - the Element or CSS rule from which the rule originated
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
-- `detail.owner` - the _owner_ of the trigger
+- `detail.swap` - the swap spec
+- `detail.event` - the event that caused the trigger (optional)
+- `detail.source` - the source element (on which the event occurred)
+- `detail.target` - the target element for the eventual swap
+- `detail.sourceOwner` - the _owner_ of the source element
+- `detail.targetOwner` - the _owner_ of the target element
+- `detail.originOwner` - the _owner_ of the origin element or rule
 
 ## `ahx:handleAction`
 
 Dispatched before a triggered action is performed.
 
-- `detail.trigger` - the trigger spec
-- `detail.action` - the action to perform on triggering
-- `detail.owner` - the _owner_ of the trigger
+**Details**
+
+same as `ahx:handleTrigger`, plus:
+
+- `detail.formData` - `FormData` from an `ahx-include`
 
 ## `ahx:swap`
 
-Dispatch before a fetched element is inserted into the DOM.
+Dispatch before a fetched element or harvested value is swapped into the DOM.
 
 **Details**
 
-- `detail.element` - the element to swap in
-- `detail.previous` - the previous sibling element that was successfully swapped
-  in
-- `detail.index` - the index of the element within the body of the response
+May vary depending on the nature of the content, either _html_ or _text_.
+
 - `detail.swapStyle` - the type of swap
-- `detail.owner` - the _owner_ of the elements to be swapped in
+- `detail.target` - the target element of the swap
+- `detail.response` - a `Response`, if a result of a fetch request
+- `detail.value` - the value, if a result of harvesting a value
+- `detail.element` (html) - the element to swap in
+- `detail.previous` (html) - the previous sibling element that was successfully
+  swapped in
+- `detail.index` (html) - the index of the element within the body of the
+  response
+- `detail.slot` (html) - the name of the slot during a slot swap
+- `detail.itemName` (text) - the name of the attribute or input
+- `detail.merge` (text) - `append` or `join`
+- `detail.input` (text) - the target form input
+- `detail.formData` (text) - the target `FormData` object
+- `detail.oldValue` (text) - the old value of the input or attribute
+- `detail.sourceOwner` - the _owner_ of the source element
+- `detail.targetOwner` - the _owner_ of the target element
+- `detail.originOwner` - the _owner_ of the origin element or rule
+
+## `ahx:request`
+
+Dispatched before a fetch request is performed.
+
+**Details**
+
+- `detail.request` - the `Request` object, may be modified by the handler
+- _:done_ `detail.response` - the `Response` from the fetch
+- _:done_ `detail.error` - the caught error if the fetch threw
+
+## `ahx:harvest`
+
+Dispatched before a value is harvested from the document by `--ahx-harvest`.
+
+**Details**
+
+- `detail.source` - the source element from where the value is taken
+- `detail.origin` - the rule that declared the `--ahx-harvest`
+- `detail.newValue` - the newly harvested value
+- `detail.oldValue` - the old value
+- `detail.sourceOwner` - the _owner_ of the source element
+- `detail.targetOwner` - the _owner_ of the target element of the eventual swap
+- `detail.originOwner` - the _owner_ of the origin rule
 
 ## Error Events
 

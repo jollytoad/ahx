@@ -479,8 +479,7 @@ async function swapHtml(props) {
     for await (const element of elements2) {
       const detail = {
         ...props,
-        swapStyle: props.swapStyle ?? "outerhtml",
-        // TODO: consider making the default "none"
+        swapStyle: props.swapStyle ?? "none",
         element,
         previous: previous2,
         index
@@ -491,7 +490,7 @@ async function swapHtml(props) {
         const slotTarget = findSlot(slot, document2);
         if (slotTarget) {
           detail.target = slotTarget;
-          detail.swapStyle = "innerhtml";
+          detail.swapStyle = "inner";
         } else {
           detail.swapStyle = "none";
         }
@@ -521,10 +520,10 @@ var swapAdjacent = (pos) => (target, element) => {
 var swapHandlers = {
   none() {
   },
-  innerhtml(target, element) {
+  inner(target, element) {
     target.replaceChildren(element);
   },
-  outerhtml(target, element) {
+  outer(target, element) {
     const pseudoPrefix = `${config.prefix}-pseudo`;
     for (const cls of target.classList) {
       if (cls.startsWith(pseudoPrefix)) {
@@ -649,8 +648,6 @@ async function handleSwap(props) {
   const { swapStyle, response, itemName } = props;
   let { value } = props;
   switch (swapStyle) {
-    case "none":
-      return swapNone(props);
     case "input":
     case "attr": {
       if (!itemName) {
@@ -670,13 +667,11 @@ async function handleSwap(props) {
       if (isHtmlResponse(response)) {
         return swapHtml({
           ...props,
-          swapStyle: swapStyle ?? "outerhtml",
+          swapStyle: swapStyle ?? "none",
           response
         });
       }
   }
-}
-function swapNone(_props) {
 }
 function isHtmlResponse(response) {
   return !!response?.headers.get("Content-Type")?.startsWith("text/html") && !!response.body;

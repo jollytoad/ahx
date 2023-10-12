@@ -33,7 +33,7 @@ Key:
 
 ## Core Attributes
 
-| Attribute     | ahx             | Notes             |
+| htmx          | ahx             | Notes             |
 | ------------- | --------------- | ----------------- |
 | hx-boost      | N               |                   |
 | hx-get        | ahx-get         |                   |
@@ -59,7 +59,7 @@ Key:
 
 ## Additional Attributes
 
-| Attribute      | ahx         | Notes          |
+| htmx           | ahx         | Notes          |
 | -------------- | ----------- | -------------- |
 | hx-confirm     | ?           |                |
 | hx-delete      | ahx-delete  |                |
@@ -87,7 +87,7 @@ Key:
 
 ## Trigger Modifiers
 
-| Modifier      | ahx | Notes                   |
+| htmx          | ahx | Notes                   |
 | ------------- | --- | ----------------------- |
 | once          | Y   |                         |
 | changed       | ?   |                         |
@@ -105,18 +105,32 @@ Key:
 
 ## Special Events
 
-| Event     | ahx    |
+| htmx      | ahx    |
 | --------- | ------ |
 | load      | Y      |
 | revealed  | ?      |
 | intersect | ?      |
 |           | mutate |
 
+## Swap Styles
+
+| htmx        | ahx            | Notes                  |
+| ----------- | -------------- | ---------------------- |
+| innerHTML   | inner          | may use morphing swap  |
+| outerHTML   | outer          | may use morphing swap  |
+| beforebegin | beforeBegin    |                        |
+| afterbegin  | afterBegin     |                        |
+| beforeend   | beforeEnd      |                        |
+| afterend    | afterEnd       |                        |
+| none        | none           | default                |
+|             | attr _<name>_  | swap into an attribute |
+|             | input _<name>_ | swap into an input     |
+
 ## Headers
 
-| Header |
-| ------ |
-|        |
+| htmx | ahx |
+| ---- | --- |
+|      |     |
 
 ## Other Features
 
@@ -125,7 +139,7 @@ Key:
 - data-ahx-* attributes (N)
 - Trigger filters (N) - no scripting permitted
 - Request indicators (?) - maybe should be responsibility of host app?
-- Morph swaps (?) - maybe Idiomorph will become the default swap
+- Morph swaps (?) - inner/outer swap may use idiomorph by default in future
 - View transitions (?)
 - Synchronization (?)
 - CSS transitions (and settling) (?)

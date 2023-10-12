@@ -7,9 +7,6 @@ export async function handleSwap(props: SwapProps) {
   let { value } = props;
 
   switch (swapStyle) {
-    case "none":
-      return swapNone(props);
-
     case "input":
     case "attr": {
       if (!itemName) {
@@ -34,15 +31,11 @@ export async function handleSwap(props: SwapProps) {
       if (isHtmlResponse(response)) {
         return swapHtml({
           ...props,
-          swapStyle: swapStyle ?? "outerhtml",
+          swapStyle: swapStyle ?? "none",
           response,
         });
       }
   }
-}
-
-function swapNone(_props: SwapProps) {
-  // TODO: consider whether a swap event should still be dispatched
 }
 
 function isHtmlResponse(response?: Response): response is Response {

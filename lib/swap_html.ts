@@ -27,7 +27,7 @@ export async function swapHtml(props: SwapHtmlProps) {
     for await (const element of elements) {
       const detail: SwapHtmlDetail = {
         ...props,
-        swapStyle: props.swapStyle ?? "outerhtml", // TODO: consider making the default "none"
+        swapStyle: props.swapStyle ?? "none",
         element,
         previous,
         index,
@@ -41,7 +41,7 @@ export async function swapHtml(props: SwapHtmlProps) {
 
         if (slotTarget) {
           detail.target = slotTarget;
-          detail.swapStyle = "innerhtml";
+          detail.swapStyle = "inner";
         } else {
           detail.swapStyle = "none";
         }
@@ -87,10 +87,10 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
   none() {
     // no-op
   },
-  innerhtml(target, element) {
+  inner(target, element) {
     target.replaceChildren(element);
   },
-  outerhtml(target, element) {
+  outer(target, element) {
     const pseudoPrefix = `${config.prefix}-pseudo`;
 
     for (const cls of target.classList) {

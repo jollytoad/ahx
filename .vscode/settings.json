@@ -4,5 +4,8 @@
   "deno.unstable": true,
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.tabSize": 2,
-  "editor.detectIndentation": false
+  "editor.detectIndentation": false,
+  "cSpell.words": [
+    "htmx"
+  ]
 }

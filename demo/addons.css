@@ -20,7 +20,7 @@ a.load-on-click {
 .huge {
   --ahx-trigger: click;
   --ahx-get: url('/huge');
-  --ahx-swap: innerHTML;
+  --ahx-swap: inner;
 }
 
 .bob-slot {

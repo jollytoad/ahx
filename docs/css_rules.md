@@ -141,15 +141,17 @@ Specify how the response of a request (`--ahx-get` etc) or a harvested value
 
 Possible values are:
 
-- `innerHTML` to replace the inner content of the target element.
-- `outerHTML` to replace the entire target element with the response.
-- `beforebegin` to insert the response before the target element.
-- `afterbegin` to insert the response before the first child of the target
+- `inner` to replace the children of the target element with the response
+  elements.
+- `outer` to replace the entire target element with the response elements.
+- `beforeBegin` to insert the response before the target element.
+- `afterBegin` to insert the response before the first child of the target
   element.
-- `beforeend` to insert the response after the last child of the target element.
-- `afterend` to insert the response after the target element.
+- `beforeEnd` to insert the response after the last child of the target element.
+- `afterEnd` to insert the response after the target element.
 - `delete` deletes the target element regardless of the response.
-- `none` does not append content from response.
+- `none` does not append content from response, but any slots will still be
+  swapped.
 
 Also, not in _htmx_:
 
@@ -159,10 +161,32 @@ Also, not in _htmx_:
   not exist. If the target is not a form an internal `FormData` object is
   associated with the target and the value is set in this.
 
+Defaults to `none`.
+
+All top-level elements (ie. direct children of `<body>`) will be swapped into
+the declared position, so a single target element may be replaced with several
+elements if `outer` is used.
+
+Any top-level element with an `ahx-swap` attribute will be treated separately,
+and swapped into a named 'slot', as declared by a `<slot>` element or a
+`--ahx-slot-name` property in a CSS rule.
+
 This can also be specified directly on an element using the `ahx-swap`
 attribute.
 
-Equivalent of [hx-swap](https://htmx.org/attributes/hx-swap).
+Equivalent of [hx-swap](https://htmx.org/attributes/hx-swap), variations of
+note:
+
+- `inner` and `outer` are roughly equivalent to _htmx_ `innerHTML` &
+  `outerHTML`, but _ahx_ may use a morph swap in the future for this.
+- _htmx_ defaults to `innerHTML` (which may also be configured), for safety and
+  clarity for an auditor, _ahx_ defaults to `none` and is not configurable.
+- _ahx_ will stream the response into a temporary document using the native
+  streaming document parser of the browser, and will swap each child of the
+  document body once the next child arrives.
+- a `<template>` element may be used to wrap all top-level elements, to prevent
+  parsing issues where certain tags can't be directly under `<body>`. The
+  template must be the first child of the `<body>`.
 
 #### swap modifiers
 
