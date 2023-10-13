@@ -45,21 +45,21 @@ export function parseCssValue(
       }
     }
 
-    // match: url(<url?>)
-    const isURL = /^url\(([^\)]*)\)$/.exec(value);
+    // match: url(<url?>) ...
+    const isURL = /^url\(([^\)]*)\)(?:\s+url\(([^\)]*)\))*$/.exec(value);
     if (isURL) {
-      value = isURL[1];
-    }
-
-    value = parseQuoted(value);
-
-    if (isURL) {
+      const [, ...values] = isURL;
       const baseURL = rule.parentStyleSheet?.href ??
         rule.style.parentRule?.parentStyleSheet?.href ??
         elt?.baseURI;
-      value = parseURL(value, baseURL);
-      return value ? [value] : [];
+
+      return values.flatMap((value) => {
+        const url = parseURL(parseQuoted(value), baseURL);
+        return url ? [url] : [];
+      });
     }
+
+    value = parseQuoted(value);
   }
 
   return value

@@ -37,10 +37,6 @@ or selectors. Need to consider morph swaps and view transitions in the mix.
 - delay
 - throttle
 
-### Fetch events
-
-More events around fetch, to allow host more control
-
 ### Request/Response headers
 
 Determine what augmentations may need here
@@ -61,3 +57,8 @@ need to review the needs before copy htmx blindly on this.
 - export functions usable to the host app
 - export types for host app
 - move debugging fns into dynamic module (loaded only when required)
+
+### Tests
+
+- Unit testing
+- Cross-browser testing

@@ -334,16 +334,16 @@ function parseCssValue(prop, rule, elt, expect = "tokens") {
         }
       }
     }
-    const isURL = /^url\(([^\)]*)\)$/.exec(value);
+    const isURL = /^url\(([^\)]*)\)(?:\s+url\(([^\)]*)\))*$/.exec(value);
     if (isURL) {
-      value = isURL[1];
+      const [, ...values2] = isURL;
+      const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
+      return values2.flatMap((value2) => {
+        const url = parseURL(parseQuoted(value2), baseURL);
+        return url ? [url] : [];
+      });
     }
     value = parseQuoted(value);
-    if (isURL) {
-      const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
-      value = parseURL(value, baseURL);
-      return value ? [value] : [];
-    }
   }
   return value ? expect === "tokens" ? value.split(/\s+/).map(parseQuoted) : [value] : [];
   function parseURL(value2, baseURL) {
@@ -650,10 +650,12 @@ var HTMLBodyElementParserStream = class extends TransformStream {
 
 // lib/util/slots.ts
 function findSlot(name, root) {
-  for (const [rule, slotNames] of objectsWithInternal("slotName")) {
-    if (rule instanceof CSSStyleRule) {
-      if (slotNames.has(name)) {
-        const slot = root.querySelector(rule.selectorText);
+  for (const [thing, slotNames] of objectsWithInternal("slotName")) {
+    if (slotNames.has(name)) {
+      if (thing instanceof Element) {
+        return thing;
+      } else if (thing instanceof CSSStyleRule) {
+        const slot = root.querySelector(thing.selectorText);
         if (slot) {
           return slot;
         }
@@ -1161,6 +1163,15 @@ function processControls(control) {
   }
 }
 
+// lib/process_slot.ts
+function processSlot(control) {
+  const slotNames = parseAttrOrCssValue("slot-name", control, "tokens");
+  if (slotNames.length) {
+    const names = getInternal(control, "slotName", () => /* @__PURE__ */ new Set());
+    slotNames.forEach((name) => names.add(name));
+  }
+}
+
 // lib/process_element.ts
 function processElement(elt) {
   if (hasAhxAttributes(elt)) {
@@ -1172,6 +1183,7 @@ function processElement(elt) {
         setOwner(elt, detail.owner);
       }
       processControls(elt);
+      processSlot(elt);
       dispatchAfter(elt, "processElement", detail);
     }
   }
@@ -1324,42 +1336,33 @@ function createPseudoRule(rule, pseudoId, place) {
 }
 
 // lib/process_css_imports.ts
-function processCssImports(rule, props, onReady) {
-  const importProp = asAhxCSSPropertyName("import");
-  for (const prop of props) {
-    if (prop === importProp || prop.startsWith(`${importProp}-`)) {
-      let link = getInternal(rule, "importLinks")?.get(prop)?.deref();
-      let ruleApplies = false;
-      for (const elt of document.querySelectorAll(rule.selectorText)) {
-        const [url] = parseCssValue(prop, rule, elt);
-        if (url) {
-          ruleApplies = true;
-          if (link) {
-            if (link.sheet && link.sheet.disabled) {
-              link.sheet.disabled = false;
-              setTimeout(() => {
-                onReady?.(link);
-              }, 0);
-            }
-            break;
-          } else {
-            link = createStyleSheetLink(
-              url,
-              resolveElement(rule)?.crossOrigin ?? void 0,
-              onReady
-            );
-            if (link) {
-              getInternal(rule, "importLinks", () => /* @__PURE__ */ new Map()).set(
-                prop,
-                new WeakRef(link)
-              );
-              break;
-            }
-          }
-        }
-      }
-      if (!ruleApplies && link && link.sheet && !link.sheet.disabled) {
+function processCssImports(rule, onReady) {
+  const ruleApplies = !!resolveElement(rule)?.ownerDocument?.querySelector(
+    rule.selectorText
+  );
+  const urls = parseCssValue("import", rule);
+  for (const url of urls) {
+    let link = getInternal(rule, "importLinks")?.get(url)?.deref();
+    if (link) {
+      if (ruleApplies && link.sheet?.disabled) {
+        link.sheet.disabled = false;
+        setTimeout(() => {
+          onReady?.(link);
+        }, 0);
+      } else if (!ruleApplies && link.sheet) {
         link.sheet.disabled = true;
+      }
+    } else if (ruleApplies) {
+      link = createStyleSheetLink(
+        url,
+        resolveElement(rule)?.crossOrigin ?? void 0,
+        onReady
+      );
+      if (link) {
+        getInternal(rule, "importLinks", () => /* @__PURE__ */ new Map()).set(
+          url,
+          new WeakRef(link)
+        );
       }
     }
   }
@@ -1397,15 +1400,6 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
   }
 }
 
-// lib/process_slot.ts
-function processSlot(rule) {
-  const slotNames = parseCssValue("slot-name", rule);
-  if (slotNames.length) {
-    const names = getInternal(rule, "slotName", () => /* @__PURE__ */ new Set());
-    slotNames.forEach((name) => names.add(name));
-  }
-}
-
 // lib/process_rule.ts
 function processRule(rule, props) {
   const ruleId = getRuleId(rule);
@@ -1421,7 +1415,7 @@ function processRule(rule, props) {
         setOwner(rule, detail.owner);
       }
       setRuleId(rule, ruleId, props);
-      processCssImports(rule, props, processImportedRules);
+      processCssImports(rule, processImportedRules);
       processGuards(rule, props);
       const pseudoRule = processPseudoElements(rule);
       if (pseudoRule) {

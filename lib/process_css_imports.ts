@@ -1,60 +1,46 @@
 import { getInternal } from "./util/internal.ts";
 import { parseCssValue } from "./parse_css_value.ts";
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
-import type { AhxCSSPropertyName, CssImportDetail } from "./types.ts";
-import { asAhxCSSPropertyName } from "./util/names.ts";
+import type { CssImportDetail } from "./types.ts";
 import { resolveElement } from "./util/resolve_element.ts";
 
 export function processCssImports(
   rule: CSSStyleRule,
-  props: Set<AhxCSSPropertyName>,
   onReady?: (link: HTMLLinkElement) => void,
 ) {
-  const importProp = asAhxCSSPropertyName("import");
+  const ruleApplies = !!resolveElement(rule)?.ownerDocument?.querySelector(
+    rule.selectorText,
+  );
 
-  for (const prop of props) {
-    if (prop === importProp || prop.startsWith(`${importProp}-`)) {
-      let link: HTMLLinkElement | undefined = getInternal(rule, "importLinks")
-        ?.get(prop)?.deref();
-      let ruleApplies = false;
+  const urls = parseCssValue("import", rule);
 
-      for (const elt of document.querySelectorAll(rule.selectorText)) {
-        // TODO: consider getting computed style so that media queries are applied
-        // and/or allow media-queries to be appended to the prop value, like `@import`
+  for (const url of urls) {
+    let link = getInternal(rule, "importLinks")?.get(url)?.deref();
 
-        const [url] = parseCssValue(prop, rule, elt);
-
-        if (url) {
-          ruleApplies = true;
-          if (link) {
-            if (link.sheet && link.sheet.disabled) {
-              link.sheet.disabled = false;
-              setTimeout(() => {
-                onReady?.(link!);
-              }, 0);
-            }
-            break;
-          } else {
-            link = createStyleSheetLink(
-              url,
-              (resolveElement(rule) as HTMLLinkElement)?.crossOrigin ??
-                undefined,
-              onReady,
-            );
-
-            if (link) {
-              getInternal(rule, "importLinks", () => new Map()).set(
-                prop,
-                new WeakRef(link),
-              );
-              break;
-            }
-          }
-        }
-      }
-
-      if (!ruleApplies && link && link.sheet && !link.sheet.disabled) {
+    if (link) {
+      if (ruleApplies && link.sheet?.disabled) {
+        // Enable a disabled stylesheet if the rule now applies
+        link.sheet.disabled = false;
+        setTimeout(() => {
+          onReady?.(link!);
+        }, 0);
+      } else if (!ruleApplies && link.sheet) {
+        // Disable an existing stylesheet if the rule no longer applies
         link.sheet.disabled = true;
+      }
+    } else if (ruleApplies) {
+      link = createStyleSheetLink(
+        url,
+        (resolveElement(rule) as HTMLLinkElement)?.crossOrigin ??
+          undefined,
+        onReady,
+      );
+
+      if (link) {
+        getInternal(rule, "importLinks", () => new Map()).set(
+          url,
+          new WeakRef(link),
+        );
       }
     }
   }

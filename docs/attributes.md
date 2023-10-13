@@ -71,4 +71,9 @@ See equivalent `--ahx-swap` CSS property.
 
 Allow some content in a response to be swapped into a named slot in the
 document. The slots in the document are declared and named using `<slot>`
-elements or the `--ahx-slot-name` property in a CSS rule.
+elements, `ahx-slot-name` attribute on an element, or the `--ahx-slot-name`
+property in a CSS rule.
+
+### ahx-slot-name
+
+Declare any element to be a named slot that can be targetted by `ahx-slot`.

@@ -1,7 +1,6 @@
 import type {
   ControlDecl,
   ControlSpec,
-  CSSPropertyName,
   EventType,
   Owner,
   PseudoId,
@@ -23,7 +22,7 @@ interface Props extends ControlProps, TriggeredProps {
   // CSSStyleRule
   "ruleId": RuleId;
   "pseudoId": PseudoId;
-  "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
+  "importLinks": Map<string, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
   "slotName": Set<string>;
 

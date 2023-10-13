@@ -39,7 +39,7 @@ export function processRule(
 
       setRuleId(rule, ruleId, props);
 
-      processCssImports(rule, props, processImportedRules);
+      processCssImports(rule, processImportedRules);
       processGuards(rule, props);
 
       const pseudoRule = processPseudoElements(rule);

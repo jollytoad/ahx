@@ -60,7 +60,7 @@ from a property of the DOM element as opposed to an attribute.
 
 ### --ahx-import
 
-Imports the given CSS stylesheet if the rule matches once.
+Imports the given CSS stylesheet(s) if the rule matches once.
 
 Example:
 
@@ -73,11 +73,16 @@ Example:
 The `url()` CSS function must be used.
 
 This will actually insert a `<link>` element into the `document.head` when the
-rule first matches at least one element. The property is removed from the
-stylesheet once processed so that it doesn't get applied again.
+rule first matches at least one element. The stylesheet will be disabled if the
+rule no longer matches an element in the document.
 
-NOTE: The stylesheet is not removed or disabled later should the rule no longer
-match any element (this behaviour may get implemented in the future).
+Multiple space-separated urls may be given:
+
+```css
+[ahx-host~="foo"] {
+  --ahx-import: url("one.css") url("two.css") url("three.css");
+}
+```
 
 Has no attribute equivalent.
 

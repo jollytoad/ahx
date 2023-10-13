@@ -1,10 +1,11 @@
-import { parseCssValue } from "./parse_css_value.ts";
+import { parseAttrOrCssValue } from "./parse_attr_value.ts";
+import type { ControlDecl } from "./types.ts";
 import { getInternal } from "./util/internal.ts";
 
-export function processSlot(rule: CSSStyleRule) {
-  const slotNames = parseCssValue("slot-name", rule);
+export function processSlot(control: ControlDecl) {
+  const slotNames = parseAttrOrCssValue("slot-name", control, "tokens");
   if (slotNames.length) {
-    const names = getInternal(rule, "slotName", () => new Set());
+    const names = getInternal(control, "slotName", () => new Set());
     slotNames.forEach((name) => names.add(name));
   }
 }
