@@ -58,6 +58,14 @@ function deleteInternal(obj, key) {
     }
   }
 }
+function cloneInternal(src, dst) {
+  ["triggered"].forEach((key) => {
+    const value = getInternal(src, key);
+    if (value !== void 0) {
+      setInternal(dst, key, value);
+    }
+  });
+}
 function* objectsWithInternal(key) {
   const valueMap = values.get(key);
   if (valueMap) {
@@ -71,11 +79,11 @@ function* objectsWithInternal(key) {
 }
 function* internalEntries() {
   for (const weakRef of weakRefs) {
-    const obj = weakRef.deref();
-    if (obj) {
+    const thing = weakRef.deref();
+    if (thing) {
       for (const [key, valueMap] of values.entries()) {
-        if (valueMap.has(obj)) {
-          yield [obj, key, valueMap.get(obj)];
+        if (valueMap.has(thing)) {
+          yield [thing, key, valueMap.get(thing)];
         }
       }
     }
@@ -719,10 +727,7 @@ var swapHandlers = {
         element.classList.add(cls);
       }
     }
-    const triggeredOnce = getInternal(target, "triggeredOnce");
-    if (triggeredOnce) {
-      setInternal(element, "triggeredOnce", triggeredOnce);
-    }
+    cloneInternal(target, element);
     target.replaceWith(element);
   },
   beforebegin: swapAdjacent("beforebegin"),
@@ -987,24 +992,23 @@ function getFormData(elt) {
 
 // lib/handle_trigger.ts
 function handleTrigger(detail) {
-  const { trigger, source } = detail;
+  const { control, trigger, source } = detail;
   if (isDenied(source)) {
     dispatchError(source, "triggerDenied", detail);
     return;
   }
+  if (trigger?.once && getInternal(control, "triggered")?.has(trigger.eventType)) {
+    return;
+  }
+  if (trigger?.changed) {
+  }
   if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
-      if (hasInternal(source, "triggeredOnce")) {
-        return;
-      } else {
-        setInternal(source, "triggeredOnce", true);
-      }
+      getInternal(control, "triggered", () => /* @__PURE__ */ new Set()).add(trigger.eventType);
     }
-    if (trigger?.changed) {
-    }
-    if (hasInternal(source, "delayed")) {
-      clearTimeout(getInternal(source, "delayed"));
-      deleteInternal(source, "delayed");
+    if (hasInternal(control, "delayed")) {
+      clearTimeout(getInternal(control, "delayed"));
+      deleteInternal(control, "delayed");
     }
     if (trigger?.throttle) {
     } else if (trigger?.delay) {
@@ -1096,8 +1100,8 @@ function initEventListener(eventType) {
   }
 }
 function eventListener(event) {
-  for (const triggerDetail of getTriggerDetailsForEvent(event)) {
-    handleTrigger(triggerDetail);
+  for (const detail of getTriggerDetailsForEvent(event)) {
+    handleTrigger(detail);
   }
 }
 function* getTriggerDetailsForEvent(event) {

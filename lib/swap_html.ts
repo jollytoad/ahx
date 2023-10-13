@@ -5,7 +5,7 @@ import type { SwapHtmlDetail, SwapHtmlProps, SwapHtmlStyle } from "./types.ts";
 import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
 import { setOwner } from "./util/owner.ts";
 import { config } from "./config.ts";
-import { getInternal, setInternal } from "./util/internal.ts";
+import { cloneInternal } from "./util/internal.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
 import { findSlot } from "./util/slots.ts";
 
@@ -99,10 +99,7 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
       }
     }
 
-    const triggeredOnce = getInternal(target, "triggeredOnce");
-    if (triggeredOnce) {
-      setInternal(element, "triggeredOnce", triggeredOnce);
-    }
+    cloneInternal(target, element);
 
     target.replaceWith(element);
   },

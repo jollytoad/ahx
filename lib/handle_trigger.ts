@@ -1,10 +1,5 @@
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
-import {
-  deleteInternal,
-  getInternal,
-  hasInternal,
-  setInternal,
-} from "./util/internal.ts";
+import { deleteInternal, getInternal, hasInternal } from "./util/internal.ts";
 import {
   dispatchAfter,
   dispatchBefore,
@@ -21,7 +16,9 @@ export function handleTrigger(detail: TriggerDetail) {
     return;
   }
 
-  if (trigger?.once && hasInternal(control, "triggeredOnce")) {
+  if (
+    trigger?.once && getInternal(control, "triggered")?.has(trigger.eventType)
+  ) {
     return;
   }
 
@@ -31,12 +28,12 @@ export function handleTrigger(detail: TriggerDetail) {
 
   if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
-      setInternal(control, "triggeredOnce", true);
+      getInternal(control, "triggered", () => new Set()).add(trigger.eventType);
     }
 
-    if (hasInternal(source, "delayed")) {
-      clearTimeout(getInternal(source, "delayed"));
-      deleteInternal(source, "delayed");
+    if (hasInternal(control, "delayed")) {
+      clearTimeout(getInternal(control, "delayed"));
+      deleteInternal(control, "delayed");
     }
 
     // TODO: throttle

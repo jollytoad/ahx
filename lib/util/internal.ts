@@ -22,11 +22,11 @@ interface Props extends ControlProps {
   "slotName": Set<string>;
 
   // Element
-  "triggeredOnce": true;
   "delayed": ReturnType<typeof setTimeout>;
   "formData": FormData;
 
   // Common
+  "triggered": Set<EventType>;
   "owner": Owner;
 }
 
@@ -110,6 +110,18 @@ export function deleteInternal(obj: Thing, key?: Key): void {
 }
 
 /**
+ * Clone important internal values from one thing to another
+ */
+export function cloneInternal(src: Thing, dst: Thing) {
+  (["triggered"] as Key[]).forEach((key) => {
+    const value = getInternal(src, key);
+    if (value !== undefined) {
+      setInternal(dst, key, value);
+    }
+  });
+}
+
+/**
  * Find all DOM objects that have a specific internal property set.
  * @returns tuples of the object and its property value
  */
@@ -135,11 +147,11 @@ export function* internalEntries<K extends Key>(): Iterable<
   [Thing, K, Props[K]]
 > {
   for (const weakRef of weakRefs) {
-    const obj = weakRef.deref();
-    if (obj) {
+    const thing = weakRef.deref();
+    if (thing) {
       for (const [key, valueMap] of values.entries()) {
-        if (valueMap.has(obj)) {
-          yield [obj, key as K, valueMap.get(obj) as Props[K]];
+        if (valueMap.has(thing)) {
+          yield [thing, key as K, valueMap.get(thing) as Props[K]];
         }
       }
     }
