@@ -1,31 +1,29 @@
 import { internalEntries } from "../util/internal.ts";
 
 export function internals() {
-  console.group("AHX Internal Properties");
+  console.group("ahx internal properties...");
 
   let groupObject: unknown;
-  for (const [object, key, value] of internalEntries()) {
-    if (object !== groupObject) {
+  for (const [thing, key, value] of internalEntries()) {
+    if (thing !== groupObject) {
       if (groupObject) {
         console.groupEnd();
       }
 
-      const representation = object instanceof CSSRule
-        ? object.cssText
-        : object;
+      const representation = thing instanceof CSSRule ? thing.cssText : thing;
 
       console.groupCollapsed(representation);
-      console.dir(object);
+      console.dir(thing);
 
-      if (object instanceof CSSStyleRule) {
+      if (thing instanceof CSSStyleRule) {
         // console.groupCollapsed('matched nodes...');
-        for (const node of document.querySelectorAll(object.selectorText)) {
+        for (const node of document.querySelectorAll(thing.selectorText)) {
           console.log(node);
         }
         // console.groupEnd();
       }
 
-      groupObject = object;
+      groupObject = thing;
     }
 
     if (value instanceof Map) {

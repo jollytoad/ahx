@@ -3,28 +3,28 @@ import { parseCssValue } from "./parse_css_value.ts";
 import type {
   AhxAttributeName,
   AhxCSSPropertyName,
-  AhxName,
+  ControlPropName,
   ValueType,
 } from "./types.ts";
 
 export function parseAttrValue(
-  prop: AhxName | AhxAttributeName | AhxCSSPropertyName,
-  origin: Element,
+  prop: ControlPropName | AhxAttributeName | AhxCSSPropertyName,
+  control: Element,
   expect: ValueType = "tokens",
 ): string[] {
   prop = asAhxAttributeName(prop);
-  const value = origin.getAttribute(prop) ?? undefined;
+  const value = control.getAttribute(prop) ?? undefined;
   return value ? (expect === "tokens" ? value.split(/\s+/) : [value]) : [];
 }
 
 export function parseAttrOrCssValue(
-  prop: AhxName | AhxAttributeName | AhxCSSPropertyName,
-  origin: Element | CSSStyleRule,
+  prop: ControlPropName | AhxAttributeName | AhxCSSPropertyName,
+  control: Element | CSSStyleRule,
   expect: ValueType = "tokens",
 ): string[] {
-  if (origin instanceof Element) {
-    return parseAttrValue(prop, origin, expect);
+  if (control instanceof Element) {
+    return parseAttrValue(prop, control, expect);
   } else {
-    return parseCssValue(prop, origin, undefined, expect);
+    return parseCssValue(prop, control, undefined, expect);
   }
 }

@@ -2,12 +2,12 @@ import { asAhxCSSPropertyName } from "./util/names.ts";
 import type {
   AhxAttributeName,
   AhxCSSPropertyName,
-  AhxName,
+  ControlPropName,
   ValueType,
 } from "./types.ts";
 
 export function parseCssValue(
-  prop: AhxName | AhxCSSPropertyName | AhxAttributeName,
+  prop: ControlPropName | AhxCSSPropertyName | AhxAttributeName,
   rule: CSSStyleRule,
   elt?: Element,
   expect: ValueType = "tokens",

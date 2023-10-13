@@ -1,9 +1,9 @@
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { parseInterval } from "./parse_interval.ts";
-import type { SwapSpec, SwapStyle, TriggerOrigin } from "./types.ts";
+import type { ControlDecl, SwapSpec, SwapStyle } from "./types.ts";
 
-export function parseSwap(origin: TriggerOrigin) {
-  const tokens = parseAttrOrCssValue("swap", origin, "tokens");
+export function parseSwap(control: ControlDecl) {
+  const tokens = parseAttrOrCssValue("swap", control, "tokens");
 
   const swapSpec: SwapSpec = {};
 

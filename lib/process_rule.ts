@@ -1,6 +1,6 @@
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { AhxCSSPropertyName, RuleId } from "./types.ts";
-import { processTriggers } from "./process_triggers.ts";
+import { processControls } from "./process_controls.ts";
 import { processGuards } from "./process_guards.ts";
 import { processPseudoElements } from "./process_pseudo_elements.ts";
 import { getOwner, setOwner } from "./util/owner.ts";
@@ -47,7 +47,7 @@ export function processRule(
         processRule(pseudoRule, getAhxCSSPropertyNames(pseudoRule));
       }
 
-      processTriggers(rule);
+      processControls(rule);
       processSlot(rule);
 
       dispatchAfter(target, "processRule", detail);

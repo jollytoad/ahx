@@ -7,14 +7,14 @@ import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { handleHarvest } from "./handle_harvest.ts";
 
 export async function handleAction(detail: ActionDetail) {
-  const { source, origin } = detail;
+  const { source, control } = detail;
 
-  const [query] = parseAttrOrCssValue("include", origin, "whole");
+  const [query] = parseAttrOrCssValue("include", control, "whole");
   const include = querySelectorExt(source, query);
 
   detail.formData = include ? getFormData(include) : undefined;
 
-  if (dispatchBefore(source, "handleAction", detail)) {
+  if (dispatchBefore(source, "action", detail)) {
     switch (detail.action.type) {
       case "request":
         await handleRequest(detail);
@@ -25,7 +25,7 @@ export async function handleAction(detail: ActionDetail) {
         break;
     }
 
-    dispatchAfter(source, "handleAction", detail);
+    dispatchAfter(source, "action", detail);
   }
 }
 

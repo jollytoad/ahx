@@ -2,21 +2,21 @@
  * Resolve a given object to the most appropriate element, usually for triggering an event on.
  */
 export function resolveElement(
-  origin: CSSRule | CSSStyleSheet | Element | null,
+  thing: CSSRule | CSSStyleSheet | Element | null,
 ): Element | undefined {
-  if (origin instanceof Element) {
-    return origin;
+  if (thing instanceof Element) {
+    return thing;
   }
   if (
-    origin && "ownerNode" in origin && origin.ownerNode &&
-    origin.ownerNode instanceof Element
+    thing && "ownerNode" in thing && thing.ownerNode &&
+    thing.ownerNode instanceof Element
   ) {
-    return origin.ownerNode;
+    return thing.ownerNode;
   }
-  if (origin?.parentStyleSheet) {
-    return resolveElement(origin.parentStyleSheet);
+  if (thing?.parentStyleSheet) {
+    return resolveElement(thing.parentStyleSheet);
   }
-  if (origin && "ownerRule" in origin) {
-    return resolveElement(origin.ownerRule);
+  if (thing && "ownerRule" in thing) {
+    return resolveElement(thing.ownerRule);
   }
 }

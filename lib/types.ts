@@ -16,7 +16,7 @@ export type AhxHttpMethod =
   | "patch"
   | "delete";
 
-export type AhxName =
+export type ControlPropName =
   | "import"
   | "deny-trigger"
   | "trigger"
@@ -30,12 +30,14 @@ export type AhxName =
   | `rule-${string}`
   | AhxHttpMethod;
 
-export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;
-export type AhxAttributeName = `${Prefix}-${AhxName}`;
+export type AhxCSSPropertyName = `--${Prefix}-${ControlPropName}`;
+export type AhxAttributeName = `${Prefix}-${ControlPropName}`;
 
-export type TriggerOrigin = Element | CSSStyleRule;
+/** A thing that declares a Hypermedia Control */
+export type ControlDecl = Element | CSSStyleRule;
 
-export interface Trigger {
+/** Specification of a Hypermedia Control */
+export interface ControlSpec {
   trigger: TriggerSpec;
   action: ActionSpec;
   swap: SwapSpec;
@@ -70,8 +72,8 @@ export interface Owners {
   sourceOwner?: Owner;
   /** The owner of the target element for the swap */
   targetOwner?: Owner;
-  /** The owner of the origin element or rule that declared the trigger */
-  originOwner?: Owner;
+  /** The owner of the control */
+  controlOwner?: Owner;
 }
 
 export type SwapHtmlStyle =
@@ -140,10 +142,10 @@ export interface AhxEventMap {
     PseudoRuleDetail,
     Omit<PseudoRuleDetail, "pseudoRule"> & WithPseudoRule,
   ];
-  "addTrigger": [AddTriggerDetail, AddTriggerDetail];
-  "addEventType": [AddEventTypeDetail, AddEventTypeDetail];
-  "handleTrigger": [TriggerDetail, TriggerDetail];
-  "handleAction": [ActionDetail, ActionDetail];
+  "processControl": [ControlDetail, ControlDetail];
+  "addEventType": [EventTypeDetail, EventTypeDetail];
+  "trigger": [TriggerDetail, TriggerDetail];
+  "action": [ActionDetail, ActionDetail];
   "swap": [SwapDetail, SwapDetail];
   "request": [RequestDetail, RequestDetail];
   "harvest": [HarvestDetail, HarvestDetail];
@@ -219,28 +221,34 @@ export interface WithPseudoRule {
   pseudoRule: CSSStyleRule;
 }
 
-export interface AddTriggerDetail extends Trigger {
-  origin: TriggerOrigin;
+export interface ControlDetail extends ControlSpec {
+  /** The rule or element that declared the control */
+  control: ControlDecl;
 }
 
-export interface TriggerDetail extends Trigger, Owners {
+export interface EventTypeDetail {
+  eventType: EventType;
+}
+
+/** The details for the handling of a triggered control */
+export interface TriggerDetail extends ControlDetail, Owners {
   /** The trigging event */
   event?: Event;
+
   /** The element on which the event was triggered */
   source: Element;
+
   /** The target for the swap */
   target: Element;
-  /** The origin of the trigger declaration */
-  origin: TriggerOrigin;
 }
 
+/** The details for performing the action of a control */
 export interface ActionDetail extends TriggerDetail {
   formData?: FormData;
 }
 
-export interface AddEventTypeDetail {
-  eventType: EventType;
-}
+/** The details for performing a swap for a control */
+export type SwapDetail = SwapHtmlDetail | SwapTextDetail;
 
 export interface SwapHtmlDetail extends SwapProps {
   swapStyle: SwapHtmlStyle;
@@ -257,8 +265,6 @@ export interface SwapTextDetail extends SwapProps {
   oldValue?: string;
 }
 
-export type SwapDetail = SwapHtmlDetail | SwapTextDetail;
-
 export interface RequestDetail {
   request: Request;
   response?: Response;
@@ -267,7 +273,7 @@ export interface RequestDetail {
 
 export interface HarvestDetail extends Owners {
   source: Element;
-  origin: CSSStyleRule;
+  control: CSSStyleRule;
   newValue: string;
   oldValue?: string;
 }

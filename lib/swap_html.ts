@@ -48,10 +48,10 @@ export async function swapHtml(props: SwapHtmlProps) {
       }
 
       if (dispatchBefore(target, "swap", detail)) {
-        const { target, element, originOwner, swapStyle, slot } = detail;
+        const { target, element, controlOwner, swapStyle, slot } = detail;
 
-        if (originOwner) {
-          setOwner(element, originOwner);
+        if (controlOwner) {
+          setOwner(element, controlOwner);
         }
 
         if (slot || !previous) {

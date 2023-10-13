@@ -21,7 +21,7 @@ export function handleTrigger(detail: TriggerDetail) {
     return;
   }
 
-  if (dispatchBefore(source, "handleTrigger", detail)) {
+  if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
       if (hasInternal(source, "triggeredOnce")) {
         return;
@@ -49,7 +49,7 @@ export function handleTrigger(detail: TriggerDetail) {
       handleAction(detail);
     }
 
-    dispatchAfter(source, "handleTrigger", detail);
+    dispatchAfter(source, "trigger", detail);
   }
 }
 

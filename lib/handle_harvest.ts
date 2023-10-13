@@ -10,16 +10,16 @@ export async function handleHarvest(props: ActionDetail) {
     action,
     target,
     swap,
-    origin,
-    originOwner,
+    control,
+    controlOwner,
     targetOwner,
   } = props;
 
-  if (!(origin instanceof CSSStyleRule) || action.type !== "harvest") {
+  if (!(control instanceof CSSStyleRule) || action.type !== "harvest") {
     return;
   }
 
-  const [newValue] = parseCssValue("harvest", origin, source);
+  const [newValue] = parseCssValue("harvest", control, source);
 
   if (newValue === undefined) {
     return;
@@ -31,9 +31,9 @@ export async function handleHarvest(props: ActionDetail) {
     source,
     oldValue,
     newValue,
-    origin,
+    control,
     targetOwner,
-    originOwner,
+    controlOwner,
   };
 
   if (dispatchBefore(source, "harvest", detail)) {

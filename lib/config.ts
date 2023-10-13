@@ -1,9 +1,9 @@
-import type { AhxHttpMethod, AhxName, Prefix } from "./types.ts";
+import type { AhxHttpMethod, ControlPropName, Prefix } from "./types.ts";
 
 interface Config {
   prefix: Prefix;
   httpMethods: AhxHttpMethod[];
-  ahxAttrs: AhxName[];
+  ahxAttrs: ControlPropName[];
   maxLoopCount: number;
   defaultDelay: number;
   defaultSettleDelay: number;

@@ -7,6 +7,9 @@ This is a work in progress and may not currently reflect reality.
 
 ## Important differences
 
+The major conceptual difference to _htmx_, is that _ahx_ allows hypermedia
+controls to be declared as CSS rules in addition to directly on elements.
+
 The focus of _ahx_ is to provide a means for a third-party to augment the UI of
 a _host_ application, and so it has to place security and auditability over
 developer convenience.
@@ -18,6 +21,10 @@ events.
 Below I may mention an _auditor_, this may be a potential user of the
 third-party augmentation, an administrator, a developer, the host app, or
 another piece of software.
+
+What differentiates 'Augmented Hypermedia' from just 'Hypermedia' is the ability
+to declare hypermedia controls as a set of rules to be applied to the document,
+and not just as inline controls within the document.
 
 ---
 

@@ -3,7 +3,7 @@ import { handleSwap } from "./handle_swap.ts";
 import type { ActionDetail, ActionRequestSpec } from "./types.ts";
 
 export async function handleRequest(props: ActionDetail) {
-  const { source, action, target, swap, formData, originOwner, targetOwner } =
+  const { source, action, target, swap, formData, controlOwner, targetOwner } =
     props;
 
   if (action.type !== "request") {
@@ -26,7 +26,7 @@ export async function handleRequest(props: ActionDetail) {
         ...swap,
         target,
         response,
-        originOwner,
+        controlOwner,
         targetOwner,
       });
     } catch (error) {

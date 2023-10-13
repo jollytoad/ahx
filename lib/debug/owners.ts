@@ -2,18 +2,18 @@ import { getInternal, internalEntries } from "../util/internal.ts";
 import { comparePosition } from "./compare_position.ts";
 
 export function owners() {
-  console.group("AHX Ownership");
+  console.group("ahx ownership...");
 
   const elements = new Set<Element>();
 
-  for (const [object, key, owner] of internalEntries()) {
-    if (object instanceof Element) {
-      elements.add(object);
+  for (const [thing, key, owner] of internalEntries()) {
+    if (thing instanceof Element) {
+      elements.add(thing);
     } else if (key === "owner") {
-      if (object instanceof CSSRule) {
-        console.log("%o -> %s", object.cssText, owner);
+      if (thing instanceof CSSRule) {
+        console.log("%o -> %s", thing.cssText, owner);
       } else {
-        console.log("%o -> %s", object, owner);
+        console.log("%o -> %s", thing, owner);
       }
     }
   }

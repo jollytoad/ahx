@@ -2,7 +2,7 @@ import { config } from "../config.ts";
 import type {
   AhxAttributeName,
   AhxCSSPropertyName,
-  AhxName,
+  ControlPropName,
 } from "../types.ts";
 
 export function getAhxCSSPropertyNames(
@@ -35,7 +35,7 @@ export function isAhxAttributeName(name: string): name is AhxAttributeName {
 }
 
 export function asAhxCSSPropertyName(
-  name: AhxName | AhxCSSPropertyName | AhxAttributeName,
+  name: ControlPropName | AhxCSSPropertyName | AhxAttributeName,
 ): AhxCSSPropertyName {
   return isAhxCSSPropertyName(name)
     ? name
@@ -45,7 +45,7 @@ export function asAhxCSSPropertyName(
 }
 
 export function asAhxAttributeName(
-  name: AhxName | AhxAttributeName | AhxCSSPropertyName,
+  name: ControlPropName | AhxAttributeName | AhxCSSPropertyName,
 ): AhxAttributeName {
   return isAhxAttributeName(name)
     ? name

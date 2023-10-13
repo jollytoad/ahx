@@ -24,11 +24,11 @@ along with the set of properties.
 Logs all elements targetted by _ahx_ either directly via attributes, or matching
 a CSS rule that has _ahx_ properties.
 
-## `ahx.triggers()`
+## `ahx.controls()`
 
-Logs all elements that have an _ahx_ trigger, along with details of the event
-type of the trigger, the action, and the origin of the trigger (ie. from element
-attributes or CSS rule).
+Logs all elements and rules that are considered hypermedia controls by _ahx_,
+along with details of the event type of the trigger, the action, swap, and the
+control itself.
 
 ## `ahx.owners()`
 

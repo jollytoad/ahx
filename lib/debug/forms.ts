@@ -5,11 +5,11 @@ import {
   objectsWithInternal,
 } from "../util/internal.ts";
 import { comparePosition } from "./compare_position.ts";
-import type { ActionType, Trigger } from "../types.ts";
+import type { ActionType, ControlSpec } from "../types.ts";
 import { parseTarget } from "../parse_target.ts";
 
 export function forms() {
-  console.group("AHX Forms");
+  console.group("ahx form...");
 
   const elements = new Set<Element>();
 
@@ -19,7 +19,7 @@ export function forms() {
     }
   }
 
-  for (const [rule] of getTriggerRulesByAction("harvest")) {
+  for (const [rule] of getControlRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
       elements.add(parseTarget(elt, rule));
     }
@@ -44,16 +44,16 @@ export function forms() {
   console.groupEnd();
 }
 
-function* getTriggerRulesByAction(
+function* getControlRulesByAction(
   type: ActionType,
-): Iterable<[CSSStyleRule, Trigger]> {
-  for (const [rule, key, trigger] of internalEntries()) {
+): Iterable<[CSSStyleRule, ControlSpec]> {
+  for (const [rule, key, control] of internalEntries()) {
     if (
-      key.startsWith("trigger:") && rule instanceof CSSStyleRule &&
-      typeof trigger === "object" && "action" in trigger &&
-      trigger.action.type === type && isRuleEnabled(rule)
+      key.startsWith("control:") && rule instanceof CSSStyleRule &&
+      typeof control === "object" && "action" in control &&
+      control.action.type === type && isRuleEnabled(rule)
     ) {
-      yield [rule, trigger as Trigger];
+      yield [rule, control as ControlSpec];
     }
   }
 }

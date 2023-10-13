@@ -1,7 +1,7 @@
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { hasAhxAttributes } from "./util/names.ts";
 import { getOwner, setOwner } from "./util/owner.ts";
-import { processTriggers } from "./process_triggers.ts";
+import { processControls } from "./process_controls.ts";
 
 export function processElement(elt: Element) {
   if (hasAhxAttributes(elt)) {
@@ -14,7 +14,7 @@ export function processElement(elt: Element) {
         setOwner(elt, detail.owner);
       }
 
-      processTriggers(elt);
+      processControls(elt);
 
       dispatchAfter(elt, "processElement", detail);
     }

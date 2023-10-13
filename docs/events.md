@@ -138,14 +138,14 @@ document before the rule is added into the stylesheet.
 
 [`CSSStyleRule`]: https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleRule
 
-## `ahx:addTrigger`
+## `ahx:processControl`
 
-Dispatched when a new ahx trigger is found, this may be a from an Element or CSS
-rule.
+Dispatched when a new _ahx_ hypermedia control is found, this may be a from an
+element or rule.
 
 **Details**
 
-- `detail.origin` - the Element or CSS rule from which the rule originated
+- `detail.control` - the element or rule that declared the control
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
 - `detail.swap` - the swap spec
@@ -160,12 +160,12 @@ Dispatched when the first listener for a type of event is added.
 
 - `detail.eventType` - the event type (immutable)
 
-## `ahx:handleTrigger`
+## `ahx:trigger`
 
-Dispatched when an event is handled by an ahx trigger (and not denied). Maybe
+Dispatched when an event is handled by an ahx control (and not denied). Maybe
 cancelled to prevent the action.
 
-- `detail.origin` - the Element or CSS rule from which the rule originated
+- `detail.control` - the element or rule that declared the control
 - `detail.trigger` - the trigger spec
 - `detail.action` - the action to perform on triggering
 - `detail.swap` - the swap spec
@@ -174,15 +174,15 @@ cancelled to prevent the action.
 - `detail.target` - the target element for the eventual swap
 - `detail.sourceOwner` - the _owner_ of the source element
 - `detail.targetOwner` - the _owner_ of the target element
-- `detail.originOwner` - the _owner_ of the origin element or rule
+- `detail.controlOwner` - the _owner_ of the control element or rule
 
-## `ahx:handleAction`
+## `ahx:action`
 
 Dispatched before a triggered action is performed.
 
 **Details**
 
-same as `ahx:handleTrigger`, plus:
+same as `ahx:trigger`, plus:
 
 - `detail.formData` - `FormData` from an `ahx-include`
 
@@ -211,7 +211,7 @@ May vary depending on the nature of the content, either _html_ or _text_.
 - `detail.oldValue` (text) - the old value of the input or attribute
 - `detail.sourceOwner` - the _owner_ of the source element
 - `detail.targetOwner` - the _owner_ of the target element
-- `detail.originOwner` - the _owner_ of the origin element or rule
+- `detail.controlOwner` - the _owner_ of the control element or rule
 
 ## `ahx:request`
 
@@ -230,12 +230,12 @@ Dispatched before a value is harvested from the document by `--ahx-harvest`.
 **Details**
 
 - `detail.source` - the source element from where the value is taken
-- `detail.origin` - the rule that declared the `--ahx-harvest`
+- `detail.control` - the rule that declared the `--ahx-harvest`
 - `detail.newValue` - the newly harvested value
 - `detail.oldValue` - the old value
 - `detail.sourceOwner` - the _owner_ of the source element
 - `detail.targetOwner` - the _owner_ of the target element of the eventual swap
-- `detail.originOwner` - the _owner_ of the origin rule
+- `detail.controlOwner` - the _owner_ of the control rule
 
 ## Error Events
 

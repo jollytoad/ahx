@@ -70,3 +70,12 @@ _ahx_ is written in modular TypeScript, and uses Deno for tooling.
 - [Element attributes](./docs/attributes.md)
 - [Custom events](./docs/events.md)
 - [Debugging and inspection tools](./docs/debugging.md)
+
+## What is Augmented Hypermedia?
+
+What differentiates **Augmented Hypermedia** from just **Hypermedia** is the
+ability to declare hypermedia controls as a set of rules to be applied to a
+document, and not just as inline controls within the document.
+
+In the case of _ahx_, we use CSS to represent the rules, but there is no reason
+the rules couldn't take some other form if necessary.

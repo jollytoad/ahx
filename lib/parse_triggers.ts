@@ -2,7 +2,7 @@
 
 import { parseInterval } from "./parse_interval.ts";
 import { dispatchError } from "./util/dispatch.ts";
-import type { TriggerOrigin, TriggerSpec } from "./types.ts";
+import type { ControlDecl, TriggerSpec } from "./types.ts";
 import { resolveElement } from "./util/resolve_element.ts";
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 
@@ -13,11 +13,11 @@ const STRINGISH_START = ['"', "'", "/"];
 const NOT_WHITESPACE = /[^\s]/;
 
 export function parseTriggers(
-  origin: TriggerOrigin,
+  control: ControlDecl,
 ): TriggerSpec[] {
-  const [triggerValue] = parseAttrOrCssValue("trigger", origin, "whole");
+  const [triggerValue] = parseAttrOrCssValue("trigger", control, "whole");
   const triggerSpecs: TriggerSpec[] = [];
-  const target = resolveElement(origin);
+  const target = resolveElement(control);
 
   if (triggerValue) {
     const tokens = tokenizeString(triggerValue);

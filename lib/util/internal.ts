@@ -1,19 +1,19 @@
 import type {
+  ControlSpec,
   CSSPropertyName,
   EventType,
   Owner,
   PseudoId,
   RuleId,
-  Trigger,
 } from "../types.ts";
 
 type Thing = Node | CSSRule | StyleSheet;
 
-type TriggerProps = {
-  [K in `trigger:${EventType}`]: Trigger;
+type ControlProps = {
+  [K in `control:${EventType}`]: ControlSpec;
 };
 
-interface Props extends TriggerProps {
+interface Props extends ControlProps {
   // CSSStyleRule
   "ruleId": RuleId;
   "pseudoId": PseudoId;

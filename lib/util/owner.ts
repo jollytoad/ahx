@@ -1,27 +1,27 @@
 import { getInternal, hasInternal, setInternal } from "./internal.ts";
 import type { Owner } from "../types.ts";
 
-export function getOwner(origin: CSSRule | StyleSheet | Element) {
-  if (hasInternal(origin, "owner")) {
-    return getInternal(origin, "owner");
+export function getOwner(thing: CSSRule | StyleSheet | Element) {
+  if (hasInternal(thing, "owner")) {
+    return getInternal(thing, "owner");
   }
 
-  if (origin instanceof StyleSheet) {
-    return getInternal(origin, "owner") ?? origin.href ?? undefined;
+  if (thing instanceof StyleSheet) {
+    return getInternal(thing, "owner") ?? thing.href ?? undefined;
   }
 
-  if (origin instanceof CSSRule && origin.parentStyleSheet) {
-    return getOwner(origin.parentStyleSheet);
+  if (thing instanceof CSSRule && thing.parentStyleSheet) {
+    return getOwner(thing.parentStyleSheet);
   }
 
-  if (origin instanceof Element && origin.parentElement) {
-    return getOwner(origin.parentElement);
+  if (thing instanceof Element && thing.parentElement) {
+    return getOwner(thing.parentElement);
   }
 }
 
-export function setOwner(origin: CSSRule | StyleSheet | Element, owner: Owner) {
+export function setOwner(thing: CSSRule | StyleSheet | Element, owner: Owner) {
   // TODO: dispatch ahx:setOwner event?
-  if (owner !== getOwner(origin)) {
-    setInternal(origin, "owner", owner);
+  if (owner !== getOwner(thing)) {
+    setInternal(thing, "owner", owner);
   }
 }

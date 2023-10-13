@@ -1,28 +1,32 @@
 import { isDenied } from "../handle_trigger.ts";
 import { internalEntries } from "../util/internal.ts";
-import type { EventType, Trigger, TriggerOrigin } from "../types.ts";
+import type { ControlDecl, ControlSpec, EventType } from "../types.ts";
 import { comparePosition } from "./compare_position.ts";
 
-export function triggers(verbose = false) {
-  console.group("AHX Triggers");
+export function controls(verbose = false) {
+  console.group("ahx controls...");
 
-  const elements = new Map<Element, Map<Trigger, TriggerOrigin>>();
+  const elements = new Map<Element, Map<ControlSpec, ControlDecl>>();
 
-  function addOrigin(elt: Element, origin: TriggerOrigin, trigger: Trigger) {
+  function addControl(
+    elt: Element,
+    ctlDecl: ControlDecl,
+    ctlSpec: ControlSpec,
+  ) {
     if (!elements.has(elt)) {
       elements.set(elt, new Map());
     }
-    elements.get(elt)!.set(trigger, origin);
+    elements.get(elt)!.set(ctlSpec, ctlDecl);
   }
 
-  for (const [origin, key, trigger] of internalEntries()) {
-    if (key.startsWith("trigger:")) {
-      if (origin instanceof Element) {
-        addOrigin(origin, origin, trigger as Trigger);
-      } else if (origin instanceof CSSStyleRule) {
-        for (const node of document.querySelectorAll(origin.selectorText)) {
+  for (const [ctlDecl, key, ctlSpec] of internalEntries()) {
+    if (key.startsWith("control:")) {
+      if (ctlDecl instanceof Element) {
+        addControl(ctlDecl, ctlDecl, ctlSpec as ControlSpec);
+      } else if (ctlDecl instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(ctlDecl.selectorText)) {
           if (node instanceof Element) {
-            addOrigin(node, origin, trigger as Trigger);
+            addControl(node, ctlDecl, ctlSpec as ControlSpec);
           }
         }
       }
@@ -32,11 +36,11 @@ export function triggers(verbose = false) {
   const orderedElements = [...elements.keys()].sort(comparePosition);
 
   for (const elt of orderedElements) {
-    const triggers = elements.get(elt) ?? [];
+    const controls = elements.get(elt) ?? [];
     const events = new Set<EventType>();
     const denied = isDenied(elt);
 
-    for (const [{ trigger }] of triggers) {
+    for (const [{ trigger }] of controls) {
       events.add(trigger.eventType);
     }
 
@@ -47,20 +51,20 @@ export function triggers(verbose = false) {
       [...events].join(", "),
     );
 
-    for (const [{ trigger, action, swap }, origin] of triggers) {
+    for (const [{ trigger, action, swap }, control] of controls) {
       if (verbose) {
         console.log(
           "trigger:",
           trigger,
           "action:",
           action,
-          "origin:",
-          origin,
+          "swap:",
+          swap,
+          "control:",
+          control,
         );
       } else {
-        const originRep = origin instanceof Element
-          ? "element"
-          : origin.cssText;
+        const ctlRep = control instanceof Element ? "element" : control.cssText;
 
         const actionRep = "method" in action
           ? `${action.method.toUpperCase()} ${action.url}`
@@ -81,7 +85,7 @@ export function triggers(verbose = false) {
           swapRep,
           "color: inherit",
           "color: hotpink",
-          originRep,
+          ctlRep,
           "color: inherit",
         );
       }

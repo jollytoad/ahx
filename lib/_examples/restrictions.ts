@@ -1,12 +1,12 @@
 // Example of how a host app could listen for events and veto operations
 
-export function setupRestrictions(document: Document) {
-  document.addEventListener("ahx:handleTrigger", (event) => {
-    const { targetOwner, originOwner } = event.detail;
-    if (targetOwner !== originOwner) {
+export function setupRestrictions() {
+  addEventListener("ahx:trigger", (event) => {
+    const { targetOwner, controlOwner } = event.detail;
+    if (targetOwner !== controlOwner) {
       veto(
         event,
-        `Target element is not owned by trigger origin: ${targetOwner} != ${originOwner}`,
+        `The control owner does not own the target element: ${controlOwner} != ${targetOwner}`,
       );
     }
   });
