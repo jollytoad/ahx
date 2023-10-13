@@ -866,6 +866,10 @@ function fromDOMEventType(type) {
 function isRuleEnabled(rule) {
   return !!rule.parentStyleSheet && !rule.parentStyleSheet.disabled;
 }
+var ruleCount = 0;
+function getRuleId(rule) {
+  return getInternal(rule, "ruleId", () => `${++ruleCount}`);
+}
 
 // lib/util/triggers.ts
 function* getTriggersFromElements(eventType, root, recursive) {
@@ -1411,6 +1415,7 @@ function processSlot(rule) {
 
 // lib/process_rule.ts
 function processRule(rule, props) {
+  const ruleId = getRuleId(rule);
   if (rule.parentStyleSheet) {
     processStyleSheet(rule.parentStyleSheet);
   }
@@ -1422,6 +1427,7 @@ function processRule(rule, props) {
       if (detail.owner) {
         setOwner(rule, detail.owner);
       }
+      setRuleId(rule, ruleId, props);
       processCssImports(rule, props, processImportedRules);
       processGuards(rule, props);
       const pseudoRule = processPseudoElements(rule);
@@ -1442,6 +1448,16 @@ function processStyleSheet(stylesheet) {
 function processImportedRules(link) {
   processRules(link);
   triggerLoad(link.ownerDocument.documentElement);
+}
+function setRuleId(rule, ruleId, props) {
+  const ruleProp = asAhxCSSPropertyName("rule");
+  if (!props.has(ruleProp)) {
+    rule.style.setProperty(ruleProp, ruleId);
+  }
+  const ruleIdProp = asAhxCSSPropertyName(`rule-${ruleId}`);
+  if (!props.has(ruleIdProp)) {
+    rule.style.setProperty(ruleIdProp, ruleId);
+  }
 }
 
 // lib/process_rules.ts

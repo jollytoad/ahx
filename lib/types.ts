@@ -2,6 +2,7 @@ export type Prefix = "ahx";
 export type CSSSelector = string;
 export type CSSPropertyName = string;
 export type EventType = string;
+export type RuleId = string;
 export type PseudoId = number | string;
 export type PseudoPlace = "before" | "after";
 export type HTML = string;
@@ -25,6 +26,8 @@ export type AhxName =
   | "include"
   | "slot"
   | "slot-name"
+  | "rule"
+  | `rule-${string}`
   | AhxHttpMethod;
 
 export type AhxCSSPropertyName = `--${Prefix}-${AhxName}`;

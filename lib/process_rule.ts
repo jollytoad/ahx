@@ -1,5 +1,5 @@
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
-import type { AhxCSSPropertyName } from "./types.ts";
+import type { AhxCSSPropertyName, RuleId } from "./types.ts";
 import { processTriggers } from "./process_triggers.ts";
 import { processGuards } from "./process_guards.ts";
 import { processPseudoElements } from "./process_pseudo_elements.ts";
@@ -8,14 +8,17 @@ import { resolveElement } from "./util/resolve_element.ts";
 import { processCssImports } from "./process_css_imports.ts";
 import { processRules } from "./process_rules.ts";
 import { hasInternal } from "./util/internal.ts";
-import { getAhxCSSPropertyNames } from "./util/names.ts";
+import { asAhxCSSPropertyName, getAhxCSSPropertyNames } from "./util/names.ts";
 import { triggerLoad } from "./trigger_load.ts";
 import { processSlot } from "./process_slot.ts";
+import { getRuleId } from "./util/rules.ts";
 
 export function processRule(
   rule: CSSStyleRule,
   props: Set<AhxCSSPropertyName>,
 ) {
+  const ruleId = getRuleId(rule);
+
   if (rule.parentStyleSheet) {
     processStyleSheet(rule.parentStyleSheet);
   }
@@ -33,6 +36,8 @@ export function processRule(
       if (detail.owner) {
         setOwner(rule, detail.owner);
       }
+
+      setRuleId(rule, ruleId, props);
 
       processCssImports(rule, props, processImportedRules);
       processGuards(rule, props);
@@ -59,4 +64,20 @@ function processStyleSheet(stylesheet: CSSStyleSheet) {
 function processImportedRules(link: HTMLLinkElement) {
   processRules(link);
   triggerLoad(link.ownerDocument.documentElement);
+}
+
+function setRuleId(
+  rule: CSSStyleRule,
+  ruleId: RuleId,
+  props: Set<AhxCSSPropertyName>,
+) {
+  const ruleProp = asAhxCSSPropertyName("rule");
+  if (!props.has(ruleProp)) {
+    rule.style.setProperty(ruleProp, ruleId);
+  }
+
+  const ruleIdProp = asAhxCSSPropertyName(`rule-${ruleId}`);
+  if (!props.has(ruleIdProp)) {
+    rule.style.setProperty(ruleIdProp, ruleId);
+  }
 }

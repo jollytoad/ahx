@@ -3,6 +3,7 @@ import type {
   EventType,
   Owner,
   PseudoId,
+  RuleId,
   Trigger,
 } from "../types.ts";
 
@@ -14,6 +15,7 @@ type TriggerProps = {
 
 interface Props extends TriggerProps {
   // CSSStyleRule
+  "ruleId": RuleId;
   "pseudoId": PseudoId;
   "importLinks": Map<CSSPropertyName, WeakRef<HTMLLinkElement>>;
   "denyTrigger": true;
