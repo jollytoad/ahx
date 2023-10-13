@@ -17,7 +17,8 @@ export function handleTrigger(detail: TriggerDetail) {
   }
 
   if (
-    trigger?.once && getInternal(control, "triggered")?.has(trigger.eventType)
+    trigger?.once &&
+    getInternal(source, `triggered:${trigger.eventType}`)?.has(control)
   ) {
     return;
   }
@@ -28,7 +29,8 @@ export function handleTrigger(detail: TriggerDetail) {
 
   if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
-      getInternal(control, "triggered", () => new Set()).add(trigger.eventType);
+      getInternal(source, `triggered:${trigger.eventType}`, () => new WeakSet())
+        .add(control);
     }
 
     if (hasInternal(control, "delayed")) {

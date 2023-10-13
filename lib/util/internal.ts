@@ -1,4 +1,5 @@
 import type {
+  ControlDecl,
   ControlSpec,
   CSSPropertyName,
   EventType,
@@ -13,7 +14,12 @@ type ControlProps = {
   [K in `control:${EventType}`]: ControlSpec;
 };
 
-interface Props extends ControlProps {
+/** Records that a control has been triggered once on an element for an event type */
+type TriggeredProps = {
+  [K in `triggered:${EventType}`]: WeakSet<ControlDecl>;
+};
+
+interface Props extends ControlProps, TriggeredProps {
   // CSSStyleRule
   "ruleId": RuleId;
   "pseudoId": PseudoId;
@@ -26,7 +32,6 @@ interface Props extends ControlProps {
   "formData": FormData;
 
   // Common
-  "triggered": Set<EventType>;
   "owner": Owner;
 }
 
@@ -110,15 +115,18 @@ export function deleteInternal(obj: Thing, key?: Key): void {
 }
 
 /**
- * Clone important internal values from one thing to another
+ * Clone important internal values from one thing to another.
+ * At present this is just the "triggered:" props.
  */
 export function cloneInternal(src: Thing, dst: Thing) {
-  (["triggered"] as Key[]).forEach((key) => {
-    const value = getInternal(src, key);
-    if (value !== undefined) {
-      setInternal(dst, key, value);
+  for (const [key, valueMap] of values.entries()) {
+    if (key.startsWith("triggered:")) {
+      const value = valueMap.get(src);
+      if (value !== undefined) {
+        setInternal(dst, key, value);
+      }
     }
-  });
+  }
 }
 
 /**

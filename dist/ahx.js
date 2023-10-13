@@ -59,12 +59,14 @@ function deleteInternal(obj, key) {
   }
 }
 function cloneInternal(src, dst) {
-  ["triggered"].forEach((key) => {
-    const value = getInternal(src, key);
-    if (value !== void 0) {
-      setInternal(dst, key, value);
+  for (const [key, valueMap] of values.entries()) {
+    if (key.startsWith("triggered:")) {
+      const value = valueMap.get(src);
+      if (value !== void 0) {
+        setInternal(dst, key, value);
+      }
     }
-  });
+  }
 }
 function* objectsWithInternal(key) {
   const valueMap = values.get(key);
@@ -997,14 +999,14 @@ function handleTrigger(detail) {
     dispatchError(source, "triggerDenied", detail);
     return;
   }
-  if (trigger?.once && getInternal(control, "triggered")?.has(trigger.eventType)) {
+  if (trigger?.once && getInternal(source, `triggered:${trigger.eventType}`)?.has(control)) {
     return;
   }
   if (trigger?.changed) {
   }
   if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
-      getInternal(control, "triggered", () => /* @__PURE__ */ new Set()).add(trigger.eventType);
+      getInternal(source, `triggered:${trigger.eventType}`, () => /* @__PURE__ */ new WeakSet()).add(control);
     }
     if (hasInternal(control, "delayed")) {
       clearTimeout(getInternal(control, "delayed"));
