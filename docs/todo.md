@@ -17,6 +17,27 @@ The document sourced data could also feed into another UI element, eg a form.
 Any trigger should be able to reference a bundle (or multiple?) to indicate the
 data it wants.
 
+## Flash of unstyled content
+
+- techniques to avoid this
+
+## Rules to restrict...
+
+- adding controls
+- harvesting data
+- swapping content
+
+## Better module build
+
+- export functions usable to the host app
+- export types for host app
+- move debugging fns into dynamic module (loaded only when required)
+
+## Tests
+
+- Unit testing
+- Cross-browser testing
+
 ## More htmx features
 
 ### Targets, out of band, swapping
@@ -51,14 +72,3 @@ Determine what augmentations may need here
 
 The host app should have some influence on these so we have a consistent UX,
 need to review the needs before copy htmx blindly on this.
-
-### Better module build
-
-- export functions usable to the host app
-- export types for host app
-- move debugging fns into dynamic module (loaded only when required)
-
-### Tests
-
-- Unit testing
-- Cross-browser testing
