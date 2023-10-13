@@ -23,19 +23,20 @@ export function initEventListener(eventType: EventType) {
 }
 
 function eventListener(event: Event) {
-  for (const triggered of getControlsForEvent(event)) {
-    handleTrigger(triggered);
+  for (const triggerDetail of getTriggerDetailsForEvent(event)) {
+    handleTrigger(triggerDetail);
   }
 }
 
-function* getControlsForEvent(
+function* getTriggerDetailsForEvent(
   event: Event,
 ): Iterable<TriggerDetail> {
   if (event.target instanceof Element) {
-    const eventType = fromDOMEventType(event.type);
-    const root = event.target;
-    const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    const controls = getControls(eventType, root, recursive);
+    const controls = getControls(
+      fromDOMEventType(event.type),
+      event.target,
+      isRecursive(event),
+    );
 
     for (const [source, control, ctlSpec] of controls) {
       const target = parseTarget(source, control);
@@ -51,4 +52,8 @@ function* getControlsForEvent(
       };
     }
   }
+}
+
+function isRecursive(event: Event): boolean {
+  return event instanceof CustomEvent && !!event.detail?.recursive;
 }

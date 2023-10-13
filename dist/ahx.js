@@ -1096,16 +1096,17 @@ function initEventListener(eventType) {
   }
 }
 function eventListener(event) {
-  for (const triggered of getControlsForEvent(event)) {
-    handleTrigger(triggered);
+  for (const triggerDetail of getTriggerDetailsForEvent(event)) {
+    handleTrigger(triggerDetail);
   }
 }
-function* getControlsForEvent(event) {
+function* getTriggerDetailsForEvent(event) {
   if (event.target instanceof Element) {
-    const eventType = fromDOMEventType(event.type);
-    const root = event.target;
-    const recursive = event instanceof CustomEvent && !!event.detail?.recursive;
-    const controls2 = getControls(eventType, root, recursive);
+    const controls2 = getControls(
+      fromDOMEventType(event.type),
+      event.target,
+      isRecursive(event)
+    );
     for (const [source, control, ctlSpec] of controls2) {
       const target = parseTarget(source, control);
       yield {
@@ -1120,6 +1121,9 @@ function* getControlsForEvent(event) {
       };
     }
   }
+}
+function isRecursive(event) {
+  return event instanceof CustomEvent && !!event.detail?.recursive;
 }
 
 // lib/process_control.ts
