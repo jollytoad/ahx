@@ -6,11 +6,13 @@
 a.load-on-click {
   --ahx-trigger: click;
   --ahx-get: url('./more.html');
+  --ahx-swap: outer;
 }
 
 .load-on-load {
   --ahx-trigger: load;
   --ahx-get: url('./more.html');
+  --ahx-swap: outer;
 }
 
 .numberwang {

@@ -17,7 +17,7 @@
         <h1>Augmented Hypermedia Extensions</h1>
       </header>
 
-      <a ahx-get="/more.html" ahx-trigger="click">Load me</a>
+      <a ahx-get="/more.html" ahx-trigger="click" ahx-swap="outer">Load me</a>
 
       <br/>
 
@@ -25,7 +25,7 @@
 
       <br/>
 
-      <span ahx-get="/more.html" ahx-trigger="load once">Load me on load</span>
+      <span ahx-get="/more.html" ahx-trigger="load once" ahx-swap="outer">Load me on load</span>
 
       <br/>
 
@@ -57,14 +57,14 @@
 
       <hr/> -->
 
-      <slot ahx-get="/numberwang.html" ahx-trigger="load once"></slot>
+      <slot ahx-get="/numberwang.html" ahx-trigger="load once" ahx-swap="outer"></slot>
 
       <hr/>
 
       <form id="my-form">
       </form>
 
-      <span ahx-trigger="click" ahx-get="/loaded.html" ahx-include="#my-form">Click Me</span>
+      <span ahx-trigger="click" ahx-get="/loaded.html" ahx-include="#my-form" ahx-swap="outer">Click Me</span>
 
       <hr/>
 
