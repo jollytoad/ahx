@@ -23,8 +23,8 @@ export function initEventListener(eventType: EventType) {
 }
 
 function eventListener(event: Event) {
-  for (const triggerDetail of getTriggerDetailsForEvent(event)) {
-    handleTrigger(triggerDetail);
+  for (const detail of getTriggerDetailsForEvent(event)) {
+    handleTrigger(detail);
   }
 }
 

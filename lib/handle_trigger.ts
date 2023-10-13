@@ -14,24 +14,24 @@ import type { TriggerDetail } from "./types.ts";
 import { handleAction } from "./handle_action.ts";
 
 export function handleTrigger(detail: TriggerDetail) {
-  const { trigger, source } = detail;
+  const { control, trigger, source } = detail;
 
   if (isDenied(source)) {
     dispatchError(source, "triggerDenied", detail);
     return;
   }
 
+  if (trigger?.once && hasInternal(control, "triggeredOnce")) {
+    return;
+  }
+
+  if (trigger?.changed) {
+    // TODO: return if value hasn't changed
+  }
+
   if (dispatchBefore(source, "trigger", detail)) {
     if (trigger?.once) {
-      if (hasInternal(source, "triggeredOnce")) {
-        return;
-      } else {
-        setInternal(source, "triggeredOnce", true);
-      }
-    }
-
-    if (trigger?.changed) {
-      // TODO: return if value hasn't changed
+      setInternal(control, "triggeredOnce", true);
     }
 
     if (hasInternal(source, "delayed")) {
