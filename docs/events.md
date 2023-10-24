@@ -237,6 +237,23 @@ Dispatched before a value is harvested from the document by `--ahx-harvest`.
 - `detail.targetOwner` - the _owner_ of the target element of the eventual swap
 - `detail.controlOwner` - the _owner_ of the control rule
 
+## `ahx:navigate`
+
+Dispatch before an attempt to navigate at the window level occurs due to a
+response header or other reason. A listener may veto this event to prevent the
+navigation occurring, in which case it will still fallback to the usual swapping
+mechanism.
+
+**Details**
+
+same as `ahx:action`, plus:
+
+- `detail.request` - the request that was performed
+- `detail.response` - the response from the request
+- `detail.refresh` - `true` if a full page reload was requested via
+  `AHX-Refresh` header
+- `detail.url` - the URL to load or reload
+
 ## Error Events
 
 ### `ahx:triggerSyntax:error`
@@ -255,3 +272,8 @@ Dispatched when an ahx css property value is invalid.
 
 Dispatched when a trigger was denied due to a `--ahx-deny-trigger` rule being
 applied to the target element.
+
+### `ahx:invalidRequest:error`
+
+Dispatched when a valid request cannot be created, due to a missing URL or other
+reason.

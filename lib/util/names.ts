@@ -2,7 +2,9 @@ import { config } from "../config.ts";
 import type {
   AhxAttributeName,
   AhxCSSPropertyName,
+  AhxHeaderName,
   ControlPropName,
+  HeaderName,
 } from "../types.ts";
 
 export function getAhxCSSPropertyNames(
@@ -34,6 +36,10 @@ export function isAhxAttributeName(name: string): name is AhxAttributeName {
   return name.startsWith(`${config.prefix}-`);
 }
 
+export function isAhxHeaderName(name: string): name is AhxHeaderName {
+  return name.startsWith(`${config.prefix}-`);
+}
+
 export function asAhxCSSPropertyName(
   name: ControlPropName | AhxCSSPropertyName | AhxAttributeName,
 ): AhxCSSPropertyName {
@@ -52,4 +58,8 @@ export function asAhxAttributeName(
     : isAhxCSSPropertyName(name)
     ? name.substring(2) as AhxAttributeName
     : `${config.prefix}-${name}`;
+}
+
+export function asAhxHeaderName(name: HeaderName | AhxHeaderName) {
+  return isAhxHeaderName(name) ? name : `${config.prefix}-${name}`;
 }

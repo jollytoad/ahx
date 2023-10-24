@@ -18,30 +18,34 @@ export function parseCssValue(
 
   if (value) {
     // match: attr(<name> <type?>)
-    if (elt) {
-      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
-      if (isAttr) {
-        value = elt.getAttribute(isAttr[1]) ?? undefined;
-        if (value && isAttr[2] === "url") {
-          value = parseURL(value, elt.baseURI);
+    const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
+    if (isAttr) {
+      if (!elt) {
+        return [value];
+      }
+      value = elt.getAttribute(isAttr[1]) ?? undefined;
+      if (value && isAttr[2] === "url") {
+        value = parseURL(value, elt.baseURI);
+      }
+      return value ? [value] : [];
+    } else {
+      // match: --prop(<name> <type?>)
+      const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
+      if (isProp) {
+        if (!elt) {
+          return [value];
+        }
+        value = undefined;
+        const propValue = elt[isProp[1] as keyof Element];
+        if (isProp[2] === "url" && typeof propValue === "string") {
+          value = parseURL(propValue, elt.baseURI);
+        } else if (
+          typeof propValue === "string" || typeof propValue === "number" ||
+          typeof propValue === "boolean"
+        ) {
+          value = String(propValue);
         }
         return value ? [value] : [];
-      } else {
-        // match: --prop(<name> <type?>)
-        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
-        if (isProp) {
-          value = undefined;
-          const propValue = elt[isProp[1] as keyof Element];
-          if (isProp[2] === "url" && typeof propValue === "string") {
-            value = parseURL(propValue, elt.baseURI);
-          } else if (
-            typeof propValue === "string" || typeof propValue === "number" ||
-            typeof propValue === "boolean"
-          ) {
-            value = String(propValue);
-          }
-          return value ? [value] : [];
-        }
       }
     }
 
@@ -54,7 +58,7 @@ export function parseCssValue(
         elt?.baseURI;
 
       return values.flatMap((value) => {
-        const url = parseURL(parseQuoted(value), baseURL);
+        const url = value ? parseURL(parseQuoted(value), baseURL) : undefined;
         return url ? [url] : [];
       });
     }

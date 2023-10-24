@@ -30,8 +30,17 @@ export type ControlPropName =
   | `rule-${string}`
   | AhxHttpMethod;
 
+export type RequestHeaderName =
+  | "current-url"
+  | "request";
+
+export type ResponseHeaderName = "refresh";
+
+export type HeaderName = RequestHeaderName | ResponseHeaderName;
+
 export type AhxCSSPropertyName = `--${Prefix}-${ControlPropName}`;
 export type AhxAttributeName = `${Prefix}-${ControlPropName}`;
+export type AhxHeaderName = `${Prefix}-${HeaderName}`;
 
 /** A thing that declares a Hypermedia Control */
 export type ControlDecl = Element | CSSStyleRule;
@@ -55,8 +64,8 @@ export interface TriggerSpec {
 
 export interface ActionRequestSpec {
   type: "request";
-  method: string;
-  url: URL;
+  method: AhxHttpMethod;
+  url?: URL;
 }
 
 export interface ActionHarvestSpec {
@@ -146,6 +155,7 @@ export interface AhxEventMap {
   "addEventType": [EventTypeDetail, EventTypeDetail];
   "trigger": [TriggerDetail, TriggerDetail];
   "action": [ActionDetail, ActionDetail];
+  "navigate": [NavigateDetail, NavigateDetail];
   "swap": [SwapDetail, SwapDetail];
   "request": [RequestDetail, RequestDetail];
   "harvest": [HarvestDetail, HarvestDetail];
@@ -162,6 +172,7 @@ export interface AhxErrorMap {
     rule: CSSStyleRule;
   };
   "triggerDenied": TriggerDetail;
+  "invalidRequest": { action: ActionRequestSpec; reason: string };
 }
 
 export interface MutationsDetail {
@@ -245,6 +256,14 @@ export interface TriggerDetail extends ControlDetail, Owners {
 /** The details for performing the action of a control */
 export interface ActionDetail extends TriggerDetail {
   formData?: FormData;
+}
+
+/** The details for performing a browser navigation following an action */
+export interface NavigateDetail extends ActionDetail {
+  request: Request;
+  response: Response;
+  refresh?: boolean;
+  url: URL;
 }
 
 /** The details for performing a swap for a control */

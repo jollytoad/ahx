@@ -5,14 +5,28 @@ import { getInternal, hasInternal } from "./util/internal.ts";
 import type { ActionDetail } from "./types.ts";
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { handleHarvest } from "./handle_harvest.ts";
+import { parseCssValue } from "./parse_css_value.ts";
 
 export async function handleAction(detail: ActionDetail) {
-  const { source, control } = detail;
+  const { source, control, action } = detail;
 
   const [query] = parseAttrOrCssValue("include", control, "whole");
   const include = querySelectorExt(source, query);
 
   detail.formData = include ? getFormData(include) : undefined;
+
+  if (
+    action.type === "request" && control instanceof CSSStyleRule &&
+    action.url === undefined
+  ) {
+    const [url] = parseCssValue(action.method, control, source);
+    if (url) {
+      detail.action = {
+        ...action,
+        url: new URL(url, source.baseURI),
+      };
+    }
+  }
 
   if (dispatchBefore(source, "action", detail)) {
     switch (detail.action.type) {

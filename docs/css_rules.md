@@ -109,9 +109,31 @@ Equivalent of [hx-trigger](https://htmx.org/attributes/hx-trigger).
 Cause an element to issue a HTTP request to the specified URL on the trigger
 event, and replace the element with the returned HTML if successful.
 
-The triggering event is determined by the type of the element, or may be
-explicitly given via a `--ahx-trigger` CSS property or `ahx-trigger` attribute
-on the element.
+The value of this property should be:
+
+- `url(<url>)` function containing an absolute or relative URL (which will be
+  resolved against the URL of the stylesheet)
+- `attr(<name> url)` function specifying an attribute to obtain the URL,
+  relative URLs will be resolved against the base URL of the element.
+
+The triggering event must be explicitly given via a `--ahx-trigger` CSS
+property.
+
+```css
+[ahx-host~="foo"] .actions::after {
+  --ahx-trigger: load once;
+  --ahx-get: url("actions");
+  --ahx-swap: inner;
+}
+```
+
+```css
+.my-button {
+  --ahx-trigger: click;
+  --ahx-get: attr(ahx-get url);
+  --ahx-swap: outer;
+}
+```
 
 This can also be specified directly on an element using `ahx-*` attributes.
 
