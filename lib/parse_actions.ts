@@ -12,7 +12,7 @@ export function parseActions(control: ControlDecl): ActionSpec[] {
       actionSpecs.push({
         type: "request",
         method,
-        url: parseURL(url),
+        url: parseURL(url, control),
       });
     }
   }
@@ -28,9 +28,10 @@ export function parseActions(control: ControlDecl): ActionSpec[] {
   return actionSpecs;
 }
 
-function parseURL(url: string): URL | undefined {
+function parseURL(url: string, control: ControlDecl): URL | undefined {
+  const baseURL = control instanceof Element ? control.baseURI : undefined;
   try {
-    return new URL(url);
+    return new URL(url, baseURL);
   } catch {
     return undefined;
   }

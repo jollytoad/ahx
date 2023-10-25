@@ -246,11 +246,17 @@ function isAhxCSSPropertyName(name) {
 function isAhxAttributeName(name) {
   return name.startsWith(`${config.prefix}-`);
 }
+function isAhxHeaderName(name) {
+  return name.startsWith(`${config.prefix}-`);
+}
 function asAhxCSSPropertyName(name) {
   return isAhxCSSPropertyName(name) ? name : isAhxAttributeName(name) ? `--${name}` : `--${config.prefix}-${name}`;
 }
 function asAhxAttributeName(name) {
   return isAhxAttributeName(name) ? name : isAhxCSSPropertyName(name) ? name.substring(2) : `${config.prefix}-${name}`;
+}
+function asAhxHeaderName(name) {
+  return isAhxHeaderName(name) ? name : `${config.prefix}-${name}`;
 }
 
 // lib/util/owner.ts
@@ -274,64 +280,35 @@ function setOwner(thing, owner) {
   }
 }
 
-// lib/parse_interval.ts
-function parseInterval(str) {
-  if (str == void 0) {
-    return void 0;
-  }
-  if (str.slice(-2) == "ms") {
-    return parseFloat(str.slice(0, -2)) || void 0;
-  }
-  if (str.slice(-1) == "s") {
-    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
-  }
-  if (str.slice(-1) == "m") {
-    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
-  }
-  return parseFloat(str) || void 0;
-}
-
-// lib/util/resolve_element.ts
-function resolveElement(thing) {
-  if (thing instanceof Element) {
-    return thing;
-  }
-  if (thing && "ownerNode" in thing && thing.ownerNode && thing.ownerNode instanceof Element) {
-    return thing.ownerNode;
-  }
-  if (thing?.parentStyleSheet) {
-    return resolveElement(thing.parentStyleSheet);
-  }
-  if (thing && "ownerRule" in thing) {
-    return resolveElement(thing.ownerRule);
-  }
-}
-
 // lib/parse_css_value.ts
 function parseCssValue(prop, rule, elt, expect = "tokens") {
   prop = asAhxCSSPropertyName(prop);
   let value = rule.style.getPropertyValue(prop)?.trim();
   if (value) {
-    if (elt) {
-      const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
-      if (isAttr) {
-        value = elt.getAttribute(isAttr[1]) ?? void 0;
-        if (value && isAttr[2] === "url") {
-          value = parseURL(value, elt.baseURI);
+    const isAttr = /^attr\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
+    if (isAttr) {
+      if (!elt) {
+        return [value];
+      }
+      value = elt.getAttribute(isAttr[1]) ?? void 0;
+      if (value && isAttr[2] === "url") {
+        value = parseURL2(value, elt.baseURI);
+      }
+      return value ? [value] : [];
+    } else {
+      const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
+      if (isProp) {
+        if (!elt) {
+          return [value];
+        }
+        value = void 0;
+        const propValue = elt[isProp[1]];
+        if (isProp[2] === "url" && typeof propValue === "string") {
+          value = parseURL2(propValue, elt.baseURI);
+        } else if (typeof propValue === "string" || typeof propValue === "number" || typeof propValue === "boolean") {
+          value = String(propValue);
         }
         return value ? [value] : [];
-      } else {
-        const isProp = /^--prop\(([^\)\s,]+)(?:\s+([^\)\s,]+))?\)$/.exec(value);
-        if (isProp) {
-          value = void 0;
-          const propValue = elt[isProp[1]];
-          if (isProp[2] === "url" && typeof propValue === "string") {
-            value = parseURL(propValue, elt.baseURI);
-          } else if (typeof propValue === "string" || typeof propValue === "number" || typeof propValue === "boolean") {
-            value = String(propValue);
-          }
-          return value ? [value] : [];
-        }
       }
     }
     const isURL = /^url\(([^\)]*)\)(?:\s+url\(([^\)]*)\))*$/.exec(value);
@@ -339,14 +316,14 @@ function parseCssValue(prop, rule, elt, expect = "tokens") {
       const [, ...values2] = isURL;
       const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
       return values2.flatMap((value2) => {
-        const url = parseURL(parseQuoted(value2), baseURL);
+        const url = value2 ? parseURL2(parseQuoted(value2), baseURL) : void 0;
         return url ? [url] : [];
       });
     }
     value = parseQuoted(value);
   }
   return value ? expect === "tokens" ? value.split(/\s+/).map(parseQuoted) : [value] : [];
-  function parseURL(value2, baseURL) {
+  function parseURL2(value2, baseURL) {
     try {
       return new URL(value2, baseURL).href;
     } catch (e) {
@@ -377,107 +354,27 @@ function parseAttrOrCssValue(prop, control, expect = "tokens") {
 }
 
 // lib/parse_triggers.ts
-var WHITESPACE_OR_COMMA = /[\s,]/;
-var SYMBOL_START = /[_$a-zA-Z]/;
-var SYMBOL_CONT = /[_$a-zA-Z0-9]/;
-var STRINGISH_START = ['"', "'", "/"];
-var NOT_WHITESPACE = /[^\s]/;
 function parseTriggers(control) {
-  const [triggerValue] = parseAttrOrCssValue("trigger", control, "whole");
+  const [rawValue] = parseAttrOrCssValue("trigger", control, "whole");
   const triggerSpecs = [];
-  const target = resolveElement(control);
-  if (triggerValue) {
-    const tokens = tokenizeString(triggerValue);
-    do {
-      consumeUntil(tokens, NOT_WHITESPACE);
-      const initialLength = tokens.length;
-      const trigger = consumeUntil(tokens, /[,\[\s]/);
+  if (rawValue) {
+    const triggerValues = rawValue.split(/\s*,\s*/);
+    for (const triggerValue of triggerValues) {
+      const [trigger, ...modifiers] = triggerValue.split(/\s+/);
       if (trigger) {
-        if (trigger === "every") {
-          const every = { eventType: "every" };
-          consumeUntil(tokens, NOT_WHITESPACE);
-          every.pollInterval = parseInterval(consumeUntil(tokens, /[,\[\s]/));
-          consumeUntil(tokens, NOT_WHITESPACE);
-          triggerSpecs.push(every);
-        } else {
-          const triggerSpec = { eventType: trigger };
-          while (tokens.length > 0 && tokens[0] !== ",") {
-            consumeUntil(tokens, NOT_WHITESPACE);
-            const token = tokens.shift();
-            if (token === "changed") {
-              triggerSpec.changed = true;
-            } else if (token === "once") {
-              triggerSpec.once = true;
-            } else if (token === "delay" && tokens[0] === ":") {
-              tokens.shift();
-              triggerSpec.delay = parseInterval(
-                consumeUntil(tokens, WHITESPACE_OR_COMMA)
-              );
-            } else if (token === "throttle" && tokens[0] === ":") {
-              tokens.shift();
-              triggerSpec.throttle = parseInterval(
-                consumeUntil(tokens, WHITESPACE_OR_COMMA)
-              );
-            } else if (token === "queue" && tokens[0] === ":") {
-              tokens.shift();
-              triggerSpec.queue = consumeUntil(
-                tokens,
-                WHITESPACE_OR_COMMA
-              );
-            } else {
-              dispatchError(target, "triggerSyntax", {
-                token: tokens.shift()
-              });
-            }
+        const triggerSpec = { eventType: trigger };
+        for (const modifier of modifiers) {
+          switch (modifier) {
+            case "once":
+              triggerSpec[modifier] = true;
+              break;
           }
-          triggerSpecs.push(triggerSpec);
         }
+        triggerSpecs.push(triggerSpec);
       }
-      if (tokens.length === initialLength) {
-        dispatchError(target, "triggerSyntax", {
-          token: tokens.shift()
-        });
-      }
-      consumeUntil(tokens, NOT_WHITESPACE);
-    } while (tokens[0] === "," && tokens.shift());
+    }
   }
   return triggerSpecs;
-}
-function tokenizeString(str) {
-  const tokens = [];
-  let position = 0;
-  while (position < str.length) {
-    if (SYMBOL_START.exec(str.charAt(position))) {
-      const startPosition = position;
-      while (SYMBOL_CONT.exec(str.charAt(position + 1))) {
-        position++;
-      }
-      tokens.push(str.substr(startPosition, position - startPosition + 1));
-    } else if (STRINGISH_START.indexOf(str.charAt(position)) !== -1) {
-      const startChar = str.charAt(position);
-      const startPosition = position;
-      position++;
-      while (position < str.length && str.charAt(position) !== startChar) {
-        if (str.charAt(position) === "\\") {
-          position++;
-        }
-        position++;
-      }
-      tokens.push(str.substr(startPosition, position - startPosition + 1));
-    } else {
-      const symbol = str.charAt(position);
-      tokens.push(symbol);
-    }
-    position++;
-  }
-  return tokens;
-}
-function consumeUntil(tokens, match) {
-  let result = "";
-  while (tokens.length > 0 && !tokens[0].match(match)) {
-    result += tokens.shift();
-  }
-  return result;
 }
 
 // lib/parse_actions.ts
@@ -486,11 +383,10 @@ function parseActions(control) {
   for (const method of config.httpMethods) {
     const [url] = parseAttrOrCssValue(method, control);
     if (url) {
-      const baseURL = (resolveElement(control) ?? document).baseURI;
       actionSpecs.push({
         type: "request",
         method,
-        url: new URL(url, baseURL)
+        url: parseURL(url, control)
       });
     }
   }
@@ -502,6 +398,31 @@ function parseActions(control) {
     }
   }
   return actionSpecs;
+}
+function parseURL(url, control) {
+  const baseURL = control instanceof Element ? control.baseURI : void 0;
+  try {
+    return new URL(url, baseURL);
+  } catch {
+    return void 0;
+  }
+}
+
+// lib/parse_interval.ts
+function parseInterval(str) {
+  if (str == void 0) {
+    return void 0;
+  }
+  if (str.slice(-2) == "ms") {
+    return parseFloat(str.slice(0, -2)) || void 0;
+  }
+  if (str.slice(-1) == "s") {
+    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
+  }
+  if (str.slice(-1) == "m") {
+    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
+  }
+  return parseFloat(str) || void 0;
 }
 
 // lib/parse_swap.ts
@@ -877,18 +798,33 @@ function isHtmlResponse(response) {
 
 // lib/handle_request.ts
 async function handleRequest(props) {
-  const { source, action, target, swap, formData, controlOwner, targetOwner } = props;
+  const { source, action, target, swap, controlOwner, targetOwner } = props;
   if (action.type !== "request") {
     return;
   }
-  const detail = {
-    request: prepareRequest(action, formData)
-  };
+  const request = prepareRequest({ ...props, action });
+  if (!request) {
+    return;
+  }
+  const detail = { request };
   if (dispatchBefore(source, "request", detail)) {
-    const { request } = detail;
+    const { request: request2 } = detail;
     try {
-      const response = await fetch(request);
-      dispatchAfter(source, "request", { request, response });
+      const response = await fetch(request2);
+      dispatchAfter(source, "request", { request: request2, response });
+      if (response.headers.has(asAhxHeaderName("refresh"))) {
+        const detail2 = {
+          ...props,
+          request: request2,
+          response,
+          refresh: true,
+          url: new URL(location.href)
+        };
+        if (dispatchBefore(source, "navigate", detail2)) {
+          location.reload();
+          return;
+        }
+      }
       await handleSwap({
         ...swap,
         target,
@@ -897,31 +833,63 @@ async function handleRequest(props) {
         targetOwner
       });
     } catch (error) {
-      dispatchAfter(source, "request", { request, error });
+      dispatchAfter(source, "request", { request: request2, error });
     }
   }
 }
-function prepareRequest(action, formData) {
+function prepareRequest(detail) {
+  const { action, formData, source } = detail;
+  if (!action.url) {
+    dispatchError(source, "invalidRequest", {
+      action,
+      reason: "Missing URL"
+    });
+    return;
+  }
   const url = new URL(action.url);
+  const headers = new Headers();
   const init = {
-    method: action.method.toUpperCase()
+    method: action.method.toUpperCase(),
+    headers
   };
+  headers.set("Accept", "text/html,application/xhtml+xml,text/plain;q=0.9");
+  headers.set(asAhxHeaderName("request"), "true");
+  headers.set(
+    asAhxHeaderName("current-url"),
+    source.ownerDocument.location.href
+  );
   if (formData) {
     switch (init.method) {
       case "GET":
       case "HEAD":
       case "DELETE":
         for (const [key, value] of formData) {
-          url.searchParams.append(key, String(value));
+          if (typeof value === "string") {
+            url.searchParams.append(key, value);
+          }
         }
         break;
       case "PUT":
       case "POST":
       case "PATCH":
-        init.body = formData;
+        if (containsFile(formData)) {
+          init.body = formData;
+          headers.set("Content-Type", "multipart/form-data");
+        } else {
+          init.body = new URLSearchParams(formData);
+          headers.set("Content-Type", "application/x-www-form-urlencoded");
+        }
     }
   }
   return new Request(url, init);
+}
+function containsFile(formData) {
+  for (const value of formData.values()) {
+    if (value instanceof File) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // lib/handle_harvest.ts
@@ -969,10 +937,19 @@ function getOldValue(event) {
 
 // lib/handle_action.ts
 async function handleAction(detail) {
-  const { source, control } = detail;
+  const { source, control, action } = detail;
   const [query] = parseAttrOrCssValue("include", control, "whole");
   const include = querySelectorExt(source, query);
   detail.formData = include ? getFormData(include) : void 0;
+  if (action.type === "request" && control instanceof CSSStyleRule && action.url === void 0) {
+    const [url] = parseCssValue(action.method, control, source);
+    if (url) {
+      detail.action = {
+        ...action,
+        url: new URL(url, source.baseURI)
+      };
+    }
+  }
   if (dispatchBefore(source, "action", detail)) {
     switch (detail.action.type) {
       case "request":
@@ -1132,6 +1109,22 @@ function* getTriggerDetailsForEvent(event) {
 }
 function isRecursive(event) {
   return event instanceof CustomEvent && !!event.detail?.recursive;
+}
+
+// lib/util/resolve_element.ts
+function resolveElement(thing) {
+  if (thing instanceof Element) {
+    return thing;
+  }
+  if (thing && "ownerNode" in thing && thing.ownerNode && thing.ownerNode instanceof Element) {
+    return thing.ownerNode;
+  }
+  if (thing?.parentStyleSheet) {
+    return resolveElement(thing.parentStyleSheet);
+  }
+  if (thing && "ownerRule" in thing) {
+    return resolveElement(thing.ownerRule);
+  }
 }
 
 // lib/process_control.ts
