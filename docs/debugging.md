@@ -38,3 +38,9 @@ ultimately responsible for the element being added to the page.
 ## `ahx.forms()`
 
 Log all forms (and internal FormData) into which values have been harvested.
+
+## `ahx.slots()`
+
+Log all elements that are considered slots by _ahx_ along with the declare slot
+names for each, which may be derived directly from the `ahx-slot-name` attribute
+on the element or from a `--ahx-slot-name` property in a CSS rule.

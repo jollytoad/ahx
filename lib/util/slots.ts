@@ -13,10 +13,4 @@ export function findSlot(name: string, root: ParentNode) {
       }
     }
   }
-
-  for (const slot of root.querySelectorAll(`slot[name]`)) {
-    if (name === slot.getAttribute("name")) {
-      return slot;
-    }
-  }
 }

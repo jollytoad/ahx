@@ -26,6 +26,7 @@ export const config: Config = {
   ahxAttrs: [
     "trigger",
     "target",
+    "slot-name",
   ],
 
   maxLoopCount: 10,
@@ -45,6 +46,7 @@ export const config: Config = {
     "canvas": null,
     "colgroup": "col",
     "datalist": "option",
+    "div": "div",
     "dl": "dt",
     "footer": "div",
     "form": "fieldset",
@@ -60,12 +62,14 @@ export const config: Config = {
     "object": null,
     "ol": "li",
     "optgroup": "option",
+    "p": "span",
     "picture": "source",
     "portal": null,
     "pre": null,
     "script": null,
     "section": "div",
     "select": "option",
+    "span": "span",
     "style": null,
     "table": "tbody",
     "tbody": "tr",
@@ -94,6 +98,6 @@ export const config: Config = {
     "wbr": null,
 
     // default for all other parents
-    "*": "span",
+    "*": "slot",
   },
 };

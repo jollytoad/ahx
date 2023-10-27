@@ -21,11 +21,25 @@ data it wants.
 
 - techniques to avoid this
 
+- if an `--ahx-import` accompanies a `--ahx-swap`, then maybe the swap could be
+  delayed until the referenced stylesheets have loaded.
+
 ## Rules to restrict...
 
 - adding controls
 - harvesting data
 - swapping content
+
+## Better control over pseudo elements
+
+At present we can use ::after/::before to declare pseudo elements so that
+multiple augmentations (and the host) can prepend or append content inside an
+element (equiv of afterBegin/beforeEnd swap). We may need to allow more control
+over this, ie. allow insertion actually before or after the element (ie.
+beforeBegin/afterEnd style swap), and/or declare weighting of pseudo element to
+allow predictive ordering of multiple pseudo elements at the same location.
+
+Or an alternative to pseudo elements altogether.
 
 ## Better module build
 
@@ -51,6 +65,8 @@ or selectors. Need to consider morph swaps and view transitions in the mix.
 - settle?
 - scroll?
 - show?
+
+UPDATE: slots introduced as an alternative to out of band.
 
 ### Trigger modifiers
 

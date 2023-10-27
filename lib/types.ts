@@ -164,7 +164,6 @@ export interface AhxEventMap {
 }
 
 export interface AhxErrorMap {
-  "triggerSyntax": { token: string | undefined };
   "pseudoElementNotPermitted": { parentTag: string };
   "invalidCssValue": {
     prop: CSSPropertyName;

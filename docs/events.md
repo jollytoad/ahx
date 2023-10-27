@@ -256,10 +256,6 @@ same as `ahx:action`, plus:
 
 ## Error Events
 
-### `ahx:triggerSyntax:error`
-
-Dispatched when a `ahx-trigger` property in invalid.
-
 ### `ahx:pseudoElementNotPermitted:error`
 
 Dispatched when a pseudo element is not permitted under a parent element.

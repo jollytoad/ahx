@@ -4,3 +4,4 @@ export * from "./debug/elements.ts";
 export * from "./debug/controls.ts";
 export * from "./debug/owners.ts";
 export * from "./debug/forms.ts";
+export * from "./debug/slots.ts";

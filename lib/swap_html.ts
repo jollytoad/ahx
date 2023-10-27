@@ -19,6 +19,7 @@ export async function swapHtml(props: SwapHtmlProps) {
   ) {
     let index = 0;
     let previous: Element | undefined;
+    let replacePrevious = false;
 
     const elements = response.body
       .pipeThrough(new TextDecoderStream())
@@ -32,6 +33,14 @@ export async function swapHtml(props: SwapHtmlProps) {
         previous,
         index,
       };
+
+      switch (element.localName) {
+        case `${config.prefix}-replace-previous`:
+          replacePrevious = true;
+          continue;
+        case `${config.prefix}-flush`:
+          continue;
+      }
 
       const [slot] = parseAttrValue("slot", element);
 
@@ -56,6 +65,8 @@ export async function swapHtml(props: SwapHtmlProps) {
 
         if (slot || !previous) {
           swapHandlers[swapStyle]?.(target, element);
+        } else if (previous && replacePrevious) {
+          previous.replaceWith(element);
         } else {
           previous.after(element);
         }
