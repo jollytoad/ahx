@@ -66,20 +66,22 @@ function createStyleSheetLink(
       }
 
       link.addEventListener("load", (event) => {
-        console.log("After load", detail.url, link.sheet);
         // IMPORTANT: The sheet object may not immediately appear in the DOM,
         // even after the load event, so we may need to poll until it actually
         // appears.
         function process(delay = 1) {
           setTimeout(() => {
-            console.log("After load + timeout", detail.url, link.sheet);
             if (link.sheet) {
               dispatchAfter(event.target ?? document, "cssImport", detail);
               onReady?.(link);
             } else if (delay < 1000) {
               process(delay * 2);
             } else {
-              console.error("TIMEOUT");
+              console.error(
+                "ahx timeout loading stylesheet:",
+                detail.url,
+                link.sheet,
+              );
             }
           }, delay);
         }

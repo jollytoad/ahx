@@ -104,7 +104,8 @@ var config = {
   ],
   ahxAttrs: [
     "trigger",
-    "target"
+    "target",
+    "slot-name"
   ],
   maxLoopCount: 10,
   defaultDelay: 20,
@@ -120,6 +121,7 @@ var config = {
     "canvas": null,
     "colgroup": "col",
     "datalist": "option",
+    "div": "div",
     "dl": "dt",
     "footer": "div",
     "form": "fieldset",
@@ -135,12 +137,14 @@ var config = {
     "object": null,
     "ol": "li",
     "optgroup": "option",
+    "p": "span",
     "picture": "source",
     "portal": null,
     "pre": null,
     "script": null,
     "section": "div",
     "select": "option",
+    "span": "span",
     "style": null,
     "table": "tbody",
     "tbody": "tr",
@@ -167,7 +171,7 @@ var config = {
     "track": null,
     "wbr": null,
     // default for all other parents
-    "*": "span"
+    "*": "slot"
   }
 };
 
@@ -583,11 +587,6 @@ function findSlot(name, root) {
       }
     }
   }
-  for (const slot of root.querySelectorAll(`slot[name]`)) {
-    if (name === slot.getAttribute("name")) {
-      return slot;
-    }
-  }
 }
 
 // lib/swap_html.ts
@@ -597,6 +596,7 @@ async function swapHtml(props) {
   if (response?.ok && response.headers.get("Content-Type")?.startsWith("text/html") && response.body) {
     let index = 0;
     let previous2;
+    let replacePrevious = false;
     const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document2, true));
     for await (const element of elements2) {
       const detail = {
@@ -606,6 +606,13 @@ async function swapHtml(props) {
         previous: previous2,
         index
       };
+      switch (element.localName) {
+        case `${config.prefix}-replace-previous`:
+          replacePrevious = true;
+          continue;
+        case `${config.prefix}-flush`:
+          continue;
+      }
       const [slot] = parseAttrValue("slot", element);
       if (slot) {
         detail.slot = slot;
@@ -624,6 +631,8 @@ async function swapHtml(props) {
         }
         if (slot2 || !previous2) {
           swapHandlers[swapStyle]?.(target2, element2);
+        } else if (previous2 && replacePrevious) {
+          previous2.replaceWith(element2);
         } else {
           previous2.after(element2);
         }
@@ -1371,17 +1380,15 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
         link.setAttribute("crossorigin", detail.crossOrigin);
       }
       link.addEventListener("load", (event) => {
-        console.log("After load", detail.url, link.sheet);
         function process(delay = 1) {
           setTimeout(() => {
-            console.log("After load + timeout", detail.url, link.sheet);
             if (link.sheet) {
               dispatchAfter(event.target ?? document, "cssImport", detail);
               onReady?.(link);
             } else if (delay < 1e3) {
               process(delay * 2);
             } else {
-              console.error("TIMEOUT");
+              console.error("ahx timeout loading stylesheet:", detail.url, link.sheet);
             }
           }, delay);
         }
@@ -1559,6 +1566,53 @@ function deleteInternalRecursive(node) {
   }
 }
 
+// lib/debug.ts
+var debug_exports = {};
+__export(debug_exports, {
+  controls: () => controls,
+  elements: () => elements,
+  eventsAll: () => eventsAll,
+  eventsNone: () => eventsNone,
+  forms: () => forms,
+  internals: () => internals,
+  logger: () => logger,
+  loggerConfig: () => loggerConfig,
+  owners: () => owners,
+  slots: () => slots
+});
+
+// lib/debug/internals.ts
+function internals() {
+  console.group("ahx internal properties...");
+  let groupObject;
+  for (const [thing, key, value] of internalEntries()) {
+    if (thing !== groupObject) {
+      if (groupObject) {
+        console.groupEnd();
+      }
+      const representation = thing instanceof CSSRule ? thing.cssText : thing;
+      console.groupCollapsed(representation);
+      console.dir(thing);
+      if (thing instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(thing.selectorText)) {
+          console.log(node);
+        }
+      }
+      groupObject = thing;
+    }
+    if (value instanceof Map) {
+      console.group("%s:", key);
+      for (const entry of value) {
+        console.log("%c%s:", "font-weight: bold", ...entry);
+      }
+      console.groupEnd();
+    } else {
+      console.log("%c%s:", "font-weight: bold", key, value);
+    }
+  }
+  console.groupEnd();
+}
+
 // lib/debug/events.ts
 var loggerConfig = {
   group: false,
@@ -1594,52 +1648,6 @@ function shouldLog(type) {
     return false;
   }
   return true;
-}
-
-// lib/debug.ts
-var debug_exports = {};
-__export(debug_exports, {
-  controls: () => controls,
-  elements: () => elements,
-  eventsAll: () => eventsAll,
-  eventsNone: () => eventsNone,
-  forms: () => forms,
-  internals: () => internals,
-  logger: () => logger,
-  loggerConfig: () => loggerConfig,
-  owners: () => owners
-});
-
-// lib/debug/internals.ts
-function internals() {
-  console.group("ahx internal properties...");
-  let groupObject;
-  for (const [thing, key, value] of internalEntries()) {
-    if (thing !== groupObject) {
-      if (groupObject) {
-        console.groupEnd();
-      }
-      const representation = thing instanceof CSSRule ? thing.cssText : thing;
-      console.groupCollapsed(representation);
-      console.dir(thing);
-      if (thing instanceof CSSStyleRule) {
-        for (const node of document.querySelectorAll(thing.selectorText)) {
-          console.log(node);
-        }
-      }
-      groupObject = thing;
-    }
-    if (value instanceof Map) {
-      console.group("%s:", key);
-      for (const entry of value) {
-        console.log("%c%s:", "font-weight: bold", ...entry);
-      }
-      console.groupEnd();
-    } else {
-      console.log("%c%s:", "font-weight: bold", key, value);
-    }
-  }
-  console.groupEnd();
 }
 
 // lib/debug/compare_position.ts
@@ -1820,6 +1828,30 @@ function* getControlRulesByAction(type) {
   }
 }
 
+// lib/debug/slots.ts
+function slots() {
+  console.group("ahx slots...");
+  const slots2 = /* @__PURE__ */ new Map();
+  function addSlot(elt, names) {
+    const nameSet = slots2.get(elt) ?? slots2.set(elt, /* @__PURE__ */ new Set()).get(elt);
+    names.forEach((name) => nameSet.add(name));
+  }
+  for (const [thing, slotNames] of objectsWithInternal("slotName")) {
+    if (thing instanceof Element) {
+      addSlot(thing, slotNames);
+    } else if (thing instanceof CSSStyleRule) {
+      const slot = document.querySelector(thing.selectorText);
+      if (slot) {
+        addSlot(slot, slotNames);
+      }
+    }
+  }
+  for (const elt of [...slots2.keys()].sort(comparePosition)) {
+    console.log(elt, ...slots2.get(elt));
+  }
+  console.groupEnd();
+}
+
 // lib/url_attrs.ts
 function applyUrlAttrs(elt, loc) {
   if (elt && elt.getAttribute(`${config.prefix}-url-href`) !== loc.href) {
@@ -1855,7 +1887,6 @@ function initUrlAttrs(document2) {
 
 // lib/ahx.ts
 ready((document2) => {
-  eventsAll();
   initUrlAttrs(document2);
   startObserver(document2);
   processRules(document2);

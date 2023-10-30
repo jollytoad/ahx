@@ -4,18 +4,13 @@
 
 import { ready } from "./ready.ts";
 import { startObserver } from "./start_observer.ts";
-import { eventsAll } from "./debug/events.ts";
 import { processElements } from "./process_elements.ts";
 import { processRules } from "./process_rules.ts";
 import * as ahx from "./debug.ts";
 import { initUrlAttrs } from "./url_attrs.ts";
 import { triggerLoad } from "./trigger_load.ts";
 
-// ahx.loggerConfig.include = ["processValue", "updateForm"];
-
 ready((document) => {
-  eventsAll();
-
   initUrlAttrs(document);
 
   startObserver(document);
