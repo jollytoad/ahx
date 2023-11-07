@@ -1,12 +1,13 @@
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
-import { deleteInternal, getInternal, hasInternal } from "./util/internal.ts";
+import { getInternal } from "./util/internal.ts";
 import {
   dispatchAfter,
   dispatchBefore,
   dispatchError,
 } from "./util/dispatch.ts";
-import type { TriggerDetail } from "./types.ts";
+import type { ActionDetail, TriggerDetail } from "./types.ts";
 import { handleAction } from "./handle_action.ts";
+import { enqueueAction } from "./util/queue.ts";
 
 export function handleTrigger(detail: TriggerDetail) {
   const { control, trigger, source } = detail;
@@ -33,22 +34,25 @@ export function handleTrigger(detail: TriggerDetail) {
         .add(control);
     }
 
-    if (hasInternal(control, "delayed")) {
-      clearTimeout(getInternal(control, "delayed"));
-      deleteInternal(control, "delayed");
-    }
-
     // TODO: throttle
 
     if (trigger?.throttle) {
       // TODO
     } else if (trigger?.delay) {
-      // TODO
+      setTimeout(doAction, trigger.delay);
     } else {
-      handleAction(detail);
+      setTimeout(doAction, 0);
     }
 
     dispatchAfter(source, "trigger", detail);
+  }
+
+  function doAction() {
+    if (hasTarget(detail)) {
+      handleAction(detail);
+    } else {
+      enqueueAction(detail);
+    }
   }
 }
 
@@ -56,4 +60,8 @@ export function isDenied(elt: Element) {
   // TODO: Should get calculated CSS value
   const [deny] = parseAttrOrCssValue("deny-trigger", elt);
   return deny === "true";
+}
+
+function hasTarget(detail: TriggerDetail): detail is ActionDetail {
+  return detail.target instanceof Element;
 }

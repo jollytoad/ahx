@@ -233,6 +233,10 @@ The value of this property can be:
 
 Defaults to `this`.
 
+The value may also be prefixed with `await`, which will cause any triggered
+action to be queued if the target element doesn't yet exist, and performed once
+the target element appears in the document.
+
 This can also be specified directly on an element using the `ahx-target`
 attribute.
 
@@ -252,8 +256,8 @@ Similar to [hx-include](https://htmx.org/attributes/hx-include).
 
 ### --ahx-slot-name
 
-Assign a slot name to the first matched element, this will be the target of any
-top-level elements with an `ahx-slot` attribute from a response.
+Assign a slot name to the elements, this will be the target of any top-level
+elements with an `ahx-slot` attribute from a response.
 
 This is an alternative to
 [hx-swap-oob](https://htmx.org/attributes/hx-swap-oob).

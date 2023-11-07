@@ -46,7 +46,7 @@ function* getTriggerDetailsForEvent(
         source,
         sourceOwner: getOwner(source),
         target,
-        targetOwner: getOwner(target),
+        targetOwner: target !== "await" ? getOwner(target) : undefined,
         control,
         controlOwner: getOwner(control),
       };

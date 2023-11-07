@@ -7,11 +7,12 @@ import { setOwner } from "./util/owner.ts";
 import { config } from "./config.ts";
 import { cloneInternal } from "./util/internal.ts";
 import { parseAttrValue } from "./parse_attr_value.ts";
-import { findSlot } from "./util/slots.ts";
+import { findSlots } from "./util/slots.ts";
 
 export async function swapHtml(props: SwapHtmlProps) {
   const { response, target } = props;
   const document = target.ownerDocument;
+
   if (
     response?.ok &&
     response.headers.get("Content-Type")?.startsWith("text/html") &&
@@ -25,15 +26,7 @@ export async function swapHtml(props: SwapHtmlProps) {
       .pipeThrough(new TextDecoderStream())
       .pipeThrough(new HTMLBodyElementParserStream(document, true));
 
-    for await (const element of elements) {
-      const detail: SwapHtmlDetail = {
-        ...props,
-        swapStyle: props.swapStyle ?? "none",
-        element,
-        previous,
-        index,
-      };
-
+    for await (let element of elements) {
       switch (element.localName) {
         case `${config.prefix}-replace-previous`:
           replacePrevious = true;
@@ -42,40 +35,60 @@ export async function swapHtml(props: SwapHtmlProps) {
           continue;
       }
 
-      const [slot] = parseAttrValue("slot", element);
+      let swapStyle = props.swapStyle ?? "none";
+      let targets = [target];
+
+      const [slot] = parseAttrValue("slot", element, "whole");
 
       if (slot) {
-        detail.slot = slot;
-        const slotTarget = findSlot(slot, document);
+        const slotTargets = findSlots(slot, document);
 
-        if (slotTarget) {
-          detail.target = slotTarget;
-          detail.swapStyle = "inner";
+        if (slotTargets.length) {
+          targets = slotTargets;
+          swapStyle = "inner";
         } else {
-          detail.swapStyle = "none";
+          swapStyle = "none";
         }
       }
 
-      if (dispatchBefore(target, "swap", detail)) {
-        const { target, element, controlOwner, swapStyle, slot } = detail;
+      const templateElement = targets.length ? element : undefined;
 
-        if (controlOwner) {
-          setOwner(element, controlOwner);
+      for (const target of targets) {
+        if (templateElement) {
+          element = templateElement.cloneNode(true) as typeof element;
         }
 
-        if (slot || !previous) {
-          swapHandlers[swapStyle]?.(target, element);
-        } else if (previous && replacePrevious) {
-          previous.replaceWith(element);
-        } else {
-          previous.after(element);
-        }
+        const detail: SwapHtmlDetail = {
+          ...props,
+          swapStyle,
+          target,
+          element,
+          previous,
+          index,
+          slot,
+        };
 
-        if (!slot) {
-          previous = element;
-        }
+        if (dispatchBefore(target, "swap", detail)) {
+          const { target, element, controlOwner, swapStyle, slot } = detail;
 
-        dispatchAfter(target, "swap", detail);
+          if (controlOwner) {
+            setOwner(element, controlOwner);
+          }
+
+          if (slot || !previous) {
+            swapHandlers[swapStyle]?.(target, element);
+          } else if (previous && replacePrevious) {
+            previous.replaceWith(element);
+          } else {
+            previous.after(element);
+          }
+
+          if (!slot) {
+            previous = element;
+          }
+
+          dispatchAfter(target, "swap", detail);
+        }
       }
 
       index++;

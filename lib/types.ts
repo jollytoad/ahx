@@ -154,6 +154,7 @@ export interface AhxEventMap {
   "processControl": [ControlDetail, ControlDetail];
   "addEventType": [EventTypeDetail, EventTypeDetail];
   "trigger": [TriggerDetail, TriggerDetail];
+  "queue": [TriggerDetail, TriggerDetail];
   "action": [ActionDetail, ActionDetail];
   "navigate": [NavigateDetail, NavigateDetail];
   "swap": [SwapDetail, SwapDetail];
@@ -249,11 +250,12 @@ export interface TriggerDetail extends ControlDetail, Owners {
   source: Element;
 
   /** The target for the swap */
-  target: Element;
+  target: Element | "await";
 }
 
 /** The details for performing the action of a control */
 export interface ActionDetail extends TriggerDetail {
+  target: Element;
   formData?: FormData;
 }
 

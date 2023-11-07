@@ -186,6 +186,18 @@ same as `ahx:trigger`, plus:
 
 - `detail.formData` - `FormData` from an `ahx-include`
 
+## `ahx:queue`
+
+Dispatched before a triggered action is queued, due to a target having been
+declared with `await` and not yet existing.
+
+The `ahx:queue:done` side of this event is dispatched when the action is removed
+from the queue, and before `ahx:action` is dispatched.
+
+**Details**
+
+same as `ahx:trigger`.
+
 ## `ahx:swap`
 
 Dispatch before a fetched element or harvested value is swapped into the DOM.

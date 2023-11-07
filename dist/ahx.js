@@ -574,18 +574,29 @@ var HTMLBodyElementParserStream = class extends TransformStream {
 };
 
 // lib/util/slots.ts
-function findSlot(name, root) {
+function findSlots(query, root) {
+  const [name, selector] = splitQuery2(query);
+  let slots2 = [];
   for (const [thing, slotNames] of objectsWithInternal("slotName")) {
     if (slotNames.has(name)) {
       if (thing instanceof Element) {
-        return thing;
+        slots2.push(thing);
       } else if (thing instanceof CSSStyleRule) {
-        const slot = root.querySelector(thing.selectorText);
-        if (slot) {
-          return slot;
-        }
+        slots2.push(...root.querySelectorAll(thing.selectorText));
       }
     }
+  }
+  if (selector) {
+    slots2 = slots2.filter((slot) => slot.matches(selector));
+  }
+  return slots2;
+}
+function splitQuery2(query) {
+  const spaceIndex = query.indexOf(" ");
+  if (spaceIndex === -1) {
+    return [query, ""];
+  } else {
+    return [query.substring(0, spaceIndex), query.substring(spaceIndex + 1)];
   }
 }
 
@@ -598,14 +609,7 @@ async function swapHtml(props) {
     let previous2;
     let replacePrevious = false;
     const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document2, true));
-    for await (const element of elements2) {
-      const detail = {
-        ...props,
-        swapStyle: props.swapStyle ?? "none",
-        element,
-        previous: previous2,
-        index
-      };
+    for await (let element of elements2) {
       switch (element.localName) {
         case `${config.prefix}-replace-previous`:
           replacePrevious = true;
@@ -613,33 +617,49 @@ async function swapHtml(props) {
         case `${config.prefix}-flush`:
           continue;
       }
-      const [slot] = parseAttrValue("slot", element);
+      let swapStyle = props.swapStyle ?? "none";
+      let targets = [target];
+      const [slot] = parseAttrValue("slot", element, "whole");
       if (slot) {
-        detail.slot = slot;
-        const slotTarget = findSlot(slot, document2);
-        if (slotTarget) {
-          detail.target = slotTarget;
-          detail.swapStyle = "inner";
+        const slotTargets = findSlots(slot, document2);
+        if (slotTargets.length) {
+          targets = slotTargets;
+          swapStyle = "inner";
         } else {
-          detail.swapStyle = "none";
+          swapStyle = "none";
         }
       }
-      if (dispatchBefore(target, "swap", detail)) {
-        const { target: target2, element: element2, controlOwner, swapStyle, slot: slot2 } = detail;
-        if (controlOwner) {
-          setOwner(element2, controlOwner);
+      const templateElement = targets.length ? element : void 0;
+      for (const target2 of targets) {
+        if (templateElement) {
+          element = templateElement.cloneNode(true);
         }
-        if (slot2 || !previous2) {
-          swapHandlers[swapStyle]?.(target2, element2);
-        } else if (previous2 && replacePrevious) {
-          previous2.replaceWith(element2);
-        } else {
-          previous2.after(element2);
+        const detail = {
+          ...props,
+          swapStyle,
+          target: target2,
+          element,
+          previous: previous2,
+          index,
+          slot
+        };
+        if (dispatchBefore(target2, "swap", detail)) {
+          const { target: target3, element: element2, controlOwner, swapStyle: swapStyle2, slot: slot2 } = detail;
+          if (controlOwner) {
+            setOwner(element2, controlOwner);
+          }
+          if (slot2 || !previous2) {
+            swapHandlers[swapStyle2]?.(target3, element2);
+          } else if (previous2 && replacePrevious) {
+            previous2.replaceWith(element2);
+          } else {
+            previous2.after(element2);
+          }
+          if (!slot2) {
+            previous2 = element2;
+          }
+          dispatchAfter(target3, "swap", detail);
         }
-        if (!slot2) {
-          previous2 = element2;
-        }
-        dispatchAfter(target2, "swap", detail);
       }
       index++;
     }
@@ -980,6 +1000,21 @@ function getFormData(elt) {
   }
 }
 
+// lib/util/queue.ts
+var actionQueue = /* @__PURE__ */ new Set();
+function enqueueAction(detail) {
+  if (dispatchBefore(detail.source, "queue", detail)) {
+    actionQueue.add(detail);
+  }
+}
+function dequeueAction(detail) {
+  actionQueue.delete(detail);
+  dispatchAfter(detail.source, "queue", detail);
+}
+function queue() {
+  return actionQueue.values();
+}
+
 // lib/handle_trigger.ts
 function handleTrigger(detail) {
   const { control, trigger, source } = detail;
@@ -996,21 +1031,28 @@ function handleTrigger(detail) {
     if (trigger?.once) {
       getInternal(source, `triggered:${trigger.eventType}`, () => /* @__PURE__ */ new WeakSet()).add(control);
     }
-    if (hasInternal(control, "delayed")) {
-      clearTimeout(getInternal(control, "delayed"));
-      deleteInternal(control, "delayed");
-    }
     if (trigger?.throttle) {
     } else if (trigger?.delay) {
+      setTimeout(doAction, trigger.delay);
     } else {
-      handleAction(detail);
+      setTimeout(doAction, 0);
     }
     dispatchAfter(source, "trigger", detail);
+  }
+  function doAction() {
+    if (hasTarget(detail)) {
+      handleAction(detail);
+    } else {
+      enqueueAction(detail);
+    }
   }
 }
 function isDenied(elt) {
   const [deny] = parseAttrOrCssValue("deny-trigger", elt);
   return deny === "true";
+}
+function hasTarget(detail) {
+  return detail.target instanceof Element;
 }
 
 // lib/util/event.ts
@@ -1073,8 +1115,17 @@ function* getControls(eventType, root, recursive) {
 
 // lib/parse_target.ts
 function parseTarget(elt, control) {
-  const [targetQuery] = parseAttrOrCssValue("target", control, "whole");
-  return querySelectorExt(elt, targetQuery) ?? elt;
+  let [targetQuery] = parseAttrOrCssValue("target", control, "whole");
+  const hasAwait = /^await\s+/.test(targetQuery);
+  if (hasAwait) {
+    targetQuery = targetQuery.substring(5).trimStart();
+  }
+  const target = querySelectorExt(elt, targetQuery);
+  if (hasAwait) {
+    return target ?? "await";
+  } else {
+    return target ?? elt;
+  }
 }
 
 // lib/event_listener.ts
@@ -1109,7 +1160,7 @@ function* getTriggerDetailsForEvent(event) {
         source,
         sourceOwner: getOwner(source),
         target,
-        targetOwner: getOwner(target),
+        targetOwner: target !== "await" ? getOwner(target) : void 0,
         control,
         controlOwner: getOwner(control)
       };
@@ -1388,7 +1439,11 @@ function createStyleSheetLink(url, crossOrigin, onReady) {
             } else if (delay < 1e3) {
               process(delay * 2);
             } else {
-              console.error("ahx timeout loading stylesheet:", detail.url, link.sheet);
+              console.error(
+                "ahx timeout loading stylesheet:",
+                detail.url,
+                link.sheet
+              );
             }
           }, delay);
         }
@@ -1496,6 +1551,21 @@ function findRules(root) {
   return rules;
 }
 
+// lib/process_queue.ts
+function processQueue() {
+  for (const detail of queue()) {
+    const target = parseTarget(detail.source, detail.control);
+    if (target instanceof Element) {
+      dequeueAction(detail);
+      handleAction({
+        ...detail,
+        target,
+        targetOwner: getOwner(target)
+      });
+    }
+  }
+}
+
 // lib/start_observer.ts
 function startObserver(root) {
   const observer = new MutationObserver((mutations) => {
@@ -1537,6 +1607,7 @@ function startObserver(root) {
         }
       });
       processRules(root);
+      processQueue();
       dispatchAfter(root, "mutations", {
         ...detail,
         removedElements,
@@ -1805,7 +1876,10 @@ function forms() {
   }
   for (const [rule] of getControlRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      elements2.add(parseTarget(elt, rule));
+      const target = parseTarget(elt, rule);
+      if (target instanceof Element) {
+        elements2.add(target);
+      }
     }
   }
   for (const elt of [...elements2].sort(comparePosition)) {
@@ -1840,8 +1914,8 @@ function slots() {
     if (thing instanceof Element) {
       addSlot(thing, slotNames);
     } else if (thing instanceof CSSStyleRule) {
-      const slot = document.querySelector(thing.selectorText);
-      if (slot) {
+      const slots3 = document.querySelectorAll(thing.selectorText);
+      for (const slot of slots3) {
         addSlot(slot, slotNames);
       }
     }

@@ -16,8 +16,8 @@ export function slots() {
     if (thing instanceof Element) {
       addSlot(thing, slotNames);
     } else if (thing instanceof CSSStyleRule) {
-      const slot = document.querySelector(thing.selectorText);
-      if (slot) {
+      const slots = document.querySelectorAll(thing.selectorText);
+      for (const slot of slots) {
         addSlot(slot, slotNames);
       }
     }

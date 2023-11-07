@@ -3,7 +3,7 @@ import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import { handleSwap } from "./handle_swap.ts";
 import { parseCssValue } from "./parse_css_value.ts";
 
-export async function handleHarvest(props: ActionDetail) {
+export async function handleHarvest(props: ActionDetail & { target: Element }) {
   const {
     event,
     source,

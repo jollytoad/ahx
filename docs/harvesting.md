@@ -25,3 +25,14 @@ This rule watches any element with `class="name"`, and whenever it is first
 loaded or later mutated, the `innerText` property of the element is harvested.
 The closest form ancestor of the element is then selected as the target, and the
 harvested value is appended to the form as a hidden input named `name`.
+
+If your target is loaded dynamically then it may not exist when the harvesting
+is first performed, in which case you can prefix the target value with `await`,
+and the action will be queued until it appears in the document...
+
+```css
+.name {
+  ...
+  --ahx-target: await #my-form;
+}
+```

@@ -5,6 +5,7 @@ import { processElements } from "./process_elements.ts";
 import { triggerMutate } from "./trigger_mutate.ts";
 import { triggerLoad } from "./trigger_load.ts";
 import { processRules } from "./process_rules.ts";
+import { processQueue } from "./process_queue.ts";
 
 export function startObserver(root: Document) {
   const observer = new MutationObserver((mutations) => {
@@ -55,6 +56,8 @@ export function startObserver(root: Document) {
       });
 
       processRules(root);
+
+      processQueue();
 
       dispatchAfter(root, "mutations", {
         ...detail,

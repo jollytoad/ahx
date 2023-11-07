@@ -21,7 +21,10 @@ export function forms() {
 
   for (const [rule] of getControlRulesByAction("harvest")) {
     for (const elt of document.querySelectorAll(rule.selectorText)) {
-      elements.add(parseTarget(elt, rule));
+      const target = parseTarget(elt, rule);
+      if (target instanceof Element) {
+        elements.add(target);
+      }
     }
   }
 

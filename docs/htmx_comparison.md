@@ -52,7 +52,7 @@ Key:
 | hx-swap       | ahx-swap        | defaults to `none` |
 | hx-swap-oob   | ahx-slot        | see below          |
 |               | --ahx-slot-name | name a slot        |
-| hx-target     | ahx-target      |                    |
+| hx-target     | ahx-target      | see below          |
 | hx-trigger    | ahx-trigger     | see below          |
 | hx-vals       | ?               |                    |
 |               | --ahx-import    | import stylesheet  |
@@ -63,6 +63,7 @@ Key:
   declared via a `<slot>` element or `--ahx-slot-name` property in a CSS rule.
 - **ahx-trigger** - this is explicitly required, so that the behaviour is clear
   to an auditor.
+- **ahx-target** - adds ability to `await` the target if non-existent.
 
 ## Additional Attributes
 
@@ -172,3 +173,4 @@ Key:
   on an element
 - Ownership model - all elements have an associated owner, which the host app
   can use to aid allow/deny of operations
+- `await` target - actions maybe queued until a target element appears

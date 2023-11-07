@@ -70,9 +70,10 @@ See equivalent `--ahx-swap` CSS property.
 ### ahx-slot
 
 Allow some content in a response to be swapped into a named slot in the
-document. The slots in the document are declared and named using the
-`ahx-slot-name` attribute on an element, or the `--ahx-slot-name` property in a
-CSS rule.
+document.
+
+The slots in the document are declared and named using the `ahx-slot-name`
+attribute on an element, or the `--ahx-slot-name` property in a CSS rule.
 
 It doesn't target a `<slot name="...">` element by default, but you could add a
 rule to do so...
@@ -96,6 +97,25 @@ div.toolbar::after {
   --ahx-slot-name: "tool";
 }
 ```
+
+Multiple elements may be declared to have the same slot name, in which case a
+CSS selector can used to filter the slots.
+
+For example:
+
+```html
+<div ahx-slot="action .project[data-id="foo"] :scope">
+```
+
+This would target the slot named `action` which matches the selector
+`.project[data-id="foo"] :scope`.
+
+NOTE: [`:scope`](https://developer.mozilla.org/en-US/docs/Web/CSS/:scope)
+represents the slot in this case and so filters the slot to ensure it's within
+an element matching `.project[data-id="foo"]`.
+
+If no selector is given or if multiple elements are still matched for the given
+slot name, then the source element is cloned and swapped into each matched slot.
 
 ### ahx-slot-name
 
