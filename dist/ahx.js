@@ -447,6 +447,7 @@ function parseSwap(control) {
           break;
         case "join":
           swapSpec.merge = "join";
+          swapSpec.separator = parseSeparator(value);
           break;
         case "append":
           swapSpec.merge = "append";
@@ -455,6 +456,16 @@ function parseSwap(control) {
     }
   }
   return swapSpec;
+}
+function parseSeparator(value = " ") {
+  switch (value) {
+    case "space":
+      return " ";
+    case "comma":
+      return ",";
+    default:
+      return value;
+  }
 }
 
 // lib/util/query_selector.ts
@@ -692,13 +703,13 @@ var swapHandlers = {
 
 // lib/swap_attr.ts
 function swapAttr(props) {
-  const { target, itemName, merge } = props;
+  const { target, itemName, merge, separator } = props;
   const detail = {
     ...props
   };
   detail.oldValue = target.getAttribute(itemName) ?? void 0;
   if (merge === "join" && detail.oldValue && detail.value) {
-    detail.value = join(detail.oldValue, detail.value);
+    detail.value = join(detail.oldValue, detail.value, separator);
   }
   if (dispatchBefore(target, "swap", detail)) {
     const { target: target2, itemName: itemName2, value } = detail;
@@ -708,8 +719,7 @@ function swapAttr(props) {
     dispatchAfter(target2, "swap", detail);
   }
 }
-function join(oldValue, newValue) {
-  const sep = " ";
+function join(oldValue, newValue, sep = " ") {
   const values2 = new Set(`${oldValue}${sep}${newValue}`.split(sep));
   values2.delete("");
   return [...values2].join(sep);
@@ -717,7 +727,7 @@ function join(oldValue, newValue) {
 
 // lib/swap_input.ts
 function swapInput(props) {
-  const { target, itemName, merge, value } = props;
+  const { target, itemName, merge, separator, value } = props;
   if (!itemName || value === void 0) {
     return;
   }
@@ -746,7 +756,7 @@ function swapInput(props) {
     }
   }
   if (merge === "join") {
-    detail.value = join2(detail.oldValue, detail.value);
+    detail.value = join2(detail.oldValue, detail.value, separator);
   }
   if (dispatchBefore(target, "swap", detail)) {
     const { target: target2, input, itemName: itemName2, merge: merge2, formData, value: value2 } = detail;
@@ -773,8 +783,7 @@ function createInput(name, document2) {
   input.name = name;
   return input;
 }
-function join2(oldValue = "", newValue = "") {
-  const sep = " ";
+function join2(oldValue = "", newValue = "", sep = " ") {
   const values2 = new Set(`${oldValue}${sep}${newValue}`.split(sep));
   values2.delete("");
   return [...values2].join(sep);

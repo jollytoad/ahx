@@ -15,6 +15,7 @@ export default handle([
       },
     );
   }),
+  staticRoute("/tests", import.meta.resolve("../tests")),
   interceptResponse(
     staticRoute("/", import.meta.resolve("../dist")),
     skip(404),

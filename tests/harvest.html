@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      .source {
+        --ahx-trigger: load;
+        --ahx-harvest: attr(data-id);
+        --ahx-target: .target1;
+        --ahx-swap: input ids append;
+      }
+
+      .source {
+        --ahx-trigger: load;
+        --ahx-harvest: attr(data-id);
+        --ahx-target: .target2;
+        --ahx-swap: input ids join;
+      }
+
+      .source {
+        --ahx-trigger: load;
+        --ahx-harvest: attr(data-id);
+        --ahx-target: .target3;
+        --ahx-swap: attr ahx-data-ids join;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="source" data-id="one"></div>
+    <div class="source" data-id="two"></div>
+    <div class="source" data-id="three"></div>
+
+    <form class="target1"></form>
+    <form class="target2"></form>
+    <div class="target3"></div>
+  </body>
+</html>
