@@ -3,7 +3,7 @@ import { getInternal } from "./util/internal.ts";
 import type { SwapDetail, SwapTextProps } from "./types.ts";
 
 export function swapInput(props: SwapTextProps) {
-  const { target, itemName, merge, value } = props;
+  const { target, itemName, merge, separator, value } = props;
 
   if (!itemName || value === undefined) {
     // TODO: consider dispatching an error event (at least for no itemName)
@@ -39,7 +39,7 @@ export function swapInput(props: SwapTextProps) {
   }
 
   if (merge === "join") {
-    detail.value = join(detail.oldValue, detail.value);
+    detail.value = join(detail.oldValue, detail.value, separator);
   }
 
   if (dispatchBefore(target, "swap", detail)) {
@@ -71,8 +71,7 @@ function createInput(name: string, document: Document) {
   return input;
 }
 
-function join(oldValue = "", newValue = "") {
-  const sep = " ";
+function join(oldValue = "", newValue = "", sep = " ") {
   const values = new Set(`${oldValue}${sep}${newValue}`.split(sep));
   values.delete("");
   return [...values].join(sep);

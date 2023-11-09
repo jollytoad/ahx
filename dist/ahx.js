@@ -1056,7 +1056,9 @@ function hasTarget(detail) {
 }
 
 // lib/util/event.ts
-var AHX_EVENTS = /* @__PURE__ */ new Set(["load", "watch"]);
+var AHX_EVENTS = /* @__PURE__ */ new Set(
+  ["load", "mutate"]
+);
 function toDOMEventType(type) {
   if (AHX_EVENTS.has(type)) {
     return `${config.prefix}:${type}`;

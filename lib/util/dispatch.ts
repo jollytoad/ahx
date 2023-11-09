@@ -1,5 +1,10 @@
 import { config } from "../config.ts";
-import type { AhxErrorMap, AhxEventMap, EventType } from "../types.ts";
+import type {
+  AhxErrorMap,
+  AhxEventMap,
+  AhxOneShotMap,
+  EventType,
+} from "../types.ts";
 
 function dispatch<T>(
   target: EventTarget | undefined | null,
@@ -37,10 +42,10 @@ function dispatch<T>(
   return false;
 }
 
-export function dispatchOneShot<E extends keyof AhxEventMap>(
+export function dispatchOneShot<E extends keyof AhxOneShotMap>(
   target: EventTarget | undefined | null,
   name: E,
-  detail?: AhxEventMap[E][0],
+  detail?: AhxOneShotMap[E],
 ): void {
   dispatch(target, `${config.prefix}:${name}`, detail, false);
 }

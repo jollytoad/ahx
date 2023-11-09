@@ -2,7 +2,7 @@ import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
 import type { SwapTextDetail, SwapTextProps } from "./types.ts";
 
 export function swapAttr(props: SwapTextProps) {
-  const { target, itemName, merge } = props;
+  const { target, itemName, merge, separator } = props;
 
   const detail: SwapTextDetail = {
     ...props,
@@ -11,7 +11,7 @@ export function swapAttr(props: SwapTextProps) {
   detail.oldValue = target.getAttribute(itemName) ?? undefined;
 
   if (merge === "join" && detail.oldValue && detail.value) {
-    detail.value = join(detail.oldValue, detail.value);
+    detail.value = join(detail.oldValue, detail.value, separator);
   }
 
   if (dispatchBefore(target, "swap", detail)) {
@@ -25,8 +25,7 @@ export function swapAttr(props: SwapTextProps) {
   }
 }
 
-function join(oldValue: string, newValue: string) {
-  const sep = " ";
+function join(oldValue: string, newValue: string, sep = " ") {
   const values = new Set(`${oldValue}${sep}${newValue}`.split(sep));
   values.delete("");
   return [...values].join(sep);

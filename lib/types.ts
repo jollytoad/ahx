@@ -109,6 +109,7 @@ export interface SwapSpec {
   delay?: number;
   itemName?: string; // name of input or attribute
   merge?: SwapMerge;
+  separator?: string;
 }
 
 export interface TargetSpec {
@@ -160,8 +161,11 @@ export interface AhxEventMap {
   "swap": [SwapDetail, SwapDetail];
   "request": [RequestDetail, RequestDetail];
   "harvest": [HarvestDetail, HarvestDetail];
-  "load": [LoadDetail];
-  "mutate": [MutateDetail];
+}
+
+export interface AhxOneShotMap {
+  "load": LoadDetail;
+  "mutate": MutateDetail;
 }
 
 export interface AhxErrorMap {
@@ -306,7 +310,10 @@ export interface LoadDetail {
 export interface MutateDetail {
 }
 
-export type AhxEventType = keyof AhxEventMap | keyof AhxErrorMap;
+export type AhxEventType =
+  | keyof AhxEventMap
+  | keyof AhxOneShotMap
+  | keyof AhxErrorMap;
 
 type BeforeEventMap = {
   [E in keyof AhxEventMap as `${Prefix}:${E}`]: CustomEvent<AhxEventMap[E][0]>;
@@ -330,11 +337,18 @@ type ErrorEventMap = {
   >;
 };
 
+type OneShotEventMap = {
+  [E in keyof AhxOneShotMap as `${Prefix}:${E}`]: CustomEvent<
+    AhxOneShotMap[E]
+  >;
+};
+
 type DebugEventMap = {
   [K in Prefix]: CustomEvent<CustomEvent>;
 };
 
 type CustomEventMap =
+  & OneShotEventMap
   & BeforeEventMap
   & AfterEventMap
   & VetoEventMap

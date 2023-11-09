@@ -23,6 +23,7 @@ export function parseSwap(control: ControlDecl) {
           break;
         case "join":
           swapSpec.merge = "join";
+          swapSpec.separator = parseSeparator(value);
           break;
         case "append":
           swapSpec.merge = "append";
@@ -32,4 +33,15 @@ export function parseSwap(control: ControlDecl) {
   }
 
   return swapSpec;
+}
+
+function parseSeparator(value = " ") {
+  switch (value) {
+    case "space":
+      return " ";
+    case "comma":
+      return ",";
+    default:
+      return value;
+  }
 }

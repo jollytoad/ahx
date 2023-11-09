@@ -212,8 +212,10 @@ note:
 - `append` (for `input` swap only) causes the value to be appended to the form
   (if the same value is not already present). Either via a new hidden `<input>`
   element or just via `FormData.append`.
-- `join` (for `input`/`attr` swaps) causes the value to be joined to an existing
-  space-separator value (duplicate values will be removed).
+- `join`, `join:space`, `join:comma` (for `input`/`attr` swaps) causes the value
+  to be joined to an existing value (duplicate values will be removed). The
+  values are space separated by default or with `join:space`, but `join:comma`
+  maybe be given to use a comma instead.
 
 ### --ahx-target
 
