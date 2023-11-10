@@ -62,10 +62,13 @@ _ahx_ is written in modular TypeScript, and uses Deno for tooling.
 
 ## More documentation
 
+- [Concepts](./docs/concepts.md)
 - [Comparison to htmx features](./docs/htmx_comparison.md)
 - [CSS properties](./docs/css_rules.md)
 - [Element attributes](./docs/attributes.md)
 - [Custom events](./docs/events.md)
+- [Custom headers](./docs/headers.md)
+- [Data harvesting](./docs/harvesting.md)
 - [Debugging and inspection tools](./docs/debugging.md)
 
 ## What is Augmented Hypermedia?
