@@ -9,8 +9,11 @@ import { processRules } from "./process_rules.ts";
 import * as ahx from "./debug.ts";
 import { initUrlAttrs } from "./url_attrs.ts";
 import { triggerLoad } from "./trigger_load.ts";
+import { initDebug } from "./debug/init.ts";
 
 ready((document) => {
+  initDebug(document);
+
   initUrlAttrs(document);
 
   startObserver(document);

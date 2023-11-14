@@ -28,6 +28,7 @@ export type ControlPropName =
   | "slot-name"
   | "rule"
   | `rule-${string}`
+  | "debug-events"
   | AhxHttpMethod;
 
 export type RequestHeaderName =

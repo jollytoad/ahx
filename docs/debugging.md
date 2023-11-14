@@ -7,6 +7,10 @@ debugging and inspection of the _ahx_ internals.
 
 Logs all _ahx_ events to the console.
 
+Event logging may also be enable via an `ahx-debug-events` attribute on any
+element in the initial document, it's value may be a space separated list for
+the `ahx.loggerConfig.include` configuration (see below).
+
 ## `ahx.eventsNone()`
 
 Stop logging events.
@@ -44,3 +48,18 @@ Log all forms (and internal FormData) into which values have been harvested.
 Log all elements that are considered slots by _ahx_ along with the declare slot
 names for each, which may be derived directly from the `ahx-slot-name` attribute
 on the element or from a `--ahx-slot-name` property in a CSS rule.
+
+## `ahx.loggerConfig`
+
+Is a object to configure logging to the console...
+
+### `ahx.loggerConfig.group`
+
+Enables grouping of events using `console.group` (when `true`), may also initial
+collapse all groups by using `"collapse"` instead, or set to `false`, the
+default to disable grouping.
+
+### `ahx.loggerConfig.include`
+
+An array strings to filter the _ahx_ event types to be logged, and/or
+`error`/`veto`. The given event names should NOT include the `ahx:` prefix.
