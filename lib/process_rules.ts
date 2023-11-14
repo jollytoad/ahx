@@ -38,10 +38,14 @@ function findRules(
     for (const rule of rules) {
       if (rule instanceof CSSImportRule && rule.styleSheet) {
         fromStylesheet(rule.styleSheet);
-      } else if (rule instanceof CSSGroupingRule) {
-        fromRuleList(rule.cssRules);
-      } else if (rule instanceof CSSStyleRule) {
+      }
+
+      if (rule instanceof CSSStyleRule) {
         fromStyleRule(rule);
+      }
+
+      if (rule instanceof CSSGroupingRule && rule.cssRules.length) {
+        fromRuleList(rule.cssRules);
       }
     }
   }

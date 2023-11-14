@@ -1539,10 +1539,12 @@ function findRules(root) {
     for (const rule of rules2) {
       if (rule instanceof CSSImportRule && rule.styleSheet) {
         fromStylesheet(rule.styleSheet);
-      } else if (rule instanceof CSSGroupingRule) {
-        fromRuleList(rule.cssRules);
-      } else if (rule instanceof CSSStyleRule) {
+      }
+      if (rule instanceof CSSStyleRule) {
         fromStyleRule(rule);
+      }
+      if (rule instanceof CSSGroupingRule && rule.cssRules.length) {
+        fromRuleList(rule.cssRules);
       }
     }
   }
@@ -1970,8 +1972,19 @@ function initUrlAttrs(document2) {
   listener();
 }
 
+// lib/debug/init.ts
+function initDebug(document2) {
+  const attrName = asAhxAttributeName("debug-events");
+  const element = document2.querySelector(`[${attrName}]`);
+  if (element) {
+    loggerConfig.include = parseAttrValue(attrName, element);
+    eventsAll();
+  }
+}
+
 // lib/ahx.ts
 ready((document2) => {
+  initDebug(document2);
   initUrlAttrs(document2);
   startObserver(document2);
   processRules(document2);
