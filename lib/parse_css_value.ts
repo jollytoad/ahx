@@ -5,6 +5,7 @@ import type {
   ControlPropName,
   ValueType,
 } from "./types.ts";
+import { resolveElement } from "./util/resolve_element.ts";
 
 export function parseCssValue(
   prop: ControlPropName | AhxCSSPropertyName | AhxAttributeName,
@@ -55,7 +56,8 @@ export function parseCssValue(
       const [, ...values] = isURL;
       const baseURL = rule.parentStyleSheet?.href ??
         rule.style.parentRule?.parentStyleSheet?.href ??
-        elt?.baseURI;
+        elt?.baseURI ??
+        resolveElement(rule)?.baseURI;
 
       return values.flatMap((value) => {
         const url = value ? parseURL(parseQuoted(value), baseURL) : undefined;
