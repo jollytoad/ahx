@@ -3,27 +3,10 @@
 /// <reference lib="dom.asynciterable"/>
 
 import { ready } from "./ready.ts";
-import { startObserver } from "./start_observer.ts";
-import { processElements } from "./process_elements.ts";
-import { processRules } from "./process_rules.ts";
 import * as ahx from "./debug.ts";
-import { initUrlAttrs } from "./url_attrs.ts";
-import { triggerLoad } from "./trigger_load.ts";
-import { initDebug } from "./debug/init.ts";
+import { startAhx } from "./start_ahx.ts";
 
-ready((document) => {
-  initDebug(document);
-
-  initUrlAttrs(document);
-
-  startObserver(document);
-
-  processRules(document);
-
-  processElements(document);
-
-  triggerLoad(document.documentElement);
-});
+ready(startAhx);
 
 // deno-lint-ignore no-explicit-any
 (window as any).ahx = ahx;

@@ -20,6 +20,21 @@ function ready(fn) {
   }
 }
 
+// lib/debug.ts
+var debug_exports = {};
+__export(debug_exports, {
+  controls: () => controls,
+  elements: () => elements,
+  eventsAll: () => eventsAll,
+  eventsNone: () => eventsNone,
+  forms: () => forms,
+  internals: () => internals,
+  logger: () => logger,
+  loggerConfig: () => loggerConfig,
+  owners: () => owners,
+  slots: () => slots
+});
+
 // lib/util/internal.ts
 var values = /* @__PURE__ */ new Map();
 var weakRefs = /* @__PURE__ */ new Set();
@@ -90,6 +105,38 @@ function* internalEntries() {
       }
     }
   }
+}
+
+// lib/debug/internals.ts
+function internals() {
+  console.group("ahx internal properties...");
+  let groupObject;
+  for (const [thing, key, value] of internalEntries()) {
+    if (thing !== groupObject) {
+      if (groupObject) {
+        console.groupEnd();
+      }
+      const representation = thing instanceof CSSRule ? thing.cssText : thing;
+      console.groupCollapsed(representation);
+      console.dir(thing);
+      if (thing instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(thing.selectorText)) {
+          console.log(node);
+        }
+      }
+      groupObject = thing;
+    }
+    if (value instanceof Map) {
+      console.group("%s:", key);
+      for (const entry of value) {
+        console.log("%c%s:", "font-weight: bold", ...entry);
+      }
+      console.groupEnd();
+    } else {
+      console.log("%c%s:", "font-weight: bold", key, value);
+    }
+  }
+  console.groupEnd();
 }
 
 // lib/config.ts
@@ -175,55 +222,41 @@ var config = {
   }
 };
 
-// lib/util/dispatch.ts
-function dispatch(target, type, detail, cancelable = true) {
-  if (target !== null) {
-    const event = new CustomEvent(type, {
-      bubbles: !!target,
-      cancelable,
-      detail
-    });
-    if (config.enableDebugEvent) {
-      dispatchEvent(
-        new CustomEvent(config.prefix, {
-          bubbles: false,
-          cancelable: false,
-          detail: {
-            type: event.type,
-            target,
-            bubbles: event.bubbles,
-            cancelable: event.cancelable,
-            detail: event.detail
-          }
-        })
-      );
+// lib/debug/events.ts
+var loggerConfig = {
+  group: false,
+  include: []
+};
+function eventsAll() {
+  config.enableDebugEvent = true;
+  addEventListener(config.prefix, logger);
+}
+function eventsNone() {
+  config.enableDebugEvent = false;
+  removeEventListener(config.prefix, logger);
+}
+function logger({ detail: event }) {
+  const { type, target, detail } = event;
+  if (shouldLog(type)) {
+    if (detail?._after && loggerConfig.group) {
+      console.groupEnd();
     }
-    return target && "dispatchEvent" in target ? target.dispatchEvent(event) : dispatchEvent(event);
+    if (detail?._before) {
+      const method = loggerConfig.group ? loggerConfig.group === true ? "group" : "groupCollapsed" : "debug";
+      console[method]("%s -> %o %o", type, target, detail);
+    } else {
+      console.debug("%s -> %o %o", type, target, detail);
+    }
   }
-  return false;
 }
-function dispatchOneShot(target, name, detail) {
-  dispatch(target, `${config.prefix}:${name}`, detail, false);
-}
-function dispatchBefore(target, name, detail) {
-  detail._before = true;
-  const permitted = dispatch(target, `${config.prefix}:${name}`, detail);
-  delete detail._before;
-  if (!permitted) {
-    dispatch(target, `${config.prefix}:${name}:veto`, detail, false);
+function shouldLog(type) {
+  if (loggerConfig.include?.length) {
+    if (loggerConfig.include.some((v) => type.includes(`:${v}`))) {
+      return true;
+    }
+    return false;
   }
-  return permitted;
-}
-function dispatchAfter(target, name, detail) {
-  detail._after = true;
-  dispatch(target, `${config.prefix}:${name}:done`, detail, false);
-  delete detail._after;
-}
-function dispatchError(target, name, detail) {
-  dispatch(target, `${config.prefix}:${name}:error`, {
-    error: name,
-    ...detail
-  }, false);
+  return true;
 }
 
 // lib/util/names.ts
@@ -261,27 +294,6 @@ function asAhxAttributeName(name) {
 }
 function asAhxHeaderName(name) {
   return isAhxHeaderName(name) ? name : `${config.prefix}-${name}`;
-}
-
-// lib/util/owner.ts
-function getOwner(thing) {
-  if (hasInternal(thing, "owner")) {
-    return getInternal(thing, "owner");
-  }
-  if (thing instanceof StyleSheet) {
-    return getInternal(thing, "owner") ?? thing.href ?? void 0;
-  }
-  if (thing instanceof CSSRule && thing.parentStyleSheet) {
-    return getOwner(thing.parentStyleSheet);
-  }
-  if (thing instanceof Element && thing.parentElement) {
-    return getOwner(thing.parentElement);
-  }
-}
-function setOwner(thing, owner) {
-  if (owner !== getOwner(thing)) {
-    setInternal(thing, "owner", owner);
-  }
 }
 
 // lib/parse_css_value.ts
@@ -357,115 +369,102 @@ function parseAttrOrCssValue(prop, control, expect = "tokens") {
   }
 }
 
-// lib/parse_triggers.ts
-function parseTriggers(control) {
-  const [rawValue] = parseAttrOrCssValue("trigger", control, "whole");
-  const triggerSpecs = [];
-  if (rawValue) {
-    const triggerValues = rawValue.split(/\s*,\s*/);
-    for (const triggerValue of triggerValues) {
-      const [trigger, ...modifiers] = triggerValue.split(/\s+/);
-      if (trigger) {
-        const triggerSpec = { eventType: trigger };
-        for (const modifier of modifiers) {
-          switch (modifier) {
-            case "once":
-              triggerSpec[modifier] = true;
-              break;
+// lib/debug/compare_position.ts
+function comparePosition(a, b) {
+  if (a === b) {
+    return 0;
+  }
+  const position = a.compareDocumentPosition(b);
+  if (position & Node.DOCUMENT_POSITION_FOLLOWING || position & Node.DOCUMENT_POSITION_CONTAINED_BY) {
+    return -1;
+  } else if (position & Node.DOCUMENT_POSITION_PRECEDING || position & Node.DOCUMENT_POSITION_CONTAINS) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+// lib/debug/elements.ts
+function elements(ahxProp) {
+  console.group("ahx elements...");
+  const elements2 = /* @__PURE__ */ new Set();
+  const rules = /* @__PURE__ */ new Set();
+  for (const [thing] of internalEntries()) {
+    if (thing instanceof Element) {
+      elements2.add(thing);
+    } else if (thing instanceof CSSStyleRule) {
+      rules.add(thing);
+    }
+  }
+  for (const rule of rules) {
+    for (const node of document.querySelectorAll(rule.selectorText)) {
+      if (node instanceof Element) {
+        elements2.add(node);
+      }
+    }
+  }
+  for (const elt of [...elements2].sort(comparePosition)) {
+    if (ahxProp) {
+      const tokens = parseAttrValue(ahxProp, elt);
+      if (tokens.length) {
+        console.log(elt, ...tokens);
+      }
+    } else {
+      console.log(elt);
+    }
+  }
+  console.groupEnd();
+}
+
+// lib/util/dispatch.ts
+function dispatch(target, type, detail, cancelable = true) {
+  if (target !== null) {
+    const event = new CustomEvent(type, {
+      bubbles: !!target,
+      cancelable,
+      detail
+    });
+    if (config.enableDebugEvent) {
+      dispatchEvent(
+        new CustomEvent(config.prefix, {
+          bubbles: false,
+          cancelable: false,
+          detail: {
+            type: event.type,
+            target,
+            bubbles: event.bubbles,
+            cancelable: event.cancelable,
+            detail: event.detail
           }
-        }
-        triggerSpecs.push(triggerSpec);
-      }
+        })
+      );
     }
+    return target && "dispatchEvent" in target ? target.dispatchEvent(event) : dispatchEvent(event);
   }
-  return triggerSpecs;
+  return false;
 }
-
-// lib/parse_actions.ts
-function parseActions(control) {
-  const actionSpecs = [];
-  for (const method of config.httpMethods) {
-    const [url] = parseAttrOrCssValue(method, control);
-    if (url) {
-      actionSpecs.push({
-        type: "request",
-        method,
-        url: parseURL(url, control)
-      });
-    }
-  }
-  if (control instanceof CSSStyleRule) {
-    if (getAhxCSSPropertyNames(control).has(asAhxCSSPropertyName("harvest"))) {
-      actionSpecs.push({
-        type: "harvest"
-      });
-    }
-  }
-  return actionSpecs;
+function dispatchOneShot(target, name, detail) {
+  dispatch(target, `${config.prefix}:${name}`, detail, false);
 }
-function parseURL(url, control) {
-  const baseURL = control instanceof Element ? control.baseURI : void 0;
-  try {
-    return new URL(url, baseURL);
-  } catch {
-    return void 0;
+function dispatchBefore(target, name, detail) {
+  detail._before = true;
+  const permitted = dispatch(target, `${config.prefix}:${name}`, detail);
+  delete detail._before;
+  if (!permitted) {
+    dispatch(target, `${config.prefix}:${name}:veto`, detail, false);
   }
+  return permitted;
 }
-
-// lib/parse_interval.ts
-function parseInterval(str) {
-  if (str == void 0) {
-    return void 0;
-  }
-  if (str.slice(-2) == "ms") {
-    return parseFloat(str.slice(0, -2)) || void 0;
-  }
-  if (str.slice(-1) == "s") {
-    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
-  }
-  if (str.slice(-1) == "m") {
-    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
-  }
-  return parseFloat(str) || void 0;
+function dispatchAfter(target, name, detail) {
+  detail._after = true;
+  dispatch(target, `${config.prefix}:${name}:done`, detail, false);
+  delete detail._after;
 }
-
-// lib/parse_swap.ts
-function parseSwap(control) {
-  const tokens = parseAttrOrCssValue("swap", control, "tokens");
-  const swapSpec = {};
-  if (tokens?.length) {
-    swapSpec.swapStyle = tokens.shift()?.toLowerCase();
-    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
-      swapSpec.itemName = tokens.shift();
-    }
-    for (const token of tokens) {
-      const [modifier, value] = token.split(":");
-      switch (modifier) {
-        case "swap":
-        case "delay":
-          swapSpec.delay = parseInterval(value);
-          break;
-        case "join":
-          swapSpec.merge = "join";
-          swapSpec.separator = parseSeparator(value);
-          break;
-        case "append":
-          swapSpec.merge = "append";
-          break;
-      }
-    }
-  }
-  return swapSpec;
-}
-function parseSeparator(value = " ") {
-  switch (value) {
-    case "space":
-      return " ";
-    case "comma":
-      return ",";
-    default:
-      return value;
-  }
+function dispatchError(target, name, detail) {
+  dispatch(target, `${config.prefix}:${name}:error`, {
+    error: name,
+    ...detail
+  }, false);
 }
 
 // lib/util/query_selector.ts
@@ -583,6 +582,27 @@ var HTMLBodyElementParserStream = class extends TransformStream {
     });
   }
 };
+
+// lib/util/owner.ts
+function getOwner(thing) {
+  if (hasInternal(thing, "owner")) {
+    return getInternal(thing, "owner");
+  }
+  if (thing instanceof StyleSheet) {
+    return getInternal(thing, "owner") ?? thing.href ?? void 0;
+  }
+  if (thing instanceof CSSRule && thing.parentStyleSheet) {
+    return getOwner(thing.parentStyleSheet);
+  }
+  if (thing instanceof Element && thing.parentElement) {
+    return getOwner(thing.parentElement);
+  }
+}
+function setOwner(thing, owner) {
+  if (owner !== getOwner(thing)) {
+    setInternal(thing, "owner", owner);
+  }
+}
 
 // lib/util/slots.ts
 function findSlots(query, root) {
@@ -1064,6 +1084,299 @@ function hasTarget(detail) {
   return detail.target instanceof Element;
 }
 
+// lib/debug/controls.ts
+function controls(verbose = false) {
+  console.group("ahx controls...");
+  const elements2 = /* @__PURE__ */ new Map();
+  function addControl(elt, ctlDecl, ctlSpec) {
+    if (!elements2.has(elt)) {
+      elements2.set(elt, /* @__PURE__ */ new Map());
+    }
+    elements2.get(elt).set(ctlSpec, ctlDecl);
+  }
+  for (const [ctlDecl, key, ctlSpec] of internalEntries()) {
+    if (key.startsWith("control:")) {
+      if (ctlDecl instanceof Element) {
+        addControl(ctlDecl, ctlDecl, ctlSpec);
+      } else if (ctlDecl instanceof CSSStyleRule) {
+        for (const node of document.querySelectorAll(ctlDecl.selectorText)) {
+          if (node instanceof Element) {
+            addControl(node, ctlDecl, ctlSpec);
+          }
+        }
+      }
+    }
+  }
+  const orderedElements = [...elements2.keys()].sort(comparePosition);
+  for (const elt of orderedElements) {
+    const controls2 = elements2.get(elt) ?? [];
+    const events = /* @__PURE__ */ new Set();
+    const denied = isDenied(elt);
+    for (const [{ trigger }] of controls2) {
+      events.add(trigger.eventType);
+    }
+    console.groupCollapsed(
+      "%o : %c%s",
+      elt,
+      denied ? "text-decoration: line-through; color: grey" : "color: red",
+      [...events].join(", ")
+    );
+    for (const [{ trigger, action, swap }, control] of controls2) {
+      if (verbose) {
+        console.log(
+          "trigger:",
+          trigger,
+          "action:",
+          action,
+          "swap:",
+          swap,
+          "control:",
+          control
+        );
+      } else {
+        const ctlRep = control instanceof Element ? "element" : control.cssText;
+        const actionRep = "method" in action ? `${action.method.toUpperCase()} ${action.url}` : action.type;
+        const swapRep = (swap.swapStyle ?? "default") + (swap.itemName ? ` ${swap.itemName}` : "");
+        console.log(
+          "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",
+          "color: red; font-weight: bold",
+          trigger.eventType,
+          "color: inherit; font-weight: normal",
+          "color: green",
+          actionRep,
+          "color: inherit",
+          "color: darkorange",
+          swapRep,
+          "color: inherit",
+          "color: hotpink",
+          ctlRep,
+          "color: inherit"
+        );
+      }
+    }
+    console.groupEnd();
+  }
+  console.groupEnd();
+}
+
+// lib/debug/owners.ts
+function owners() {
+  console.group("ahx ownership...");
+  const elements2 = /* @__PURE__ */ new Set();
+  for (const [thing, key, owner] of internalEntries()) {
+    if (thing instanceof Element) {
+      elements2.add(thing);
+    } else if (key === "owner") {
+      if (thing instanceof CSSRule) {
+        console.log("%o -> %s", thing.cssText, owner);
+      } else {
+        console.log("%o -> %s", thing, owner);
+      }
+    }
+  }
+  for (const elt of [...elements2].sort(comparePosition)) {
+    const owner = getInternal(elt, "owner");
+    console.log("%o -> %s", elt, owner ?? "none");
+  }
+  console.groupEnd();
+}
+
+// lib/util/rules.ts
+function isRuleEnabled(rule) {
+  return !!rule.parentStyleSheet && !rule.parentStyleSheet.disabled;
+}
+var ruleCount = 0;
+function getRuleId(rule) {
+  return getInternal(rule, "ruleId", () => `${++ruleCount}`);
+}
+
+// lib/parse_target.ts
+function parseTarget(elt, control) {
+  let [targetQuery] = parseAttrOrCssValue("target", control, "whole");
+  const hasAwait = /^await\s+/.test(targetQuery);
+  if (hasAwait) {
+    targetQuery = targetQuery.substring(5).trimStart();
+  }
+  const target = querySelectorExt(elt, targetQuery);
+  if (hasAwait) {
+    return target ?? "await";
+  } else {
+    return target ?? elt;
+  }
+}
+
+// lib/debug/forms.ts
+function forms() {
+  console.group("ahx form...");
+  const elements2 = /* @__PURE__ */ new Set();
+  for (const [elt] of objectsWithInternal("formData")) {
+    if (elt instanceof Element) {
+      elements2.add(elt);
+    }
+  }
+  for (const [rule] of getControlRulesByAction("harvest")) {
+    for (const elt of document.querySelectorAll(rule.selectorText)) {
+      const target = parseTarget(elt, rule);
+      if (target instanceof Element) {
+        elements2.add(target);
+      }
+    }
+  }
+  for (const elt of [...elements2].sort(comparePosition)) {
+    const formData = elt instanceof HTMLFormElement ? new FormData(elt) : getInternal(elt, "formData");
+    if (formData) {
+      console.group(elt);
+      for (const [name, value] of formData ?? []) {
+        console.log("%s: %c%s", name, "font-weight: bold", value);
+      }
+      console.groupEnd();
+    }
+  }
+  console.groupEnd();
+}
+function* getControlRulesByAction(type) {
+  for (const [rule, key, control] of internalEntries()) {
+    if (key.startsWith("control:") && rule instanceof CSSStyleRule && typeof control === "object" && "action" in control && control.action.type === type && isRuleEnabled(rule)) {
+      yield [rule, control];
+    }
+  }
+}
+
+// lib/debug/slots.ts
+function slots() {
+  console.group("ahx slots...");
+  const slots2 = /* @__PURE__ */ new Map();
+  function addSlot(elt, names) {
+    const nameSet = slots2.get(elt) ?? slots2.set(elt, /* @__PURE__ */ new Set()).get(elt);
+    names.forEach((name) => nameSet.add(name));
+  }
+  for (const [thing, slotNames] of objectsWithInternal("slotName")) {
+    if (thing instanceof Element) {
+      addSlot(thing, slotNames);
+    } else if (thing instanceof CSSStyleRule) {
+      const slots3 = document.querySelectorAll(thing.selectorText);
+      for (const slot of slots3) {
+        addSlot(slot, slotNames);
+      }
+    }
+  }
+  for (const elt of [...slots2.keys()].sort(comparePosition)) {
+    console.log(elt, ...slots2.get(elt));
+  }
+  console.groupEnd();
+}
+
+// lib/parse_triggers.ts
+function parseTriggers(control) {
+  const [rawValue] = parseAttrOrCssValue("trigger", control, "whole");
+  const triggerSpecs = [];
+  if (rawValue) {
+    const triggerValues = rawValue.split(/\s*,\s*/);
+    for (const triggerValue of triggerValues) {
+      const [trigger, ...modifiers] = triggerValue.split(/\s+/);
+      if (trigger) {
+        const triggerSpec = { eventType: trigger };
+        for (const modifier of modifiers) {
+          switch (modifier) {
+            case "once":
+              triggerSpec[modifier] = true;
+              break;
+          }
+        }
+        triggerSpecs.push(triggerSpec);
+      }
+    }
+  }
+  return triggerSpecs;
+}
+
+// lib/parse_actions.ts
+function parseActions(control) {
+  const actionSpecs = [];
+  for (const method of config.httpMethods) {
+    const [url] = parseAttrOrCssValue(method, control);
+    if (url) {
+      actionSpecs.push({
+        type: "request",
+        method,
+        url: parseURL(url, control)
+      });
+    }
+  }
+  if (control instanceof CSSStyleRule) {
+    if (getAhxCSSPropertyNames(control).has(asAhxCSSPropertyName("harvest"))) {
+      actionSpecs.push({
+        type: "harvest"
+      });
+    }
+  }
+  return actionSpecs;
+}
+function parseURL(url, control) {
+  const baseURL = control instanceof Element ? control.baseURI : void 0;
+  try {
+    return new URL(url, baseURL);
+  } catch {
+    return void 0;
+  }
+}
+
+// lib/parse_interval.ts
+function parseInterval(str) {
+  if (str == void 0) {
+    return void 0;
+  }
+  if (str.slice(-2) == "ms") {
+    return parseFloat(str.slice(0, -2)) || void 0;
+  }
+  if (str.slice(-1) == "s") {
+    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
+  }
+  if (str.slice(-1) == "m") {
+    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
+  }
+  return parseFloat(str) || void 0;
+}
+
+// lib/parse_swap.ts
+function parseSwap(control) {
+  const tokens = parseAttrOrCssValue("swap", control, "tokens");
+  const swapSpec = {};
+  if (tokens?.length) {
+    swapSpec.swapStyle = tokens.shift()?.toLowerCase();
+    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
+      swapSpec.itemName = tokens.shift();
+    }
+    for (const token of tokens) {
+      const [modifier, value] = token.split(":");
+      switch (modifier) {
+        case "swap":
+        case "delay":
+          swapSpec.delay = parseInterval(value);
+          break;
+        case "join":
+          swapSpec.merge = "join";
+          swapSpec.separator = parseSeparator(value);
+          break;
+        case "append":
+          swapSpec.merge = "append";
+          break;
+      }
+    }
+  }
+  return swapSpec;
+}
+function parseSeparator(value = " ") {
+  switch (value) {
+    case "space":
+      return " ";
+    case "comma":
+      return ",";
+    default:
+      return value;
+  }
+}
+
 // lib/util/event.ts
 var AHX_EVENTS = /* @__PURE__ */ new Set(
   ["load", "mutate"]
@@ -1080,15 +1393,6 @@ function fromDOMEventType(type) {
     return type.substring(prefix.length);
   }
   return type;
-}
-
-// lib/util/rules.ts
-function isRuleEnabled(rule) {
-  return !!rule.parentStyleSheet && !rule.parentStyleSheet.disabled;
-}
-var ruleCount = 0;
-function getRuleId(rule) {
-  return getInternal(rule, "ruleId", () => `${++ruleCount}`);
 }
 
 // lib/util/controls.ts
@@ -1122,21 +1426,6 @@ function* getControlsFromRules(eventType, root, recursive) {
 function* getControls(eventType, root, recursive) {
   yield* getControlsFromElements(eventType, root, recursive);
   yield* getControlsFromRules(eventType, root, recursive);
-}
-
-// lib/parse_target.ts
-function parseTarget(elt, control) {
-  let [targetQuery] = parseAttrOrCssValue("target", control, "whole");
-  const hasAwait = /^await\s+/.test(targetQuery);
-  if (hasAwait) {
-    targetQuery = targetQuery.substring(5).trimStart();
-  }
-  const target = querySelectorExt(elt, targetQuery);
-  if (hasAwait) {
-    return target ?? "await";
-  } else {
-    return target ?? elt;
-  }
 }
 
 // lib/event_listener.ts
@@ -1650,295 +1939,6 @@ function deleteInternalRecursive(node) {
   }
 }
 
-// lib/debug.ts
-var debug_exports = {};
-__export(debug_exports, {
-  controls: () => controls,
-  elements: () => elements,
-  eventsAll: () => eventsAll,
-  eventsNone: () => eventsNone,
-  forms: () => forms,
-  internals: () => internals,
-  logger: () => logger,
-  loggerConfig: () => loggerConfig,
-  owners: () => owners,
-  slots: () => slots
-});
-
-// lib/debug/internals.ts
-function internals() {
-  console.group("ahx internal properties...");
-  let groupObject;
-  for (const [thing, key, value] of internalEntries()) {
-    if (thing !== groupObject) {
-      if (groupObject) {
-        console.groupEnd();
-      }
-      const representation = thing instanceof CSSRule ? thing.cssText : thing;
-      console.groupCollapsed(representation);
-      console.dir(thing);
-      if (thing instanceof CSSStyleRule) {
-        for (const node of document.querySelectorAll(thing.selectorText)) {
-          console.log(node);
-        }
-      }
-      groupObject = thing;
-    }
-    if (value instanceof Map) {
-      console.group("%s:", key);
-      for (const entry of value) {
-        console.log("%c%s:", "font-weight: bold", ...entry);
-      }
-      console.groupEnd();
-    } else {
-      console.log("%c%s:", "font-weight: bold", key, value);
-    }
-  }
-  console.groupEnd();
-}
-
-// lib/debug/events.ts
-var loggerConfig = {
-  group: false,
-  include: []
-};
-function eventsAll() {
-  config.enableDebugEvent = true;
-  addEventListener(config.prefix, logger);
-}
-function eventsNone() {
-  config.enableDebugEvent = false;
-  removeEventListener(config.prefix, logger);
-}
-function logger({ detail: event }) {
-  const { type, target, detail } = event;
-  if (shouldLog(type)) {
-    if (detail?._after && loggerConfig.group) {
-      console.groupEnd();
-    }
-    if (detail?._before) {
-      const method = loggerConfig.group ? loggerConfig.group === true ? "group" : "groupCollapsed" : "debug";
-      console[method]("%s -> %o %o", type, target, detail);
-    } else {
-      console.debug("%s -> %o %o", type, target, detail);
-    }
-  }
-}
-function shouldLog(type) {
-  if (loggerConfig.include?.length) {
-    if (loggerConfig.include.some((v) => type.includes(`:${v}`))) {
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
-
-// lib/debug/compare_position.ts
-function comparePosition(a, b) {
-  if (a === b) {
-    return 0;
-  }
-  const position = a.compareDocumentPosition(b);
-  if (position & Node.DOCUMENT_POSITION_FOLLOWING || position & Node.DOCUMENT_POSITION_CONTAINED_BY) {
-    return -1;
-  } else if (position & Node.DOCUMENT_POSITION_PRECEDING || position & Node.DOCUMENT_POSITION_CONTAINS) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-// lib/debug/elements.ts
-function elements(ahxProp) {
-  console.group("ahx elements...");
-  const elements2 = /* @__PURE__ */ new Set();
-  const rules = /* @__PURE__ */ new Set();
-  for (const [thing] of internalEntries()) {
-    if (thing instanceof Element) {
-      elements2.add(thing);
-    } else if (thing instanceof CSSStyleRule) {
-      rules.add(thing);
-    }
-  }
-  for (const rule of rules) {
-    for (const node of document.querySelectorAll(rule.selectorText)) {
-      if (node instanceof Element) {
-        elements2.add(node);
-      }
-    }
-  }
-  for (const elt of [...elements2].sort(comparePosition)) {
-    if (ahxProp) {
-      const tokens = parseAttrValue(ahxProp, elt);
-      if (tokens.length) {
-        console.log(elt, ...tokens);
-      }
-    } else {
-      console.log(elt);
-    }
-  }
-  console.groupEnd();
-}
-
-// lib/debug/controls.ts
-function controls(verbose = false) {
-  console.group("ahx controls...");
-  const elements2 = /* @__PURE__ */ new Map();
-  function addControl(elt, ctlDecl, ctlSpec) {
-    if (!elements2.has(elt)) {
-      elements2.set(elt, /* @__PURE__ */ new Map());
-    }
-    elements2.get(elt).set(ctlSpec, ctlDecl);
-  }
-  for (const [ctlDecl, key, ctlSpec] of internalEntries()) {
-    if (key.startsWith("control:")) {
-      if (ctlDecl instanceof Element) {
-        addControl(ctlDecl, ctlDecl, ctlSpec);
-      } else if (ctlDecl instanceof CSSStyleRule) {
-        for (const node of document.querySelectorAll(ctlDecl.selectorText)) {
-          if (node instanceof Element) {
-            addControl(node, ctlDecl, ctlSpec);
-          }
-        }
-      }
-    }
-  }
-  const orderedElements = [...elements2.keys()].sort(comparePosition);
-  for (const elt of orderedElements) {
-    const controls2 = elements2.get(elt) ?? [];
-    const events = /* @__PURE__ */ new Set();
-    const denied = isDenied(elt);
-    for (const [{ trigger }] of controls2) {
-      events.add(trigger.eventType);
-    }
-    console.groupCollapsed(
-      "%o : %c%s",
-      elt,
-      denied ? "text-decoration: line-through; color: grey" : "color: red",
-      [...events].join(", ")
-    );
-    for (const [{ trigger, action, swap }, control] of controls2) {
-      if (verbose) {
-        console.log(
-          "trigger:",
-          trigger,
-          "action:",
-          action,
-          "swap:",
-          swap,
-          "control:",
-          control
-        );
-      } else {
-        const ctlRep = control instanceof Element ? "element" : control.cssText;
-        const actionRep = "method" in action ? `${action.method.toUpperCase()} ${action.url}` : action.type;
-        const swapRep = (swap.swapStyle ?? "default") + (swap.itemName ? ` ${swap.itemName}` : "");
-        console.log(
-          "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",
-          "color: red; font-weight: bold",
-          trigger.eventType,
-          "color: inherit; font-weight: normal",
-          "color: green",
-          actionRep,
-          "color: inherit",
-          "color: darkorange",
-          swapRep,
-          "color: inherit",
-          "color: hotpink",
-          ctlRep,
-          "color: inherit"
-        );
-      }
-    }
-    console.groupEnd();
-  }
-  console.groupEnd();
-}
-
-// lib/debug/owners.ts
-function owners() {
-  console.group("ahx ownership...");
-  const elements2 = /* @__PURE__ */ new Set();
-  for (const [thing, key, owner] of internalEntries()) {
-    if (thing instanceof Element) {
-      elements2.add(thing);
-    } else if (key === "owner") {
-      if (thing instanceof CSSRule) {
-        console.log("%o -> %s", thing.cssText, owner);
-      } else {
-        console.log("%o -> %s", thing, owner);
-      }
-    }
-  }
-  for (const elt of [...elements2].sort(comparePosition)) {
-    const owner = getInternal(elt, "owner");
-    console.log("%o -> %s", elt, owner ?? "none");
-  }
-  console.groupEnd();
-}
-
-// lib/debug/forms.ts
-function forms() {
-  console.group("ahx form...");
-  const elements2 = /* @__PURE__ */ new Set();
-  for (const [elt] of objectsWithInternal("formData")) {
-    if (elt instanceof Element) {
-      elements2.add(elt);
-    }
-  }
-  for (const [rule] of getControlRulesByAction("harvest")) {
-    for (const elt of document.querySelectorAll(rule.selectorText)) {
-      const target = parseTarget(elt, rule);
-      if (target instanceof Element) {
-        elements2.add(target);
-      }
-    }
-  }
-  for (const elt of [...elements2].sort(comparePosition)) {
-    const formData = elt instanceof HTMLFormElement ? new FormData(elt) : getInternal(elt, "formData");
-    if (formData) {
-      console.group(elt);
-      for (const [name, value] of formData ?? []) {
-        console.log("%s: %c%s", name, "font-weight: bold", value);
-      }
-      console.groupEnd();
-    }
-  }
-  console.groupEnd();
-}
-function* getControlRulesByAction(type) {
-  for (const [rule, key, control] of internalEntries()) {
-    if (key.startsWith("control:") && rule instanceof CSSStyleRule && typeof control === "object" && "action" in control && control.action.type === type && isRuleEnabled(rule)) {
-      yield [rule, control];
-    }
-  }
-}
-
-// lib/debug/slots.ts
-function slots() {
-  console.group("ahx slots...");
-  const slots2 = /* @__PURE__ */ new Map();
-  function addSlot(elt, names) {
-    const nameSet = slots2.get(elt) ?? slots2.set(elt, /* @__PURE__ */ new Set()).get(elt);
-    names.forEach((name) => nameSet.add(name));
-  }
-  for (const [thing, slotNames] of objectsWithInternal("slotName")) {
-    if (thing instanceof Element) {
-      addSlot(thing, slotNames);
-    } else if (thing instanceof CSSStyleRule) {
-      const slots3 = document.querySelectorAll(thing.selectorText);
-      for (const slot of slots3) {
-        addSlot(slot, slotNames);
-      }
-    }
-  }
-  for (const elt of [...slots2.keys()].sort(comparePosition)) {
-    console.log(elt, ...slots2.get(elt));
-  }
-  console.groupEnd();
-}
-
 // lib/url_attrs.ts
 function applyUrlAttrs(elt, loc) {
   if (elt && elt.getAttribute(`${config.prefix}-url-href`) !== loc.href) {
@@ -1982,13 +1982,16 @@ function initDebug(document2) {
   }
 }
 
+// lib/start_ahx.ts
+function startAhx(doc) {
+  initDebug(doc);
+  initUrlAttrs(doc);
+  startObserver(doc);
+  processRules(doc);
+  processElements(doc);
+  triggerLoad(doc.documentElement);
+}
+
 // lib/ahx.ts
-ready((document2) => {
-  initDebug(document2);
-  initUrlAttrs(document2);
-  startObserver(document2);
-  processRules(document2);
-  processElements(document2);
-  triggerLoad(document2.documentElement);
-});
+ready(startAhx);
 window.ahx = debug_exports;
