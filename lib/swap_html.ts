@@ -112,7 +112,11 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
     // no-op
   },
   inner(target, element) {
-    target.replaceChildren(element);
+    if (typeof Idiomorph !== "undefined") {
+      Idiomorph.morph(target, element, { morphStyle: "innerHTML", ignoreActiveValue: true });
+    } else {
+      target.replaceChildren(element);
+    }
   },
   outer(target, element) {
     const pseudoPrefix = `${config.prefix}-pseudo`;
@@ -125,7 +129,11 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
 
     cloneInternal(target, element);
 
-    target.replaceWith(element);
+    if (typeof Idiomorph !== "undefined") {
+      Idiomorph.morph(target, element, { morphStyle: "outerHTML", ignoreActiveValue: true });
+    } else {
+      target.replaceWith(element);
+    }
   },
   beforebegin: swapAdjacent("beforebegin"),
   afterbegin: swapAdjacent("afterbegin"),

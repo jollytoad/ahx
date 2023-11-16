@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="https://unpkg.com/idiomorph"></script>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      main {
+        --ahx-trigger: load once;
+        --ahx-get: url("./morph_1.html");
+        --ahx-swap: outer;
+      }
+
+      button[ahx-slot="button"] {
+        --ahx-trigger: click;
+        --ahx-get: attr(ahx-get);
+        --ahx-target: main;
+        --ahx-swap: outer;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test morphing of content when Idiomorph is present</aside>
+
+    <br/>
+
+    <div ahx-slot-name="button"></div>
+
+    <hr/>
+
+    <main></main>
+  </body>
+</html>

@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html ahx-debug-events>
   <head>
     <script src="../ahx.js" type="module"></script>
     <style>
       .load-via-rule {
         --ahx-trigger: load;
-        --ahx-get: "loaded.html";
+        --ahx-get: url("loaded.html");
         --ahx-swap: inner;
       }
     </style>
   </head>
   <body>
+    <aside>Test "load" triggers.</aside>
+
     <div class="load-via-rule"></div>
 
     <div class="load-via-attr" ahx-trigger="load" ahx-get="loaded.html" ahx-swap="inner"></div>

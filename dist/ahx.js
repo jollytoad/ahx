@@ -296,6 +296,22 @@ function asAhxHeaderName(name) {
   return isAhxHeaderName(name) ? name : `${config.prefix}-${name}`;
 }
 
+// lib/util/resolve_element.ts
+function resolveElement(thing) {
+  if (thing instanceof Element) {
+    return thing;
+  }
+  if (thing && "ownerNode" in thing && thing.ownerNode && thing.ownerNode instanceof Element) {
+    return thing.ownerNode;
+  }
+  if (thing?.parentStyleSheet) {
+    return resolveElement(thing.parentStyleSheet);
+  }
+  if (thing && "ownerRule" in thing) {
+    return resolveElement(thing.ownerRule);
+  }
+}
+
 // lib/parse_css_value.ts
 function parseCssValue(prop, rule, elt, expect = "tokens") {
   prop = asAhxCSSPropertyName(prop);
@@ -330,7 +346,7 @@ function parseCssValue(prop, rule, elt, expect = "tokens") {
     const isURL = /^url\(([^\)]*)\)(?:\s+url\(([^\)]*)\))*$/.exec(value);
     if (isURL) {
       const [, ...values2] = isURL;
-      const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI;
+      const baseURL = rule.parentStyleSheet?.href ?? rule.style.parentRule?.parentStyleSheet?.href ?? elt?.baseURI ?? resolveElement(rule)?.baseURI;
       return values2.flatMap((value2) => {
         const url = value2 ? parseURL2(parseQuoted(value2), baseURL) : void 0;
         return url ? [url] : [];
@@ -703,7 +719,11 @@ var swapHandlers = {
   none() {
   },
   inner(target, element) {
-    target.replaceChildren(element);
+    if (typeof Idiomorph !== "undefined") {
+      Idiomorph.morph(target, element, { morphStyle: "innerHTML", ignoreActiveValue: true });
+    } else {
+      target.replaceChildren(element);
+    }
   },
   outer(target, element) {
     const pseudoPrefix = `${config.prefix}-pseudo`;
@@ -713,7 +733,11 @@ var swapHandlers = {
       }
     }
     cloneInternal(target, element);
-    target.replaceWith(element);
+    if (typeof Idiomorph !== "undefined") {
+      Idiomorph.morph(target, element, { morphStyle: "outerHTML", ignoreActiveValue: true });
+    } else {
+      target.replaceWith(element);
+    }
   },
   beforebegin: swapAdjacent("beforebegin"),
   afterbegin: swapAdjacent("afterbegin"),
@@ -1469,22 +1493,6 @@ function* getTriggerDetailsForEvent(event) {
 }
 function isRecursive(event) {
   return event instanceof CustomEvent && !!event.detail?.recursive;
-}
-
-// lib/util/resolve_element.ts
-function resolveElement(thing) {
-  if (thing instanceof Element) {
-    return thing;
-  }
-  if (thing && "ownerNode" in thing && thing.ownerNode && thing.ownerNode instanceof Element) {
-    return thing.ownerNode;
-  }
-  if (thing?.parentStyleSheet) {
-    return resolveElement(thing.parentStyleSheet);
-  }
-  if (thing && "ownerRule" in thing) {
-    return resolveElement(thing.ownerRule);
-  }
 }
 
 // lib/process_control.ts
