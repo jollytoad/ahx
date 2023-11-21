@@ -113,7 +113,10 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
   },
   inner(target, element) {
     if (typeof Idiomorph !== "undefined") {
-      Idiomorph.morph(target, element, { morphStyle: "innerHTML", ignoreActiveValue: true });
+      Idiomorph.morph(target, element, {
+        morphStyle: "innerHTML",
+        ignoreActiveValue: true,
+      });
     } else {
       target.replaceChildren(element);
     }
@@ -130,7 +133,10 @@ const swapHandlers: Record<SwapHtmlStyle, SwapHandler> = {
     cloneInternal(target, element);
 
     if (typeof Idiomorph !== "undefined") {
-      Idiomorph.morph(target, element, { morphStyle: "outerHTML", ignoreActiveValue: true });
+      Idiomorph.morph(target, element, {
+        morphStyle: "outerHTML",
+        ignoreActiveValue: true,
+      });
     } else {
       target.replaceWith(element);
     }
