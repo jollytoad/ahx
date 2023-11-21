@@ -7,7 +7,7 @@ import process from "node:process";
  */
 // require('dotenv').config();
 
-const port = 8000;
+const port = process.env.PORT ?? 8000;
 
 /**
  * See https://playwright.dev/docs/test-configuration.

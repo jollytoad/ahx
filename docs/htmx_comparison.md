@@ -67,29 +67,29 @@ Key:
 
 ## Additional Attributes
 
-| htmx           | ahx         | Notes          |
-| -------------- | ----------- | -------------- |
-| hx-confirm     | ?           |                |
-| hx-delete      | ahx-delete  |                |
-| hx-disable     | ?           |                |
-| hx-disinherit  | N           | no inheritance |
-| hx-encoding    | ?           |                |
-| hx-ext         | N           | no extensions  |
-| hx-headers     | --W         |                |
-| hx-history     | N           |                |
-| hx-history-elt | ?           |                |
-| hx-include     | ahx-include | see below      |
-| hx-params      | ?           |                |
-| hx-preserve    | ?           |                |
-| hx-prompt      | ?           |                |
-| hx-put         | ahx-put     |                |
-| hx-replace-url | N           |                |
-| hx-request     | N           |                |
-| hx-sse         | N           |                |
-| hx-sync        | ?           |                |
-| hx-validate    | ?           |                |
-| hx-vars        | N           | no scripting   |
-| hx-ws          | N           |                |
+| htmx           | ahx           | Notes          |
+| -------------- | ------------- | -------------- |
+| hx-confirm     | ?             |                |
+| hx-delete      | ahx-delete    |                |
+| hx-disable     | ?             |                |
+| hx-disinherit  | N             | no inheritance |
+| hx-encoding    | ?             |                |
+| hx-ext         | N             | no extensions  |
+| hx-headers     | --ahx-headers |                |
+| hx-history     | N             |                |
+| hx-history-elt | ?             |                |
+| hx-include     | ahx-include   | see below      |
+| hx-params      | ?             |                |
+| hx-preserve    | ?             |                |
+| hx-prompt      | ?             |                |
+| hx-put         | ahx-put       |                |
+| hx-replace-url | N             |                |
+| hx-request     | N             |                |
+| hx-sse         | N             |                |
+| hx-sync        | ?             |                |
+| hx-validate    | ?             |                |
+| hx-vars        | N             | no scripting   |
+| hx-ws          | N             |                |
 
 - **ahx-include**: targets a form or element with internal `FormData` atm.
 

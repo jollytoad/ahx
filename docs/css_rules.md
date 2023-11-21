@@ -143,6 +143,28 @@ Equivalent of [hx-get](https://htmx.org/attributes/hx-get),
 [hx-patch](https://htmx.org/attributes/hx-patch),
 [hx-delete](https://htmx.org/attributes/hx-delete).
 
+### --ahx-headers
+
+Allows you to add headers that will be submitted with a HTTP request.
+
+The value of this must be a valid JSON object of the headers.
+
+```css
+.my-button {
+  --ahx-trigger: click;
+  --ahx-get: attr(ahx-get url);
+  --ahx-swap: outer;
+  --ahx-headers: {
+    "X-Custom-Header": "foo"
+  };
+}
+```
+
+NOTE: This is only supported as a CSS property, and NOT as an element attribute.
+
+Equivalent of [hx-headers](https://htmx.org/attributes/hx-headers), but does not
+support dynamic evaluation using javascript code.
+
 ### --ahx-harvest
 
 Cause the value of the property to be 'harvested' on the trigger event. This is

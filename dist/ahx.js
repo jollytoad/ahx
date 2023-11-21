@@ -884,6 +884,28 @@ function isHtmlResponse(response) {
   return !!response?.headers.get("Content-Type")?.startsWith("text/html") && !!response.body;
 }
 
+// lib/parse_headers.ts
+function parseHeaders(control, source) {
+  if (control instanceof CSSStyleRule) {
+    const [headersJson] = parseCssValue("headers", control, source, "whole");
+    try {
+      const headersObj = JSON.parse(headersJson);
+      return new Headers(headersObj);
+    } catch {
+      dispatchError(
+        source,
+        "invalidCssValue",
+        {
+          prop: asAhxCSSPropertyName("headers"),
+          value: headersJson,
+          rule: control,
+          reason: "Must be a valid JSON object of request headers"
+        }
+      );
+    }
+  }
+}
+
 // lib/handle_request.ts
 async function handleRequest(props) {
   const { source, action, target, swap, controlOwner, targetOwner } = props;
@@ -926,7 +948,7 @@ async function handleRequest(props) {
   }
 }
 function prepareRequest(detail) {
-  const { action, formData, source } = detail;
+  const { action, formData, source, control } = detail;
   if (!action.url) {
     dispatchError(source, "invalidRequest", {
       action,
@@ -935,12 +957,14 @@ function prepareRequest(detail) {
     return;
   }
   const url = new URL(action.url);
-  const headers = new Headers();
+  const headers = parseHeaders(control, source) ?? new Headers();
   const init = {
     method: action.method.toUpperCase(),
     headers
   };
-  headers.set("Accept", "text/html,application/xhtml+xml,text/plain;q=0.9");
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "text/html,application/xhtml+xml,text/plain;q=0.9");
+  }
   headers.set(asAhxHeaderName("request"), "true");
   headers.set(
     asAhxHeaderName("current-url"),

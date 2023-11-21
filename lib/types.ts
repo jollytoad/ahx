@@ -22,6 +22,7 @@ export type ControlPropName =
   | "trigger"
   | "swap"
   | "harvest"
+  | "headers"
   | "target"
   | "include"
   | "slot"
@@ -175,6 +176,7 @@ export interface AhxErrorMap {
     prop: CSSPropertyName;
     value?: string;
     rule: CSSStyleRule;
+    reason?: string;
   };
   "triggerDenied": TriggerDetail;
   "invalidRequest": { action: ActionRequestSpec; reason: string };

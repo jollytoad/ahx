@@ -6,6 +6,7 @@ import {
 import { handleSwap } from "./handle_swap.ts";
 import type { ActionDetail, ActionRequestSpec } from "./types.ts";
 import { asAhxHeaderName } from "./util/names.ts";
+import { parseHeaders } from "./parse_headers.ts";
 
 export async function handleRequest(props: ActionDetail) {
   const { source, action, target, swap, controlOwner, targetOwner } = props;
@@ -58,7 +59,7 @@ export async function handleRequest(props: ActionDetail) {
 }
 
 function prepareRequest(detail: ActionDetail & { action: ActionRequestSpec }) {
-  const { action, formData, source } = detail;
+  const { action, formData, source, control } = detail;
 
   if (!action.url) {
     dispatchError(source, "invalidRequest", {
@@ -70,14 +71,16 @@ function prepareRequest(detail: ActionDetail & { action: ActionRequestSpec }) {
 
   const url = new URL(action.url);
 
-  const headers = new Headers();
+  const headers = parseHeaders(control, source) ?? new Headers();
 
   const init: RequestInit = {
     method: action.method.toUpperCase(),
     headers,
   };
 
-  headers.set("Accept", "text/html,application/xhtml+xml,text/plain;q=0.9");
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "text/html,application/xhtml+xml,text/plain;q=0.9");
+  }
   headers.set(asAhxHeaderName("request"), "true");
   headers.set(
     asAhxHeaderName("current-url"),

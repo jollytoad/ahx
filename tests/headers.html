@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      .with-headers {
+        --ahx-trigger: click;
+        --ahx-get: url("loaded.html");
+        --ahx-target: #target;
+        --ahx-swap: inner;
+        --ahx-headers: {
+          "X-Custom-Header": "foo"
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test --ahx-headers.</aside>
+
+    <button type="button" class="with-headers">Load</button>
+
+    <div id="target"></div>
+  </body>
+</html>
