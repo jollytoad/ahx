@@ -13,7 +13,7 @@ document.
 
 ```html
 <div>Thinking, please wait...</div>
-<ahx-flush>
+<ahx-flush><ahx-flush/>
 <div>The answer is 42</div>
 ```
 

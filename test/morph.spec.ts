@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/tests/morph.html");
+  await page.goto("/test/morph.html");
 });
 
 test("video continues to play", async ({ page }) => {

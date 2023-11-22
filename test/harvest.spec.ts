@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/tests/harvest.html");
+  await page.goto("/test/harvest.html");
 });
 
 test("input append", async ({ page }) => {

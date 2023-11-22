@@ -2,6 +2,8 @@ import { handle } from "$http_fns/handle.ts";
 import { staticRoute } from "$http_fns/static.ts";
 import { interceptResponse, skip } from "$http_fns/intercept.ts";
 import { byPattern } from "$http_fns/pattern.ts";
+import { dynamicRoute } from "$http_fns/dynamic.ts";
+import { lazy } from "$http_fns/lazy.ts";
 
 export default handle([
   byPattern("/huge", () => {
@@ -15,7 +17,30 @@ export default handle([
       },
     );
   }),
-  staticRoute("/tests", import.meta.resolve("../tests")),
+  byPattern("/test", lazy(() => import("../test/index.ts"))),
+  interceptResponse(
+    dynamicRoute({
+      pattern: "/test",
+      fileRootUrl: import.meta.resolve("../test"),
+      eagerness: "request",
+      routeMapper({ ext, pattern, module }) {
+        if (pattern.endsWith(".route") && (ext === ".ts" || ext === ".tsx")) {
+          switch (ext) {
+            case ".ts":
+            case ".tsx":
+              return [{
+                pattern: pattern.replace(/\.route$/, ""),
+                module,
+              }];
+          }
+        }
+        return [];
+      },
+      verbose: true,
+    }),
+    skip(404),
+  ),
+  staticRoute("/test", import.meta.resolve("../test")),
   interceptResponse(
     staticRoute("/", import.meta.resolve("../dist")),
     skip(404),

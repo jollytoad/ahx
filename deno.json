@@ -19,14 +19,16 @@
     "node_modules"
   ],
   "imports": {
-    "$std/": "https://deno.land/std@0.201.0/",
-    "https://deno.land/std@0.173.0/": "https://deno.land/std@0.201.0/",
-    "https://deno.land/std@0.173.0/encoding/jsonc.ts": "https://deno.land/std@0.201.0/jsonc/mod.ts",
+    "$std/": "https://deno.land/std@0.207.0/",
+    "https://deno.land/std@0.200.0/": "https://deno.land/std@0.207.0/",
+    "https://deno.land/std@0.201.0/": "https://deno.land/std@0.207.0/",
+    "https://deno.land/std@0.140.0/": "https://deno.land/std@0.207.0/",
+    "https://deno.land/std@0.140.0/streams/conversion.ts": "https://deno.land/std@0.207.0/streams/mod.ts",
     "$http_fns/": "https://deno.land/x/http_fns@v0.0.27/",
-    "esbuild": "https://deno.land/x/esbuild@v0.19.3/mod.js",
-    "https://deno.land/x/esbuild@v0.17.19/": "https://deno.land/x/esbuild@v0.19.3/",
-    "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.1/mod.ts",
-    "https://deno.land/x/deno_cache@0.4.1/": "https://deno.land/x/deno_cache@0.6.0/",
+    "esbuild": "https://deno.land/x/esbuild@v0.19.6/mod.js",
+    "https://deno.land/x/esbuild@v0.19.2/": "https://deno.land/x/esbuild@v0.19.6/",
+    "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.2/mod.ts",
+    "https://deno.land/x/deno_cache@0.4.1/": "https://deno.land/x/deno_cache@0.6.2/",
     "@playwright/test": "npm:@playwright/test"
   }
 }

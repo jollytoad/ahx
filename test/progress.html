@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      #start {
+        --ahx-trigger: click;
+        --ahx-get: url("progress");
+        --ahx-target: #progress-container;
+        --ahx-swap: inner;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test a streaming progress bar.</aside>
+
+    <button id="start">Start</button>
+
+    <div id="progress-container"></div>
+  </body>
+</html>

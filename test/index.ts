@@ -1,0 +1,35 @@
+import { stream } from "./_stream.ts";
+import { parse } from "$std/path/parse.ts";
+
+export default stream(index);
+
+async function* index() {
+  yield (
+    `<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Tests</h1>
+    <ul>
+`
+  );
+
+  try {
+    const dir = Deno.readDir(new URL(import.meta.resolve("./")));
+    for await (const entry of dir) {
+      const { ext, base, name } = parse(entry.name);
+      if (ext === ".html" && !name.startsWith("_")) {
+        yield `<li><a href="/test/${base}">${name}</a></li>\n`;
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    yield `<li>Failed to load list of tests, check the console for errors.</li>\n`;
+  }
+
+  yield (
+    `   </ul>
+  </body>
+</html>
+`
+  );
+}

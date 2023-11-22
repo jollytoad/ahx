@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/tests/headers.html");
+  await page.goto("/test/headers.html");
 });
 
 test("load with headers", async ({ page }) => {
