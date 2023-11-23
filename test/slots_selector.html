@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      ol > li {
+        --ahx-slot-name: thing;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test slots with selectors, streaming content into slots with loading indicators.</aside>
+
+    <p ahx-slot-name="mode">?</p>
+
+    <ol>
+      <li class="thing-1"></li>
+      <li class="thing-2"></li>
+      <li class="thing-3"></li>
+      <li class="thing-4"></li>
+      <li class="thing-5"></li>
+      <li class="thing-6"></li>
+      <li class="thing-7"></li>
+      <li class="thing-8"></li>
+      <li class="thing-9"></li>
+    </ol>
+
+    <button ahx-trigger="click" ahx-get="slots_selector?even">Load even slots</button>
+    <button ahx-trigger="click" ahx-get="slots_selector?odd">Load odd slots</button>
+    <button ahx-trigger="click" ahx-get="slots_selector?even&odd">Load all slots</button>
+    <button ahx-trigger="click" ahx-get="slots_selector">Load no slots</button>
+
+    <p>
+      TODO: Implement concurrent control strategy. For example, hit the buttons in quick
+      succession before the previous action finishes, you should see conflicting results.
+    </p>
+  </body>
+</html>

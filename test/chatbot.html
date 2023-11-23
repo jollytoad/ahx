@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      #start {
+        --ahx-trigger: click;
+        --ahx-get: url("chatbot");
+        --ahx-target: #target;
+        --ahx-swap: inner;
+      }
+
+      #target {
+        max-height: 20rem;
+        width: 30em;
+        overflow: scroll;
+        border: 1px solid black;
+        margin-top: 1ex;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test streaming content, like a chatbot.</aside>
+
+    <button id="start">Start</button>
+
+    <div id="target"></div>
+  </body>
+</html>

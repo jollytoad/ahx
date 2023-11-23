@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      .bob-slot {
+        --ahx-slot-name: bob;
+      }
+      .slot-container > div {
+        --ahx-slot-name: all;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test slots.</aside>
+
+    <div class="slot-container">
+      <div ahx-slot-name="alice">This is the slot named "alice" (directly via an attribute)</div>
+
+      <div class="bob-slot">This is the slot named "bob" (indirectly via a rule)</div>
+    </div>
+
+    <button ahx-trigger="click" ahx-get="_slotted_1.html">Load individual slots</button>
+    <button ahx-trigger="click" ahx-get="_slotted_2.html">Load all slots</button>
+
+  </body>
+</html>
