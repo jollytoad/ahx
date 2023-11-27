@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html ahx-debug-events>
+  <head>
+    <script src="../ahx.js" type="module"></script>
+    <style>
+      #button {
+        --ahx-trigger: click;
+        --ahx-dispatch: load-me-now;
+        --ahx-target: #target;
+      }
+
+      #target {
+        --ahx-trigger: load-me-now;
+        --ahx-get: url("_loaded.html");
+        --ahx-swap: inner;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>Test dispatching events.</aside>
+
+    <button id="button">Dispatch</button>
+
+    <div id="target"></div>
+  </body>
+</html>

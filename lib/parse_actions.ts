@@ -18,9 +18,17 @@ export function parseActions(control: ControlDecl): ActionSpec[] {
   }
 
   if (control instanceof CSSStyleRule) {
-    if (getAhxCSSPropertyNames(control).has(asAhxCSSPropertyName("harvest"))) {
+    const props = getAhxCSSPropertyNames(control);
+
+    if (props.has(asAhxCSSPropertyName("harvest"))) {
       actionSpecs.push({
         type: "harvest",
+      });
+    }
+
+    if (props.has(asAhxCSSPropertyName("dispatch"))) {
+      actionSpecs.push({
+        type: "dispatch",
       });
     }
   }

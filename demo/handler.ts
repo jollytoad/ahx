@@ -18,28 +18,25 @@ export default handle([
     );
   }),
   byPattern("/test", lazy(() => import("../test/index.ts"))),
-  interceptResponse(
-    dynamicRoute({
-      pattern: "/test",
-      fileRootUrl: import.meta.resolve("../test"),
-      eagerness: "request",
-      routeMapper({ ext, pattern, module }) {
-        if (pattern.endsWith(".route") && (ext === ".ts" || ext === ".tsx")) {
-          switch (ext) {
-            case ".ts":
-            case ".tsx":
-              return [{
-                pattern: pattern.replace(/\.route$/, ""),
-                module,
-              }];
-          }
+  dynamicRoute({
+    pattern: "/test",
+    fileRootUrl: import.meta.resolve("../test"),
+    eagerness: "request",
+    routeMapper({ ext, pattern, module }) {
+      if (pattern.endsWith(".route") && (ext === ".ts" || ext === ".tsx")) {
+        switch (ext) {
+          case ".ts":
+          case ".tsx":
+            return [{
+              pattern: pattern.replace(/\.route$/, ""),
+              module,
+            }];
         }
-        return [];
-      },
-      verbose: true,
-    }),
-    skip(404),
-  ),
+      }
+      return [];
+    },
+    verbose: true,
+  }),
   staticRoute("/test", import.meta.resolve("../test")),
   interceptResponse(
     staticRoute("/", import.meta.resolve("../dist")),

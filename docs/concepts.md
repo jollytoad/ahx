@@ -149,6 +149,25 @@ element in response to the trigger. This can only be declared via a CSS rule.
 }
 ```
 
+### Event Dispatch
+
+- `ahx-dispatch`
+
+This action dispatches a [CustomEvent] on the target element.
+
+[CustomEvent]: https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent
+
+```css
+.something {
+  --ahx-dispatch: do-it;
+  --ahx-target: .other;
+}
+
+.other {
+  --ahx-trigger: do-it;
+}
+```
+
 ## Targets
 
 - `ahx-target`

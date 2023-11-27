@@ -22,6 +22,7 @@ export type ControlPropName =
   | "trigger"
   | "swap"
   | "harvest"
+  | "dispatch"
   | "headers"
   | "target"
   | "include"
@@ -51,7 +52,7 @@ export type ControlDecl = Element | CSSStyleRule;
 export interface ControlSpec {
   trigger: TriggerSpec;
   action: ActionSpec;
-  swap: SwapSpec;
+  swap?: SwapSpec;
 }
 
 export interface TriggerSpec {
@@ -74,7 +75,14 @@ export interface ActionHarvestSpec {
   type: "harvest";
 }
 
-export type ActionSpec = ActionRequestSpec | ActionHarvestSpec;
+export interface ActionDispatchSpec {
+  type: "dispatch";
+}
+
+export type ActionSpec =
+  | ActionRequestSpec
+  | ActionHarvestSpec
+  | ActionDispatchSpec;
 
 export type ActionType = ActionSpec["type"];
 
@@ -163,6 +171,7 @@ export interface AhxEventMap {
   "swap": [SwapDetail, SwapDetail];
   "request": [RequestDetail, RequestDetail];
   "harvest": [HarvestDetail, HarvestDetail];
+  "dispatch": [DispatchDetail, DispatchDetail & { cancelled: boolean }];
 }
 
 export interface AhxOneShotMap {
@@ -303,6 +312,13 @@ export interface HarvestDetail extends Owners {
   control: CSSStyleRule;
   newValue: string;
   oldValue?: string;
+}
+
+export interface DispatchDetail extends Owners {
+  source: Element;
+  target: Element;
+  control: CSSStyleRule;
+  event: CustomEvent;
 }
 
 export interface LoadDetail {

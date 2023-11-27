@@ -1013,6 +1013,7 @@ async function handleHarvest(props) {
     target,
     swap,
     control,
+    sourceOwner,
     controlOwner,
     targetOwner
   } = props;
@@ -1029,6 +1030,7 @@ async function handleHarvest(props) {
     oldValue,
     newValue,
     control,
+    sourceOwner,
     targetOwner,
     controlOwner
   };
@@ -1044,6 +1046,43 @@ async function handleHarvest(props) {
 function getOldValue(event) {
   if (event instanceof CustomEvent && "oldValue" in event.detail) {
     return event.detail.oldValue;
+  }
+}
+
+// lib/handle_dispatch.ts
+async function handleDispatch(props) {
+  const {
+    source,
+    action,
+    target,
+    control,
+    sourceOwner,
+    controlOwner,
+    targetOwner
+  } = props;
+  if (!(control instanceof CSSStyleRule) || action.type !== "dispatch") {
+    return;
+  }
+  const [eventType] = parseCssValue("dispatch", control, source);
+  if (!eventType) {
+    return;
+  }
+  const detail = {
+    source,
+    target,
+    control,
+    sourceOwner,
+    targetOwner,
+    controlOwner,
+    event: new CustomEvent(eventType, {
+      bubbles: true,
+      cancelable: true,
+      detail: {}
+    })
+  };
+  if (dispatchBefore(source, "dispatch", detail)) {
+    const cancelled = !target.dispatchEvent(detail.event);
+    dispatchAfter(source, "dispatch", { ...detail, cancelled });
   }
 }
 
@@ -1069,6 +1108,9 @@ async function handleAction(detail) {
         break;
       case "harvest":
         await handleHarvest(detail);
+        break;
+      case "dispatch":
+        await handleDispatch(detail);
         break;
     }
     dispatchAfter(source, "action", detail);
@@ -1190,7 +1232,7 @@ function controls(verbose = false) {
       } else {
         const ctlRep = control instanceof Element ? "element" : control.cssText;
         const actionRep = "method" in action ? `${action.method.toUpperCase()} ${action.url}` : action.type;
-        const swapRep = (swap.swapStyle ?? "default") + (swap.itemName ? ` ${swap.itemName}` : "");
+        const swapRep = (swap?.swapStyle ?? "default") + (swap?.itemName ? ` ${swap.itemName}` : "");
         console.log(
           "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",
           "color: red; font-weight: bold",
@@ -1358,9 +1400,15 @@ function parseActions(control) {
     }
   }
   if (control instanceof CSSStyleRule) {
-    if (getAhxCSSPropertyNames(control).has(asAhxCSSPropertyName("harvest"))) {
+    const props = getAhxCSSPropertyNames(control);
+    if (props.has(asAhxCSSPropertyName("harvest"))) {
       actionSpecs.push({
         type: "harvest"
+      });
+    }
+    if (props.has(asAhxCSSPropertyName("dispatch"))) {
+      actionSpecs.push({
+        type: "dispatch"
       });
     }
   }

@@ -239,9 +239,33 @@ note:
   values are space separated by default or with `join:space`, but `join:comma`
   maybe be given to use a comma instead.
 
+### --ahx-dispatch
+
+Allows custom events to be dispatched in response to a trigger.
+
+```css
+#button {
+  --ahx-trigger: click;
+  --ahx-dispatch: get-the-thing;
+  --ahx-target: #thing;
+}
+
+#thing {
+  --ahx-trigger: get-the-thing;
+  --ahx-get: url("the-thing");
+}
+```
+
+NOTE: This is only supported as a CSS property, and NOT as an element attribute.
+
+There is no equivalent _htmx_ attribute, although it does allow dispatching of
+events via the [HX-Trigger](https://htmx.org/headers/hx-trigger/) response
+header.
+
 ### --ahx-target
 
-Allows you to target a different element for the swap than that of the rule.
+Allows you to target a different element for the swap (or event) than that of
+the rule.
 
 The value of this property can be:
 

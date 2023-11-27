@@ -11,6 +11,7 @@ export async function handleHarvest(props: ActionDetail & { target: Element }) {
     target,
     swap,
     control,
+    sourceOwner,
     controlOwner,
     targetOwner,
   } = props;
@@ -32,6 +33,7 @@ export async function handleHarvest(props: ActionDetail & { target: Element }) {
     oldValue,
     newValue,
     control,
+    sourceOwner,
     targetOwner,
     controlOwner,
   };

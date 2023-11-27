@@ -3,6 +3,7 @@
   <head>
     <script src="../ahx.js" type="module"></script>
     <style>
+      /* Harvest data into additional input fields in a form */
       .source {
         --ahx-trigger: load;
         --ahx-harvest: attr(data-id);
@@ -10,6 +11,7 @@
         --ahx-swap: input ids append;
       }
 
+      /* Harvest data into a single input field in a form */
       .source {
         --ahx-trigger: load;
         --ahx-harvest: attr(data-id);
@@ -17,11 +19,20 @@
         --ahx-swap: input ids join;
       }
 
+      /* Harvest data into an attribute */
       .source {
         --ahx-trigger: load;
         --ahx-harvest: attr(data-id);
         --ahx-target: .target3;
         --ahx-swap: attr ahx-data-ids join;
+      }
+
+      /* Harvest data into internal form */
+      .source {
+        --ahx-trigger: load;
+        --ahx-harvest: attr(data-id);
+        --ahx-target: .target4;
+        --ahx-swap: input ids join;
       }
     </style>
   </head>
@@ -35,5 +46,6 @@
     <form class="target1"></form>
     <form class="target2"></form>
     <div class="target3"></div>
+    <div class="target4"></div>
   </body>
 </html>

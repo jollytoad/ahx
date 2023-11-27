@@ -70,8 +70,8 @@ export function controls(verbose = false) {
           ? `${action.method.toUpperCase()} ${action.url}`
           : action.type;
 
-        const swapRep = (swap.swapStyle ?? "default") +
-          (swap.itemName ? ` ${swap.itemName}` : "");
+        const swapRep = (swap?.swapStyle ?? "default") +
+          (swap?.itemName ? ` ${swap.itemName}` : "");
 
         console.log(
           "%c%s%c -> %c%s%c -> %c%s%c from: %c%s%c",

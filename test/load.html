@@ -8,6 +8,14 @@
         --ahx-get: url("_loaded.html");
         --ahx-swap: inner;
       }
+
+      .container {
+        & .load-via-nested-rule {
+          --ahx-trigger: load;
+          --ahx-get: url("_loaded.html");
+          --ahx-swap: inner;
+        }
+      }
     </style>
   </head>
   <body>
@@ -15,6 +23,10 @@
 
     <div class="load-via-rule"></div>
 
-    <div class="load-via-attr" ahx-trigger="load" ahx-get="loaded.html" ahx-swap="inner"></div>
+    <div class="load-via-attr" ahx-trigger="load" ahx-get="_loaded.html" ahx-swap="inner"></div>
+
+    <div class="container">
+      <div class="load-via-nested-rule"></div>
+    </div>
   </body>
 </html>

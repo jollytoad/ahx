@@ -6,6 +6,7 @@ import type { ActionDetail } from "./types.ts";
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { handleHarvest } from "./handle_harvest.ts";
 import { parseCssValue } from "./parse_css_value.ts";
+import { handleDispatch } from "./handle_dispatch.ts";
 
 export async function handleAction(detail: ActionDetail) {
   const { source, control, action } = detail;
@@ -36,6 +37,10 @@ export async function handleAction(detail: ActionDetail) {
 
       case "harvest":
         await handleHarvest(detail);
+        break;
+
+      case "dispatch":
+        await handleDispatch(detail);
         break;
     }
 
