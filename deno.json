@@ -2,10 +2,10 @@
   "tasks": {
     "build": "deno run -A scripts/build.ts",
     "start": "deno run --unstable --allow-all --watch demo/dev.ts",
-    "start:test": "deno run --unstable --allow-all --allow-env demo/dev.ts --http",
+    "start:test": "deno run --unstable --allow-all --allow-env --watch demo/dev.ts --http",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
     "check": "deno fmt && deno lint && deno --unstable check lib/**/*.ts ext/**/*.js demo/**/*.ts",
-    "lock": "rm -f deno.lock && deno --unstable check lib/**/*.ts ext/**/*.js demo/**/*.ts",
+    "lock": "rm -f deno.lock && deno check lib/**/*.ts ext/**/*.js demo/**/*.ts",
     "test": "yarn playwright test"
   },
   "compilerOptions": {
@@ -19,15 +19,15 @@
     "node_modules"
   ],
   "imports": {
-    "$std/": "https://deno.land/std@0.208.0/",
-    "https://deno.land/std@0.201.0/": "https://deno.land/std@0.208.0/",
-    "https://deno.land/std@0.140.0/": "https://deno.land/std@0.208.0/",
-    "https://deno.land/std@0.140.0/streams/conversion.ts": "https://deno.land/std@0.208.0/streams/mod.ts",
+    "$std/": "https://deno.land/std@0.213.0/",
+    "https://deno.land/std@0.211.0/": "https://deno.land/std@0.213.0/",
+    "https://deno.land/std@0.208.0/": "https://deno.land/std@0.213.0/",
+    "https://deno.land/std@0.140.0/": "https://deno.land/std@0.213.0/",
+    "https://deno.land/std@0.140.0/streams/conversion.ts": "https://deno.land/std@0.213.0/streams/mod.ts",
     "$http_fns/": "https://deno.land/x/http_fns@v0.1.0/lib/",
-    "esbuild": "https://deno.land/x/esbuild@v0.19.7/mod.js",
-    "https://deno.land/x/esbuild@v0.19.2/": "https://deno.land/x/esbuild@v0.19.7/",
-    "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.2/mod.ts",
-    "https://deno.land/x/deno_cache@0.4.1/": "https://deno.land/x/deno_cache@0.6.2/",
-    "@playwright/test": "npm:@playwright/test"
+    "esbuild": "https://deno.land/x/esbuild@v0.19.12/mod.js",
+    "https://deno.land/x/esbuild@v0.19.11/": "https://deno.land/x/esbuild@v0.19.12/",
+    "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.5/mod.ts",
+    "@playwright/test": "npm:@playwright/test@1.41.1"
   }
 }

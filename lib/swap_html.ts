@@ -79,6 +79,7 @@ export async function swapHtml(props: SwapHtmlProps) {
             swapHandlers[swapStyle]?.(target, element);
           } else if (previous && replacePrevious) {
             previous.replaceWith(element);
+            replacePrevious = false;
           } else {
             previous.after(element);
           }

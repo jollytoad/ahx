@@ -699,6 +699,7 @@ async function swapHtml(props) {
             swapHandlers[swapStyle2]?.(target3, element2);
           } else if (previous2 && replacePrevious) {
             previous2.replaceWith(element2);
+            replacePrevious = false;
           } else {
             previous2.after(element2);
           }

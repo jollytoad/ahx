@@ -206,7 +206,7 @@ All top-level elements (ie. direct children of `<body>`) will be swapped into
 the declared position, so a single target element may be replaced with several
 elements if `outer` is used.
 
-Any top-level element with an `ahx-swap` attribute will be treated separately,
+Any top-level element with an `ahx-slot` attribute will be treated separately,
 and swapped into a named 'slot', as declared by a `<slot>` element or a
 `--ahx-slot-name` property in a CSS rule.
 
