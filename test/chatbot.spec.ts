@@ -6,6 +6,7 @@ test.beforeEach(async ({ page }) => {
 
 test("chatbot", async ({ page }) => {
   const startButton = page.getByText("Start", { exact: true });
+  const target = page.getByTestId("target");
   const msg = page.getByTestId("msg");
   const control = page.getByTestId("control");
   const content = page.getByTestId("content");
@@ -22,8 +23,10 @@ test("chatbot", async ({ page }) => {
 
   await expect(done).toBeVisible();
 
-  // check that done is not inside .msg
-  await expect(msg.getByTestId("done")).toHaveCount(0, { timeout: 1 });
+  // check that done is inside #target
+  await expect(target.filter({ has: done })).toHaveCount(1, { timeout: 1 });
+  // but NOT inside .msg (ie. ahx-target has reset the target)
+  await expect(msg.filter({ hasNot: done })).toHaveCount(1, { timeout: 1 });
 
   await expect(control).toContainText("Retry", { timeout: 1 });
   await expect(control).not.toContainText("Stop", { timeout: 1 });
