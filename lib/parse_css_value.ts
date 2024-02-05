@@ -24,7 +24,7 @@ export function parseCssValue(
       if (!elt) {
         return [value];
       }
-      value = elt.getAttribute(isAttr[1]) ?? undefined;
+      value = elt.getAttribute(isAttr[1]!) ?? undefined;
       if (value && isAttr[2] === "url") {
         value = parseURL(value, elt.baseURI);
       }
@@ -86,7 +86,7 @@ function parseQuoted(value: string): string {
   const isQuoted = /^\"([^\"]*)\"$/.exec(value) ??
     /^\'([^\']*)\'$/.exec(value);
   if (isQuoted) {
-    return isQuoted[1];
+    return isQuoted[1]!;
   }
   return value;
 }

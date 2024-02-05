@@ -28,6 +28,7 @@ export type ControlPropName =
   | "include"
   | "slot"
   | "slot-name"
+  | "slot-swap"
   | "rule"
   | `rule-${string}`
   | "debug-events"
@@ -122,8 +123,23 @@ export interface SwapSpec {
   separator?: string;
 }
 
+export type SlotSwapStyle =
+  | "none"
+  | "inner"
+  | "afterbegin"
+  | "beforeend";
+
+export interface SlotSwapSpec {
+  swapStyle?: SlotSwapStyle;
+}
+
 export interface TargetSpec {
   query: string;
+}
+
+export interface SlotSpec extends SlotSwapSpec {
+  slot?: string;
+  selector?: string;
 }
 
 export interface SwapProps extends SwapSpec, Owners {

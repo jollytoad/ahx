@@ -117,6 +117,18 @@ an element matching `.project[data-id="foo"]`.
 If no selector is given or if multiple elements are still matched for the given
 slot name, then the source element is cloned and swapped into each matched slot.
 
+### ahx-slot-swap
+
+Declare the style for swapping into a slot targetted by the `ahx-slot`
+attribute.
+
+This is like `ahx-swap` but restricted to swapping just the content of the slot,
+so possible values are:
+
+- `inner` to replace the whole content of the slot element with the element.
+- `afterBegin` to insert before the first child of the slot.
+- `beforeEnd` to insert after the last child of the slot.
+
 ### ahx-slot-name
 
 Declare any element to be a named slot that can be targetted by `ahx-slot`.

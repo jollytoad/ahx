@@ -1,13 +1,18 @@
 import "../ext/polyfill/ReadableStream_asyncIterator.js";
 
 import { dispatchAfter, dispatchBefore } from "./util/dispatch.ts";
-import type { SwapHtmlDetail, SwapHtmlProps, SwapHtmlStyle } from "./types.ts";
+import type {
+  SlotSpec,
+  SwapHtmlDetail,
+  SwapHtmlProps,
+  SwapHtmlStyle,
+} from "./types.ts";
 import { HTMLBodyElementParserStream } from "../ext/HTMLBodyElementParserStream.js";
 import { setOwner } from "./util/owner.ts";
 import { config } from "./config.ts";
 import { cloneInternal } from "./util/internal.ts";
-import { parseAttrValue } from "./parse_attr_value.ts";
 import { findSlots } from "./util/slots.ts";
+import { parseSlot } from "./parse_slot.ts";
 
 export async function swapHtml(props: SwapHtmlProps) {
   const { response, target } = props;
@@ -21,6 +26,10 @@ export async function swapHtml(props: SwapHtmlProps) {
     let index = 0;
     let previous: Element | undefined;
     let replacePrevious = false;
+    const slotSpecDefault: SlotSpec = {
+      swapStyle: "inner",
+    };
+    let slotSpecTarget: SlotSpec = {};
 
     const elements = response.body
       .pipeThrough(new TextDecoderStream())
@@ -28,6 +37,11 @@ export async function swapHtml(props: SwapHtmlProps) {
 
     for await (let element of elements) {
       switch (element.localName) {
+        case `${config.prefix}-target`: {
+          slotSpecTarget = parseSlot(element);
+          console.log("ahx-target", slotSpecTarget);
+          continue;
+        }
         case `${config.prefix}-replace-previous`:
           replacePrevious = true;
           continue;
@@ -38,17 +52,25 @@ export async function swapHtml(props: SwapHtmlProps) {
       let swapStyle = props.swapStyle ?? "none";
       let targets = [target];
 
-      const [slot] = parseAttrValue("slot", element, "whole");
+      const slotSpecElement = parseSlot(element);
+
+      const slot = slotSpecElement.slot || slotSpecTarget.slot ||
+        slotSpecDefault.slot;
+      const selector = slotSpecElement.selector || slotSpecTarget.selector ||
+        slotSpecDefault.selector;
 
       if (slot) {
-        const slotTargets = findSlots(slot, document);
+        const slotTargets = findSlots(slot, selector, document);
 
         if (slotTargets.length) {
           targets = slotTargets;
-          swapStyle = "inner";
+          swapStyle = slotSpecElement.swapStyle || slotSpecTarget.swapStyle ||
+            slotSpecDefault.swapStyle || "inner";
         } else {
           swapStyle = "none";
         }
+
+        console.log("slots", slotTargets, swapStyle);
       }
 
       const templateElement = targets.length ? element : undefined;

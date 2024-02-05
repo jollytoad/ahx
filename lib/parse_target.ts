@@ -6,7 +6,7 @@ export function parseTarget(
   elt: Element,
   control: ControlDecl,
 ): Element | "await" {
-  let [targetQuery] = parseAttrOrCssValue("target", control, "whole");
+  let [targetQuery = ""] = parseAttrOrCssValue("target", control, "whole");
   const hasAwait = /^await\s+/.test(targetQuery);
 
   if (hasAwait) {

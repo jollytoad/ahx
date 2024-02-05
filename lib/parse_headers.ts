@@ -11,7 +11,7 @@ export function parseHeaders(
     const [headersJson] = parseCssValue("headers", control, source, "whole");
 
     try {
-      const headersObj = JSON.parse(headersJson);
+      const headersObj = JSON.parse(headersJson!);
       return new Headers(headersObj);
     } catch {
       dispatchError(

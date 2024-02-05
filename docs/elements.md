@@ -47,3 +47,26 @@ is so that the initial element is seen as complete by the parser due to the
 `<ahx-replace-previous>` appearing, and will be swapped into the document.
 
 Multiple `<ahx-replace-previous>` elements are ignored.
+
+## `<ahx-target>`
+
+This changes the target of all following top-level elements in the response
+stream.
+
+Supported attributes:
+
+- `ahx-slot` - sets the target slot
+- `ahx-slot-swap` - sets the swap style
+
+```html
+<ahx-target ahx-slot="alternative-slot" ahx-slot-swap="beforeEnd"></ahx-target>
+```
+
+The original slot and swap style can be restored using element without
+attributes...
+
+```html
+<ahx-target></ahx-target>
+```
+
+See the [chatbot test](../test/chatbot.route.ts) for an example.

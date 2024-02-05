@@ -64,7 +64,7 @@ function _query(
   }
 }
 
-function splitQuery(query: string) {
+function splitQuery(query: string): [string, string] {
   const spaceIndex = query.indexOf(" ");
   if (spaceIndex === -1) {
     return [query, ""];
@@ -88,7 +88,7 @@ function previous(start: Element, selector: string) {
   for (let i = results.length - 1; i >= 0; i--) {
     const elt = results[i];
     if (
-      elt.compareDocumentPosition(start) === Node.DOCUMENT_POSITION_FOLLOWING
+      elt?.compareDocumentPosition(start) === Node.DOCUMENT_POSITION_FOLLOWING
     ) {
       return elt;
     }

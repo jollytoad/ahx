@@ -1,9 +1,27 @@
 import { parseAttrOrCssValue } from "./parse_attr_value.ts";
 import { parseInterval } from "./parse_interval.ts";
+import type { SlotSwapSpec } from "./types.ts";
 import type { ControlDecl, SwapSpec, SwapStyle } from "./types.ts";
 
-export function parseSwap(control: ControlDecl) {
-  const tokens = parseAttrOrCssValue("swap", control, "tokens");
+export function parseSwap(control: ControlDecl): SwapSpec {
+  return _parseSwap(control, "swap");
+}
+
+export function parseSlotSwap(control: ControlDecl): SlotSwapSpec {
+  const { swapStyle } = _parseSwap(control, "slot-swap");
+  switch (swapStyle) {
+    case "none":
+    case "inner":
+    case "afterbegin":
+    case "beforeend":
+      return { swapStyle };
+    default:
+      return {};
+  }
+}
+
+function _parseSwap(control: ControlDecl, prop: "swap" | "slot-swap") {
+  const tokens = parseAttrOrCssValue(prop, control, "tokens");
 
   const swapSpec: SwapSpec = {};
 

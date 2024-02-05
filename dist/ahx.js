@@ -534,7 +534,7 @@ function previous(start, selector) {
   const results = start.ownerDocument.querySelectorAll(selector);
   for (let i = results.length - 1; i >= 0; i--) {
     const elt = results[i];
-    if (elt.compareDocumentPosition(start) === Node.DOCUMENT_POSITION_FOLLOWING) {
+    if (elt?.compareDocumentPosition(start) === Node.DOCUMENT_POSITION_FOLLOWING) {
       return elt;
     }
   }
@@ -621,8 +621,7 @@ function setOwner(thing, owner) {
 }
 
 // lib/util/slots.ts
-function findSlots(query, root) {
-  const [name, selector] = splitQuery2(query);
+function findSlots(name, selector, root) {
   let slots2 = [];
   for (const [thing, slotNames] of objectsWithInternal("slotName")) {
     if (slotNames.has(name)) {
@@ -638,13 +637,88 @@ function findSlots(query, root) {
   }
   return slots2;
 }
-function splitQuery2(query) {
-  const spaceIndex = query.indexOf(" ");
-  if (spaceIndex === -1) {
-    return [query, ""];
-  } else {
-    return [query.substring(0, spaceIndex), query.substring(spaceIndex + 1)];
+
+// lib/parse_interval.ts
+function parseInterval(str) {
+  if (str == void 0) {
+    return void 0;
   }
+  if (str.slice(-2) == "ms") {
+    return parseFloat(str.slice(0, -2)) || void 0;
+  }
+  if (str.slice(-1) == "s") {
+    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
+  }
+  if (str.slice(-1) == "m") {
+    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
+  }
+  return parseFloat(str) || void 0;
+}
+
+// lib/parse_swap.ts
+function parseSwap(control) {
+  return _parseSwap(control, "swap");
+}
+function parseSlotSwap(control) {
+  const { swapStyle } = _parseSwap(control, "slot-swap");
+  switch (swapStyle) {
+    case "none":
+    case "inner":
+    case "afterbegin":
+    case "beforeend":
+      return { swapStyle };
+    default:
+      return {};
+  }
+}
+function _parseSwap(control, prop) {
+  const tokens = parseAttrOrCssValue(prop, control, "tokens");
+  const swapSpec = {};
+  if (tokens?.length) {
+    swapSpec.swapStyle = tokens.shift()?.toLowerCase();
+    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
+      swapSpec.itemName = tokens.shift();
+    }
+    for (const token of tokens) {
+      const [modifier, value] = token.split(":");
+      switch (modifier) {
+        case "swap":
+        case "delay":
+          swapSpec.delay = parseInterval(value);
+          break;
+        case "join":
+          swapSpec.merge = "join";
+          swapSpec.separator = parseSeparator(value);
+          break;
+        case "append":
+          swapSpec.merge = "append";
+          break;
+      }
+    }
+  }
+  return swapSpec;
+}
+function parseSeparator(value = " ") {
+  switch (value) {
+    case "space":
+      return " ";
+    case "comma":
+      return ",";
+    default:
+      return value;
+  }
+}
+
+// lib/parse_slot.ts
+function parseSlot(element) {
+  const [slot, ...selectorParts] = parseAttrValue("slot", element, "tokens");
+  const selector = selectorParts.join(" ");
+  const slotSpec = parseSlotSwap(element);
+  return {
+    slot,
+    selector,
+    ...slotSpec
+  };
 }
 
 // lib/swap_html.ts
@@ -655,9 +729,18 @@ async function swapHtml(props) {
     let index = 0;
     let previous2;
     let replacePrevious = false;
+    const slotSpecDefault = {
+      swapStyle: "inner"
+    };
+    let slotSpecTarget = {};
     const elements2 = response.body.pipeThrough(new TextDecoderStream()).pipeThrough(new HTMLBodyElementParserStream(document2, true));
     for await (let element of elements2) {
       switch (element.localName) {
+        case `${config.prefix}-target`: {
+          slotSpecTarget = parseSlot(element);
+          console.log("ahx-target", slotSpecTarget);
+          continue;
+        }
         case `${config.prefix}-replace-previous`:
           replacePrevious = true;
           continue;
@@ -666,15 +749,18 @@ async function swapHtml(props) {
       }
       let swapStyle = props.swapStyle ?? "none";
       let targets = [target];
-      const [slot] = parseAttrValue("slot", element, "whole");
+      const slotSpecElement = parseSlot(element);
+      const slot = slotSpecElement.slot || slotSpecTarget.slot || slotSpecDefault.slot;
+      const selector = slotSpecElement.selector || slotSpecTarget.selector || slotSpecDefault.selector;
       if (slot) {
-        const slotTargets = findSlots(slot, document2);
+        const slotTargets = findSlots(slot, selector, document2);
         if (slotTargets.length) {
           targets = slotTargets;
-          swapStyle = "inner";
+          swapStyle = slotSpecElement.swapStyle || slotSpecTarget.swapStyle || slotSpecDefault.swapStyle || "inner";
         } else {
           swapStyle = "none";
         }
+        console.log("slots", slotTargets, swapStyle);
       }
       const templateElement = targets.length ? element : void 0;
       for (const target2 of targets) {
@@ -1289,7 +1375,7 @@ function getRuleId(rule) {
 
 // lib/parse_target.ts
 function parseTarget(elt, control) {
-  let [targetQuery] = parseAttrOrCssValue("target", control, "whole");
+  let [targetQuery = ""] = parseAttrOrCssValue("target", control, "whole");
   const hasAwait = /^await\s+/.test(targetQuery);
   if (hasAwait) {
     targetQuery = targetQuery.substring(5).trimStart();
@@ -1421,62 +1507,6 @@ function parseURL(url, control) {
     return new URL(url, baseURL);
   } catch {
     return void 0;
-  }
-}
-
-// lib/parse_interval.ts
-function parseInterval(str) {
-  if (str == void 0) {
-    return void 0;
-  }
-  if (str.slice(-2) == "ms") {
-    return parseFloat(str.slice(0, -2)) || void 0;
-  }
-  if (str.slice(-1) == "s") {
-    return parseFloat(str.slice(0, -1)) * 1e3 || void 0;
-  }
-  if (str.slice(-1) == "m") {
-    return parseFloat(str.slice(0, -1)) * 1e3 * 60 || void 0;
-  }
-  return parseFloat(str) || void 0;
-}
-
-// lib/parse_swap.ts
-function parseSwap(control) {
-  const tokens = parseAttrOrCssValue("swap", control, "tokens");
-  const swapSpec = {};
-  if (tokens?.length) {
-    swapSpec.swapStyle = tokens.shift()?.toLowerCase();
-    if (swapSpec.swapStyle === "attr" || swapSpec.swapStyle === "input") {
-      swapSpec.itemName = tokens.shift();
-    }
-    for (const token of tokens) {
-      const [modifier, value] = token.split(":");
-      switch (modifier) {
-        case "swap":
-        case "delay":
-          swapSpec.delay = parseInterval(value);
-          break;
-        case "join":
-          swapSpec.merge = "join";
-          swapSpec.separator = parseSeparator(value);
-          break;
-        case "append":
-          swapSpec.merge = "append";
-          break;
-      }
-    }
-  }
-  return swapSpec;
-}
-function parseSeparator(value = " ") {
-  switch (value) {
-    case "space":
-      return " ";
-    case "comma":
-      return ",";
-    default:
-      return value;
   }
 }
 
