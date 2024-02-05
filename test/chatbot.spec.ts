@@ -22,7 +22,8 @@ test("chatbot", async ({ page }) => {
 
   await expect(done).toBeVisible();
 
-  // TODO: check done is direct child of #target and not .msg
+  // check that done is not inside .msg
+  await expect(msg.getByTestId("done")).toHaveCount(0, { timeout: 1 });
 
   await expect(control).toContainText("Retry", { timeout: 1 });
   await expect(control).not.toContainText("Stop", { timeout: 1 });
