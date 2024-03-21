@@ -31,7 +31,6 @@
     "https://deno.land/x/esbuild@v0.19.11/": "https://deno.land/x/esbuild@v0.20.0/",
     "https://deno.land/x/deno_cache@0.6.2/": "https://deno.land/x/deno_cache@0.6.3/",
     "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.5/mod.ts",
-    "@playwright/test": "npm:@playwright/test@1.41.2"
-  },
-  "pkgx": "mkcert certutil"
+    "@playwright/test": "npm:@playwright/test@1.42.1"
+  }
 }
