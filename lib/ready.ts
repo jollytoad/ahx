@@ -1,14 +1,8 @@
-let isReady = false;
-
-document.addEventListener("DOMContentLoaded", function () {
-  isReady = true;
-}, { once: true, passive: true });
-
 export function ready(fn: (document: Document) => void) {
-  if (isReady) {
+  if (document.readyState === "complete") {
     fn(document);
   } else {
-    document.addEventListener("DOMContentLoaded", () => fn(document), {
+    document.addEventListener("readystatechange", () => ready(fn), {
       once: true,
       passive: true,
     });
