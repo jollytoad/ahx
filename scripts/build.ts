@@ -1,6 +1,6 @@
 import * as esbuild from "esbuild";
-import { denoPlugins } from "esbuild_deno_loader";
-import { fromFileUrl } from "$std/path/mod.ts";
+import { denoPlugins } from "@luca/esbuild-deno-loader";
+import { fromFileUrl } from "@std/path/from-file-url";
 
 export async function build(opts?: { watch?: boolean }) {
   const configPath = fromFileUrl(import.meta.resolve("../deno.json"));

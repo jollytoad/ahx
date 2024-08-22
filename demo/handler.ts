@@ -1,14 +1,14 @@
-import { handle } from "$http_fns/handle.ts";
-import { staticRoute } from "$http_fns/static_route.ts";
-import { interceptResponse, skip } from "$http_fns/intercept.ts";
-import { byPattern } from "$http_fns/by_pattern.ts";
-import { dynamicRoute } from "$http_fns/dynamic_route.ts";
-import { lazy } from "$http_fns/lazy.ts";
+import { handle } from "@http/route/handle";
+import { staticRoute } from "@http/route/static-route";
+import { interceptResponse } from "@http/interceptor/intercept-response";
+import { skip } from "@http/interceptor/skip";
+import { byPattern } from "@http/route/by-pattern";
+import { dynamicRoute } from "@http/discovery/dynamic-route";
+import { lazy } from "@http/route/lazy";
 
 export default handle([
   byPattern("/huge", () => {
     return new Response(
-      // @ts-expect-error ReadableStream.from seems to be missing!
       ReadableStream.from(huge()).pipeThrough(new TextEncoderStream()),
       {
         headers: {

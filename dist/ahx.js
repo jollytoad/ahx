@@ -5,15 +5,11 @@ var __export = (target, all) => {
 };
 
 // lib/ready.ts
-var isReady = false;
-document.addEventListener("DOMContentLoaded", function() {
-  isReady = true;
-}, { once: true, passive: true });
 function ready(fn) {
-  if (isReady) {
+  if (document.readyState === "complete") {
     fn(document);
   } else {
-    document.addEventListener("DOMContentLoaded", () => fn(document), {
+    document.addEventListener("readystatechange", () => ready(fn), {
       once: true,
       passive: true
     });
@@ -1461,6 +1457,7 @@ function parseTriggers(control) {
         const triggerSpec = { eventType: trigger };
         for (const modifier of modifiers) {
           switch (modifier) {
+            // case "changed":
             case "once":
               triggerSpec[modifier] = true;
               break;

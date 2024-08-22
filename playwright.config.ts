@@ -7,7 +7,8 @@ import process from "node:process";
  */
 // require('dotenv').config();
 
-const port = process.env.PORT ?? 8000;
+const port = process.env["PORT"] ?? 8000;
+const isCI = !!process.env["CI"];
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -17,11 +18,11 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: isCI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: isCI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: isCI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -30,7 +31,7 @@ export default defineConfig({
     baseURL: `http://localhost:${port}`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
+    trace: "on",
   },
 
   /* Configure projects for major browsers */
@@ -74,6 +75,6 @@ export default defineConfig({
   webServer: {
     command: `PORT=${port} deno task start:test`,
     url: `http://localhost:${port}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !isCI,
   },
 });

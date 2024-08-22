@@ -3,7 +3,6 @@ export function stream(
 ) {
   return (req: Request) =>
     new Response(
-      // @ts-expect-error ReadableStream.from seems to be missing!
       ReadableStream.from(render(req)).pipeThrough(new TextEncoderStream()),
       {
         headers: {

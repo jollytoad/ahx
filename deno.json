@@ -4,8 +4,10 @@
     "start": "deno run --allow-all --watch demo/dev.ts",
     "start:test": "deno run --allow-all --allow-env --watch demo/dev.ts --http",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
-    "check": "deno fmt && deno lint && deno check lib/**/*.ts ext/**/*.js demo/**/*.ts",
-    "lock": "rm -f deno.lock && deno check lib/**/*.ts ext/**/*.js demo/**/*.ts",
+    "check": "deno check lib/**/*.ts ext/**/*.js demo/**/*.ts",
+    "ok": "deno fmt && deno lint && deno task check",
+    "lock": "rm -f deno.lock && deno task check",
+    "outdated": "deno run --allow-read=. --allow-net=jsr.io,registry.npmjs.org jsr:@check/deps",
     "test": "yarn playwright test"
   },
   "compilerOptions": {
@@ -21,16 +23,13 @@
     "node_modules"
   ],
   "imports": {
-    "$std/": "https://deno.land/std@0.214.0/",
-    "https://deno.land/std@0.211.0/": "https://deno.land/std@0.214.0/",
-    "https://deno.land/std@0.208.0/": "https://deno.land/std@0.214.0/",
-    "https://deno.land/std@0.140.0/": "https://deno.land/std@0.214.0/",
-    "https://deno.land/std@0.140.0/streams/conversion.ts": "https://deno.land/std@0.214.0/io/mod.ts",
-    "$http_fns/": "https://deno.land/x/http_fns@v0.1.0/lib/",
-    "esbuild": "https://deno.land/x/esbuild@v0.20.0/mod.js",
-    "https://deno.land/x/esbuild@v0.19.11/": "https://deno.land/x/esbuild@v0.20.0/",
-    "https://deno.land/x/deno_cache@0.6.2/": "https://deno.land/x/deno_cache@0.6.3/",
-    "esbuild_deno_loader": "https://deno.land/x/esbuild_deno_loader@0.8.5/mod.ts",
-    "@playwright/test": "npm:@playwright/test@1.42.1"
+    "@http/discovery": "jsr:@http/discovery@^0.21.0",
+    "@http/host-deno-local": "jsr:@http/host-deno-local@^0.21.0",
+    "@http/interceptor": "jsr:@http/interceptor@^0.21.0",
+    "@http/route": "jsr:@http/route@^0.21.0",
+    "@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@^0.10.3",
+    "@playwright/test": "npm:@playwright/test@^1.46.1",
+    "@std/path": "jsr:@std/path@^1.0.2",
+    "esbuild": "npm:esbuild@^0.23.1"
   }
 }

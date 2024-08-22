@@ -390,9 +390,7 @@ type CustomEventMap =
   & ErrorEventMap;
 
 declare global {
-  // deno-lint-ignore no-empty-interface
   interface GlobalEventHandlersEventMap extends CustomEventMap {}
 
-  // deno-lint-ignore no-empty-interface
   interface WindowEventMap extends DebugEventMap {}
 }
