@@ -1,5 +1,5 @@
 import { stream } from "./_stream.ts";
-import { parse } from "$std/path/parse.ts";
+import { parse } from "@std/path/parse";
 
 export default stream(index);
 

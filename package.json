@@ -1,8 +1,0 @@
-{
-  "name": "ahx_lib",
-  "packageManager": "yarn@4.1.0",
-  "dependencies": {
-    "@playwright/test": "^1.46.1",
-    "playwright": "^1.46.1"
-  }
-}
