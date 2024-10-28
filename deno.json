@@ -2,12 +2,13 @@
   "tasks": {
     "build": "deno run -A scripts/build.ts",
     "start": "deno run --allow-all --watch demo/dev.ts",
-    "start:test": "deno run --allow-all --allow-env --watch demo/dev.ts --http",
+    "start:test": "deno run --allow-all --watch demo/dev.ts --http",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
     "check": "deno check lib/**/*.ts ext/**/*.js demo/**/*.ts",
     "ok": "deno fmt && deno lint && deno task check",
     "lock": "rm -f deno.lock && deno task check",
     "outdated": "deno run --allow-read=. --allow-net=jsr.io,registry.npmjs.org jsr:@check/deps",
+    "test:install": "deno install && deno run --allow-all npm:playwright install",
     "test": "deno run --allow-all npm:playwright test"
   },
   "compilerOptions": {
@@ -23,14 +24,16 @@
     "node_modules"
   ],
   "imports": {
-    "@http/discovery": "jsr:@http/discovery@^0.21.0",
-    "@http/host-deno-local": "jsr:@http/host-deno-local@^0.21.0",
-    "@http/interceptor": "jsr:@http/interceptor@^0.21.0",
-    "@http/route": "jsr:@http/route@^0.21.0",
-    "@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@^0.10.3",
-    "@playwright/test": "npm:@playwright/test@^1.46.1",
-    "@std/path": "jsr:@std/path@^1.0.2",
-    "esbuild": "npm:esbuild@^0.23.1",
-    "playwright": "npm:playwright@^1.46.1"
-  }
+    "@http/discovery": "jsr:@http/discovery@^0.23.0",
+    "@http/host-deno-local": "jsr:@http/host-deno-local@^0.23.0",
+    "@http/interceptor": "jsr:@http/interceptor@^0.23.0",
+    "@http/route": "jsr:@http/route@^0.23.0",
+    "@luca/esbuild-deno-loader": "jsr:@luca/esbuild-deno-loader@^0.11.0",
+    "@playwright/test": "npm:@playwright/test@^1.48.2",
+    "@std/path": "jsr:@std/path@^1.0.7",
+    "@types/node": "npm:@types/node@^22.8.1",
+    "esbuild": "npm:esbuild@^0.24.0",
+    "playwright": "npm:playwright@^1.48.2"
+  },
+  "nodeModulesDir": "auto"
 }
