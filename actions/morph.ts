@@ -1,3 +1,4 @@
+// @ts-types="./_idiomorph.d.ts"
 // deno-lint-ignore-file no-window
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 
