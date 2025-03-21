@@ -14,6 +14,7 @@ export function createFeatureLoader<
     typeof detail.exportValue === "function",
   toModuleSpec = defaultFeatureModuleSpec,
   toExportName = defaultFeatureExportName,
+  importModule = defaultImportModule,
 }: FeatureLoaderOptions<F, V> = {}): FeatureLoader<F, V> {
   return async (feature) => {
     if (
@@ -32,7 +33,7 @@ export function createFeatureLoader<
         url.hash = "";
         moduleUrl = url.href;
 
-        mod = await import(moduleUrl);
+        mod = await importModule(moduleUrl);
       } catch {
         // ignore and try next module
         continue;
@@ -95,7 +96,7 @@ export function defaultFeatureModuleSpec(
   feature: Feature,
   binding: string[],
 ): string {
-  return `$feature/${feature.kind}/${binding.join("/")}`;
+  return `@ahx/features/${feature.kind}/${binding.join("/")}.ts`;
 }
 
 export function defaultFeatureExportName(
@@ -103,4 +104,10 @@ export function defaultFeatureExportName(
   binding: string[],
 ): string {
   return binding.join("_");
+}
+
+export function defaultImportModule(
+  url: string,
+): Promise<Record<string, unknown>> {
+  return import(url);
 }

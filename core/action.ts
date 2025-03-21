@@ -14,11 +14,15 @@ export async function createAction(
   actionDecl: ActionDecl,
   root: ParentNode,
 ): Promise<Action> {
-  const { actionModulePrefix } = getConfig(root, "actionModulePrefix") ?? "";
+  const { actionModulePrefix, actionModuleExt } = getConfig(
+    root,
+    "actionModulePrefix",
+    "actionModuleExt",
+  );
 
   const loader = createFeatureLoader<ActionFeature, ActionConstruct>({
     toModuleSpec: (_feature, binding) =>
-      `${actionModulePrefix}${binding.join("_")}`,
+      `${actionModulePrefix}${binding.join("_")}${actionModuleExt}`,
   });
 
   const outcome = await loader({

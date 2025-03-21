@@ -6,8 +6,9 @@
       src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
     ></script>
     <script src="/importmap.json" type="importmap-shim"></script>
-    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
-    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+    <script type="module-shim">
+      import "@ahx/init/mod.ts";
+    </script>
 
     <link
       rel="stylesheet"

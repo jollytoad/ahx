@@ -34,9 +34,15 @@ export interface Config {
    * Prefix to prepend to an action name to form
    * a bare module specifier that will be resolved
    * against the import map.
-   * Defaults to `$action/`
+   * Defaults to `@ahx/actions/`
    */
   actionModulePrefix: string;
+
+  /**
+   * Extension to add to an action module specifier.
+   * Defaults to `.ts`
+   */
+  actionModuleExt: string;
 }
 
 export type ConfigKey = keyof Config;

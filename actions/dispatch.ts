@@ -1,27 +1,5 @@
-import type { ActionConstruct, Control } from "@ahx/types";
+import type { ActionConstruct } from "@ahx/types";
 import * as log from "@ahx/common/logging.ts";
-
-const done = new WeakSet<Control>();
-
-export const once: ActionConstruct = () => ({ control }) => {
-  if (done.has(control)) {
-    return { break: true };
-  } else {
-    done.add(control);
-  }
-};
-
-export const preventDefault: ActionConstruct = () => ({ event }) => {
-  event.preventDefault();
-};
-
-export const stopPropagation: ActionConstruct = () => ({ event }) => {
-  event.stopPropagation();
-};
-
-export const stopImmediatePropagation: ActionConstruct = () => ({ event }) => {
-  event.stopImmediatePropagation();
-};
 
 export const dispatch: ActionConstruct = (...args) => {
   const [eventType] = args;

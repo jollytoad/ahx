@@ -93,4 +93,5 @@ export interface FeatureLoaderOptions<
   ) => detail is FeatureLoaded<F, V>;
   toModuleSpec?: (feature: Feature, binding: string[]) => string;
   toExportName?: (feature: Feature, binding: string[]) => string;
+  importModule?: (url: string) => Promise<Record<string, unknown>>;
 }

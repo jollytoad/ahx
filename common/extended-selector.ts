@@ -1,5 +1,12 @@
 import type { ActionContext } from "@ahx/types";
 
+export function validateSelector(...args: string[]) {
+  // TODO: better validation
+  if (!args.length) {
+    throw new TypeError("A CSS selector is required");
+  }
+}
+
 export function extendedSelectorAll(
   { control, event }: ActionContext,
   ...args: string[]

@@ -214,12 +214,13 @@ It'll take all initial args that match a 'name' token, in this case:
 
 Then try to resolve and import the following modules in order:
 
-- `$action/foo_bar_load`
-- `$action/foo_bar`
-- `$action/foo`
+- `@ahx/actions/foo_bar_load.ts`
+- `@ahx/actions/foo_bar.ts`
+- `@ahx/actions/foo.ts`
 
 relying on the native JS module loader to resolve these via an import map to a
-real module URL. (NOTE: `$action/` prefix is configurable)
+real module URL. (NOTE: `@ahx/actions/` prefix and `.ts` extension is
+configurable)
 
 once it has a module, it'll again look for the functions of the same name in
 order:

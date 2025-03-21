@@ -7,7 +7,8 @@ const DEFAULT_CONFIG: Config = {
   onAttrPrefix: "on-",
   onCssPropPrefix: "--on-",
   eventPrefix: "",
-  actionModulePrefix: "$action/",
+  actionModulePrefix: "@ahx/actions/",
+  actionModuleExt: ".ts",
 };
 
 const documentConfigCache = new WeakMap<Document, Config>();

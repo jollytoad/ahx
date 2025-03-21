@@ -69,7 +69,7 @@ function view({ firstName, lastName, email }: Contact) {
 
 function edit({ firstName, lastName, email }: Contact) {
   return `
-<form class="contact table rows" on-submit="preventDefault |> put contact |> swap outer">
+<form class="contact table rows" on-submit="prevent-default |> put contact |> swap outer">
   <p>
     <label>First Name</label>
     <input type="text" name="firstName" value="${firstName}">

@@ -1,6 +1,6 @@
 import type { ActionDecl } from "@ahx/types";
 
-export const ACTION_NAME_REGEXP = /^[a-z][a-zA-Z0-9\-]*$/;
+export const ACTION_NAME_REGEXP = /^[a-z][a-z0-9\-]*$/;
 
 export function parsePipeline(source: string): ActionDecl[] {
   return source.trim().split(/\s+\|\>\s+/).map((actionString) => {
