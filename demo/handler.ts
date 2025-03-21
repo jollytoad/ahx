@@ -19,6 +19,18 @@ export default handle([
     );
   }),
   byPattern(
+    "/importmap.json",
+    async () => {
+      const { default: importmap } = await import("./importmap.json", {
+        with: { type: "json" },
+      });
+      if (Deno.env.has("AHX_URL")) {
+        importmap.imports["@ahx/"] = Deno.env.get("AHX_URL")!;
+      }
+      return Response.json(importmap);
+    },
+  ),
+  byPattern(
     "/examples",
     (req) =>
       serveFile(

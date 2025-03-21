@@ -2,6 +2,8 @@
   "tasks": {
     "start": "deno run --allow-all --watch demo/dev.ts",
     "start:test": "deno run --allow-all demo/dev.ts --http",
+    "start:gh": "AHX_URL=https://raw.githubusercontent.com/jollytoad/ahx/v0.5.0-alpha.3/ deno run --allow-all --watch demo/dev.ts",
+    "start:jsd": "AHX_URL=https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.3/ deno run --allow-all --watch demo/dev.ts",
     "ok": "deno fmt && deno lint && deno task check && deno publish --dry-run --allow-dirty --no-check",
     "check": "deno check common/**/*.ts actions/**/*.ts core/**/*.ts demo/**/*.ts init/**/*.ts",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
