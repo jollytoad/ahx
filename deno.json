@@ -1,0 +1,33 @@
+{
+  "tasks": {
+    "start": "deno run --allow-all --watch demo/dev.ts",
+    "start:test": "deno run --allow-all demo/dev.ts --http",
+    "ok": "deno fmt && deno lint && deno task check && deno publish --dry-run --allow-dirty --no-check",
+    "check": "deno check common/**/*.ts actions/**/*.ts core/**/*.ts demo/**/*.ts init/**/*.ts",
+    "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
+    "packages": "./_tools/packages.ts",
+    "test:install": "deno install && deno run --allow-all npm:playwright install",
+    "test": "PW_DISABLE_TS_ESM=true deno run --allow-all npm:playwright test",
+    "test:ui": "deno task test --ui --ui-host=localhost"
+  },
+  "lint": {
+    "plugins": [
+      "jsr:@jollytoad/lint-no-cross-package-imports"
+    ]
+  },
+  "nodeModulesDir": "auto",
+  "workspace": [
+    "./_tools",
+    "./actions",
+    "./common",
+    "./core",
+    "./demo",
+    "./detectors",
+    "./features",
+    "./init",
+    "./types"
+  ],
+  "imports": {
+    "@playwright/test": "npm:@playwright/test@^1.51.1"
+  }
+}

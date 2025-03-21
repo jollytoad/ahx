@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+
+    <style>
+      h1 {
+        color: green;
+      }
+
+      .important {
+        text-transform: uppercase;
+        display: block;
+      }
+    </style>
+    <style>
+      @import url("styling.css") layer(ahx);
+    </style>
+  </head>
+  <body>
+    <h1>Host Header</h1>
+
+    <div class="important">Important</div>
+  </body>
+</html>

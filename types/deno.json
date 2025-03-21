@@ -1,0 +1,25 @@
+{
+  "name": "@ahx/types",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./action-context.ts": "./action-context.ts",
+    "./action-result.ts": "./action-result.ts",
+    "./action.ts": "./action.ts",
+    "./config.ts": "./config.ts",
+    "./control.ts": "./control.ts",
+    "./feature.ts": "./feature.ts",
+    "./general.ts": "./general.ts",
+    ".": "./mod.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

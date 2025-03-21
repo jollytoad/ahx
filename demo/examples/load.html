@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ahx</title>
+    <meta name="viewport" content="width=device-width">
+
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+    />
+
+    <style>
+      .load-via-rule {
+        --on-ready: get _loaded.html |> swap inner;
+      }
+
+      .container {
+        & .load-via-nested-rule {
+          --on-ready: get _loaded.html |> swap inner;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Load content from <code>on-ready</code> triggers</h2>
+
+      <section class="box">
+        <strong class="block titlebar">Loaded via an inline attribute</strong>
+        <div
+          class="load-via-attr"
+          on-ready="get _loaded.html |> swap inner"
+        >
+        </div>
+      </section>
+
+      <section class="box">
+        <strong class="block titlebar">Loaded via a CSS rule</strong>
+        <div class="load-via-rule"></div>
+      </section>
+
+      <section class="box">
+        <strong class="block titlebar">Loaded via a nested CSS rule</strong>
+
+        <div class="container">
+          <div class="load-via-nested-rule"></div>
+        </div>
+      </section>
+
+      <section class="box">
+        <strong class="block titlebar"
+        >Loaded via a CSS rule in a sibling stylesheet</strong>
+        <div class="load-via-sibling-rule"></div>
+        <style>
+          .load-via-sibling-rule {
+            --on-ready: get _loaded.html |> swap inner;
+          }
+        </style>
+      </section>
+
+      <section class="box">
+        <strong class="block titlebar"
+        >Load and delay swapping in the content</strong>
+
+        <button on-click="target body [on-ready] |> abort ready">Abort</button>
+
+        <div on-ready="get _loaded.html |> sleep 2000 |> swap inner"></div>
+      </section>
+    </main>
+
+    <footer>
+      <a href="/examples">back</a>
+    </footer>
+  </body>
+</html>

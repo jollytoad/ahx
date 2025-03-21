@@ -1,0 +1,24 @@
+{
+  "name": "@ahx/detectors",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./custom-attr.ts": "./custom-attr.ts",
+    "./custom-css-property.ts": "./custom-css-property.ts",
+    "./custom-element.ts": "./custom-element.ts",
+    "./mutation-record.ts": "./mutation-record.ts",
+    "./recurse-css-rules.ts": "./recurse-css-rules.ts",
+    "./recurse-element.ts": "./recurse-element.ts",
+    "./recurse-shadow-root.ts": "./recurse-shadow-root.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

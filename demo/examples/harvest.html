@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ahx</title>
+    <meta name="viewport" content="width=device-width">
+
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+    />
+
+    <style>
+      /* Harvest data into additional input fields in a form */
+      .source {
+        --on-harvest: attr get data-id |> target .target1 |> input append ids;
+      }
+
+      /* Harvest data into a single input field in a form */
+      .source {
+        --on-harvest: attr get data-id |> target .target2 |> input join ids;
+      }
+
+      /* Harvest data into an attribute */
+      .source {
+        --on-harvest: attr get data-id |> target .target3 |> attr include
+          data-ids;
+      }
+
+      .source::after {
+        content: attr(data-id);
+      }
+
+      .target3::after {
+        content: attr(data-ids);
+        font-size: larger;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Harvest data into forms</h2>
+
+      <section class="tool-bar">
+        <button on-click="target .source, [on-harvest] |> dispatch harvest">
+          Harvest
+        </button>
+        <p on-harvest="attr remove hidden" hidden>
+          Now open the developer console and inspect the elements below
+        </p>
+      </section>
+
+      <section class="box">
+        <strong class="block titlebar">Source</strong>
+        <p>
+          The following elements each have a data-id attr that will be the
+          source of the harvested data:
+        </p>
+        <div class="source" data-id="one"></div>
+        <div class="source" data-id="two"></div>
+        <div class="source" data-id="three"></div>
+      </section>
+
+      <form class="target1 box">
+        <legend class="block titlebar">Target 1 - form</legend>
+        <p>
+          This should three separate hidden inputs after harvesting, each with a
+          different value.
+        </p>
+        <p>
+          View in the developer console, or hit submit to post the form and see
+          the values in the URL:
+        </p>
+        <button>Submit</button>
+      </form>
+
+      <form class="target2 box">
+        <legend class="block titlebar">Target 2 - form</legend>
+        <p>
+          This should have one hidden inputs after harvesting of all values,
+          space separated.
+        </p>
+        <p>
+          View in the developer console, or hit submit to post the form and see
+          the values in the URL:
+        </p>
+        <button>Submit</button>
+      </form>
+
+      <form class="target2 box">
+        <legend class="block titlebar">Target 2(a) - form</legend>
+        <p>
+          The input below should contain the space separated values after
+          harvesting:
+        </p>
+        <input type="text" name="ids" />
+        <button>Submit</button>
+      </form>
+
+      <div class="target3 box">
+        <strong class="block titlebar">Target 3 - div</strong>
+        <p>
+          This should have a data-ids attribute containing the three space
+          separated values after harvesting.
+        </p>
+        <p>
+          The value of the attribute will appear below thanks to a css ::after
+          rule:
+        </p>
+        <br />
+      </div>
+
+      <form
+        class="target4 box"
+        on-harvest="target .source |> attr get data-id |> target this |> input append ids"
+      >
+        <legend class="block titlebar">Target 4 - form</legend>
+        <p>This should be like Target 1, but uses an inline event handler.</p>
+        <p>
+          View in the developer console, or hit submit to post the form and see
+          the values in the URL:
+        </p>
+        <button>Submit</button>
+      </form>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>

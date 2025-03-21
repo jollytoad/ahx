@@ -1,0 +1,24 @@
+{
+  "name": "@ahx/common",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./config.ts": "./config.ts",
+    "./controls.ts": "./controls.ts",
+    "./extended-selector.ts": "./extended-selector.ts",
+    "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
+    "./logging.ts": "./logging.ts",
+    "./potential-bindings.ts": "./potential-bindings.ts",
+    "./swap.ts": "./swap.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

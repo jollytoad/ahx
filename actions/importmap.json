@@ -1,0 +1,37 @@
+{
+  "imports": {
+    "dompurify": "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs",
+    "idiomorph": "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.3/dist/idiomorph.esm.js",
+
+    "$action/once": "/@ahx/actions/event.ts",
+    "$action/preventDefault": "/@ahx/actions/event.ts",
+    "$action/stopPropagation": "/@ahx/actions/event.ts",
+    "$action/stopImmediatePropagation": "/@ahx/actions/event.ts",
+    "$action/dispatch": "/@ahx/actions/event.ts",
+    "$action/get": "/@ahx/actions/request.ts",
+    "$action/query": "/@ahx/actions/request.ts",
+    "$action/put": "/@ahx/actions/request.ts",
+    "$action/post": "/@ahx/actions/request.ts",
+    "$action/patch": "/@ahx/actions/request.ts",
+    "$action/delete": "/@ahx/actions/request.ts",
+    "$action/header": "/@ahx/actions/request.ts",
+    "$action/select": "/@ahx/actions/selector.ts",
+    "$action/template": "/@ahx/actions/selector.ts",
+    "$action/target": "/@ahx/actions/selector.ts",
+    "$action/matches": "/@ahx/actions/selector.ts",
+    "$action/swap": "/@ahx/actions/swap.ts",
+    "$action/morph": "/@ahx/actions/morph.ts",
+    "$action/clone": "/@ahx/actions/clone.ts",
+    "$action/stream": "/@ahx/actions/stream.ts",
+    "$action/sanitize": "/@ahx/actions/sanitize.ts",
+    "$action/attr": "/@ahx/actions/attr.ts",
+    "$action/class": "/@ahx/actions/class.ts",
+    "$action/input": "/@ahx/actions/input.ts",
+    "$action/sleep": "/@ahx/actions/sleep.ts",
+    "$action/abort": "/@ahx/actions/abort.ts",
+    "$action/filter": "/@ahx/actions/filter.ts",
+
+    "$feature/attr/on": "/@ahx/features/attr/on.ts",
+    "$feature/cssprop/on": "/@ahx/features/cssprop/on.ts"
+  }
+}

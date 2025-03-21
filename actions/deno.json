@@ -1,0 +1,35 @@
+{
+  "name": "@ahx/actions",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./abort.ts": "./abort.ts",
+    "./attr.ts": "./attr.ts",
+    "./class.ts": "./class.ts",
+    "./clone.ts": "./clone.ts",
+    "./event.ts": "./event.ts",
+    "./filter.ts": "./filter.ts",
+    "./input.ts": "./input.ts",
+    "./morph.ts": "./morph.ts",
+    "./request.ts": "./request.ts",
+    "./sanitize.ts": "./sanitize.ts",
+    "./selector.ts": "./selector.ts",
+    "./sleep.ts": "./sleep.ts",
+    "./stream.ts": "./stream.ts",
+    "./swap.ts": "./swap.ts"
+  },
+  "imports": {
+    "dompurify": "npm:dompurify@3.2.4",
+    "idiomorph": "npm:idiomorph@0.7.3"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

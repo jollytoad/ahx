@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<body>
+  <button
+    on-click="target #stolen |> select [data-info] |> clone |> swap inner"
+  >
+    Steal data
+  </button>
+  <button
+    on-click="template #junk |> target [data-info] |> clone |> swap inner"
+  >
+    Overwrite elements
+  </button>
+  <p>Stolen data:</p>
+  <div id="stolen"></div>
+  <template id="junk">
+    <span>JUNK</span>
+  </template>
+</body>

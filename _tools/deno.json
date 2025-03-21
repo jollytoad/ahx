@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "verbatimModuleSyntax": true
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.0.8"
+  }
+}

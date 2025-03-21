@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+    />
+
+    <style>
+      body [on-oob] {
+        display: none;
+        --on-ready: dispatch oob |> attr remove on-oob;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Test out-of-band slots</h2>
+
+      <button on-click="target #tmp |> get _slotted_1.html |> swap beforeend">
+        Load into individual slots
+      </button>
+      <button on-click="target #tmp |> get _slotted_2.html |> swap beforeend">
+        Load into all slots
+      </button>
+
+      <div class="slot-container">
+        <div class="slot alice box">
+          This is the slot named "alice"
+        </div>
+
+        <div class="slot bob box">
+          This is the slot named "bob"
+        </div>
+      </div>
+
+      <div id="tmp"></div>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>

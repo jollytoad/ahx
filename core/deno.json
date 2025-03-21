@@ -1,0 +1,30 @@
+{
+  "name": "@ahx/core",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./action-event.ts": "./action-event.ts",
+    "./action.ts": "./action.ts",
+    "./ahx-event.ts": "./ahx-event.ts",
+    "./control.ts": "./control.ts",
+    "./exec-pipeline.ts": "./exec-pipeline.ts",
+    "./feature-finder.ts": "./feature-finder.ts",
+    "./feature-loader.ts": "./feature-loader.ts",
+    "./init-features.ts": "./init-features.ts",
+    "./load-concurrently.ts": "./load-concurrently.ts",
+    "./parse-pipeline.ts": "./parse-pipeline.ts",
+    "./start-dom-observer.ts": "./start-dom-observer.ts",
+    "./start.ts": "./start.ts",
+    "./update-control.ts": "./update-control.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

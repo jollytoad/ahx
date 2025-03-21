@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<body>
+  <article>
+    <div>
+      <iframe
+        id="video"
+        width="422"
+        height="240"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        title="Rick Astley - Never Gonna Give You Up (Official Music Video)"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <div>
+      <h3>Below...</h3>
+      <input id="input" type="text" name="input" autofocus />
+    </div>
+  </article>
+  <button
+    type="button"
+    on-oob="target .button-slot |> swap inner"
+    on-click="get _morph_1.html |> sanitize |> target article |> morph outer"
+  >
+    Morph
+  </button>
+</body>

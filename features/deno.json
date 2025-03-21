@@ -1,0 +1,19 @@
+{
+  "name": "@ahx/features",
+  "version": "0.1.0",
+  "license": "MIT",
+  "exports": {
+    "./attr/on.ts": "./attr/on.ts",
+    "./cssprop/on.ts": "./cssprop/on.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

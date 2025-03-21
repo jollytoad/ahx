@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/actions/importmap.json" type="importmap-shim"></script>
+    <script src="/@ahx/init/mod.ts" type="module-shim"></script>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+    />
+
+    <style>
+      body {
+        /* allow anything to be selected by default */
+        --allow-select: true;
+        --allow-swap: true;
+
+        /* filter selected nodes to allow only those with `--allow-select: true` style */
+        --on-after-select: filter nodes --allow-select true;
+
+        --on-before-swap: filter targets --allow-swap true;
+      }
+      /* prevent any `.private` element or that contains a `.private` element from being selected */
+      .private, main > :has(.private) {
+        --allow-select: false;
+        --allow-swap: false;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Lockdown parts of the documents</h2>
+
+      <button on-click="target #content |> get _third_party.html |> swap inner">
+        Load
+      </button>
+
+      <br />
+
+      <section id="content" class="box">
+        Third Party Content Loads Here
+      </section>
+
+      <section data-info="mundane-info" class="box">
+        This is a public area
+      </section>
+
+      <section data-info="juicy-info" class="private box">
+        This is a private area
+      </section>
+
+      <section data-info="mixed-info" class="box">
+        <span>This is public,</span>
+        <span class="private"> but this is private</span>
+      </section>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>
