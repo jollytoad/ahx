@@ -5,9 +5,11 @@ export async function createFeatureFinder(
 ): Promise<FeatureFinder> {
   const detectors = await resolveFns<FeatureDetector>(lazyDetectors);
   const finder: FeatureFinder = function* (things, context) {
+    nextThing:
     for (const thing of things) {
       for (const detector of detectors) {
         for (const feature of detector(thing, context)) {
+          if (feature.ignore) continue nextThing;
           yield feature;
           if (feature.children) {
             yield* finder(feature.children, feature.context ?? context);

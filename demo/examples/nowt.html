@@ -13,7 +13,20 @@
     <link
       rel="stylesheet"
       href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+      ahx-ignore
     />
+
+    <style ahx-ignore>
+      #two {
+        --on-ready: swap delete;
+      }
+    </style>
+    <style>
+      #three {
+        --ahx-ignore: true;
+        --on-ready: swap delete;
+      }
+    </style>
   </head>
   <body>
     <main>
@@ -26,9 +39,23 @@
       <h2>Nothing to see here</h2>
 
       <p>
-        This page has no <b>on-</b> attributes, and so none of the related
-        modules should be loaded to support them.
+        This page has no active <b>on-</b> attributes, and so none of the
+        related modules should be loaded to support them.
       </p>
+
+      <p>
+        The items below have controls defined that will attempt to delete the
+        item, but <code>ahx-ignore</code> is used to prevent the control from
+        initializing in the first place.
+      </p>
+
+      <ul>
+        <li id="one" on-ready="swap delete" ahx-ignore>
+          Ignored via attribute here
+        </li>
+        <li id="two">Ignored via attribute on style element</li>
+        <li id="three">Ignored via property on rule</li>
+      </ul>
 
       <footer>
         <a href="/examples">back</a>

@@ -24,6 +24,7 @@ export async function start(
 
 async function headFinder() {
   return (await import("./feature-finder.ts")).createFeatureFinder(
+    import("@ahx/detectors/ahx-ignore.ts"),
     import("@ahx/detectors/custom-css-property.ts"),
     import("@ahx/detectors/recurse-css-rules.ts"),
   );
@@ -31,6 +32,7 @@ async function headFinder() {
 
 async function bodyFinder() {
   return (await import("./feature-finder.ts")).createFeatureFinder(
+    import("@ahx/detectors/ahx-ignore.ts"),
     import("@ahx/detectors/custom-element.ts"),
     import("@ahx/detectors/custom-attr.ts"),
     import("@ahx/detectors/custom-css-property.ts"),
@@ -42,6 +44,7 @@ async function bodyFinder() {
 
 async function observerFinder() {
   return (await import("./feature-finder.ts")).createFeatureFinder(
+    import("@ahx/detectors/ahx-ignore.ts"),
     import("@ahx/detectors/mutation-record.ts"),
     import("@ahx/detectors/custom-element.ts"),
     import("@ahx/detectors/custom-attr.ts"),

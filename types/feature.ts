@@ -19,6 +19,11 @@ export interface Feature {
   context?: Context;
   children?: Iterable<unknown>;
   bindings?: string[][];
+  ignore?: boolean;
+}
+
+export interface IgnoreFeature {
+  ignore?: boolean;
 }
 
 export interface RecurseFeature {
