@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<style>
+  :host {
+    display: block !important;
+  }
+  style {
+    --on-ready: select head link[rel="stylesheet"] |> clone |> swap afterend;
+  }
+</style>
+<div class="box">
+  <strong class="block titlebar"><slot name="title">Title</slot></strong>
+  <slot name="main"></slot>
+</div>

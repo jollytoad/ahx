@@ -10,8 +10,6 @@
     "./exec-pipeline.ts": "./exec-pipeline.ts",
     "./feature-finder.ts": "./feature-finder.ts",
     "./feature-loader.ts": "./feature-loader.ts",
-    "./init-features.ts": "./init-features.ts",
-    "./load-concurrently.ts": "./load-concurrently.ts",
     "./parse-pipeline.ts": "./parse-pipeline.ts",
     "./start-dom-observer.ts": "./start-dom-observer.ts",
     "./start.ts": "./start.ts",

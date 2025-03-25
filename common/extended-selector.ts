@@ -36,10 +36,24 @@ export function extendedSelectorAll(
     case "next": {
       return findSibling(event.target, "nextSibling", rest.join(" "));
     }
-
+    case "document": {
+      return selectSelfOrDescendent(getDocument(event.target), ...rest);
+    }
+    case "head": {
+      return selectDescendent(getDocument(event.target), "head", ...rest);
+    }
+    case "body": {
+      return selectDescendent(getDocument(event.target), "body", ...rest);
+    }
+    case "shadowroot": {
+      const shadowroot = event.target instanceof Element
+        ? event.target.shadowRoot
+        : null;
+      return selectSelfOrDescendent(shadowroot, ...rest);
+    }
     // TODO: other special scopes
     default:
-      return root ? [...root.querySelectorAll(args.join(" "))] : [];
+      return selectDescendent(root, ...args);
   }
 }
 
@@ -60,4 +74,27 @@ function findSibling(
     }
   }
   return [];
+}
+
+function getDocument(target: EventTarget | null) {
+  return target instanceof Document
+    ? target
+    : target instanceof Node
+    ? target.ownerDocument
+    : null;
+}
+
+function selectSelfOrDescendent(root?: ParentNode | null, ...args: string[]) {
+  if (root) {
+    if (args.length) {
+      return [...root.querySelectorAll(args.join(" "))];
+    } else {
+      return [root];
+    }
+  }
+  return [];
+}
+
+function selectDescendent(root?: ParentNode | null, ...args: string[]) {
+  return root ? [...root.querySelectorAll(args.join(" "))] : [];
 }

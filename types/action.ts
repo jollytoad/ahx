@@ -41,5 +41,6 @@ export interface Action extends ActionDecl {
 }
 
 export interface ActionFeature extends ActionDecl {
+  kind: "action";
   bindings?: string[][];
 }

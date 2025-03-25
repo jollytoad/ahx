@@ -1,12 +1,9 @@
 {
-  "name": "@ahx/features",
+  "name": "@ahx/custom",
   "version": "0.5.0-alpha.4",
   "license": "MIT",
   "exports": {
-    "./attr/on.ts": "./attr/on.ts",
-    "./cssprop/on.ts": "./cssprop/on.ts",
-    "./observe/body.ts": "./observe/body.ts",
-    "./observe/shadow.ts": "./observe/shadow.ts"
+    "./detectors.ts": "./detectors.ts"
   },
   "compilerOptions": {
     "lib": [

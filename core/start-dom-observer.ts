@@ -1,22 +1,15 @@
-import type { Awaitable, FeatureFinder, FeatureLoader } from "@ahx/types";
+import { initFeatures } from "@ahx/common/init-features.ts";
 
 const cache = new WeakMap<Node, MutationObserver>();
 
 export function startDOMObserver(
-  root: ParentNode,
-  lazyFinder: Awaitable<FeatureFinder>,
-  lazyLoader: Awaitable<FeatureLoader>,
+  root: Node,
 ): MutationObserver {
   let observer = cache.get(root);
 
   if (!observer) {
-    observer = new MutationObserver(async (mutations) => {
-      const [finder, loader, { initFeatures }] = await Promise.all([
-        lazyFinder,
-        lazyLoader,
-        import("./init-features.ts"),
-      ]);
-      initFeatures(loader, finder(mutations, root));
+    observer = new MutationObserver((mutations) => {
+      initFeatures(root, mutations);
     });
 
     observer.observe(root, {

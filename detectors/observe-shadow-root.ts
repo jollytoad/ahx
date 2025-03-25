@@ -1,9 +1,9 @@
-import type { Context, RecurseFeature } from "@ahx/types";
+import type { Context, ObserveFeature } from "@ahx/types";
 
-export function* recurseShadowRoot(
+export function* observeShadowRoot(
   node: unknown,
   _context?: Context,
-): Iterable<RecurseFeature> {
+): Iterable<ObserveFeature> {
   const shadow = node instanceof ShadowRoot
     ? node
     : node instanceof Element && node.shadowRoot
@@ -12,11 +12,11 @@ export function* recurseShadowRoot(
 
   if (shadow) {
     yield {
-      kind: "recurse",
+      kind: "observe",
       context: shadow,
-      children: shadow.childNodes,
+      bindings: [["shadow"]],
     };
   }
 }
 
-export default recurseShadowRoot;
+export default observeShadowRoot;

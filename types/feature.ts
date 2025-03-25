@@ -1,3 +1,5 @@
+import type { Awaitable } from "./general.ts";
+
 export type Context = unknown;
 
 export type FeatureFinder = (
@@ -30,6 +32,12 @@ export interface RecurseFeature {
   kind: "recurse";
   context?: Context;
   children: Iterable<unknown>;
+}
+
+export interface ObserveFeature {
+  kind: "observe";
+  context: Node;
+  bindings?: string[][];
 }
 
 export interface AttrFeature {
@@ -100,3 +108,7 @@ export interface FeatureLoaderOptions<
   toExportName?: (feature: Feature, binding: string[]) => string;
   importModule?: (url: string) => Promise<Record<string, unknown>>;
 }
+
+export type LazyFeatureDetector = Awaitable<
+  FeatureDetector | { default?: FeatureDetector } | undefined
+>;

@@ -1,9 +1,8 @@
 import type {
-  ActionConstruct,
   ActionContext,
-  ActionFeature,
   ActionResult,
   Control,
+  Feature,
   FeatureLoaded,
 } from "@ahx/types";
 
@@ -121,22 +120,25 @@ export function afterAction(
 
 const loggedImportCache = new Set<string>();
 
-export function importAction(
-  outcome: FeatureLoaded<ActionFeature, ActionConstruct>,
+export function importFeature(
+  outcome: FeatureLoaded<Feature, unknown>,
+  sep = "-",
 ) {
   const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
+  const kind = outcome.feature.kind;
 
   const actionBinding =
     (exportBinding && exportBinding.length > moduleBinding.length
       ? exportBinding
-      : moduleBinding).join(" ");
+      : moduleBinding).join(sep);
 
   if (loggedImportCache.has(actionBinding)) return;
 
   loggedImportCache.add(actionBinding);
 
   console.debug(
-    `${PREFIX}imported action "%c%s%c" from "%c%s()%c" in "%s"`,
+    `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
+    kind ?? "unknown",
     BOLD,
     actionBinding,
     RESET,

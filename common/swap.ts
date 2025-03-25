@@ -51,7 +51,9 @@ const swapAdjacent = (pos: InsertPosition): SwapHandler => (target, node) => {
 };
 
 const swapInner: SwapHandler = (target, node) => {
-  if (target instanceof Element && node !== null) {
+  if (
+    (target instanceof Element || target instanceof ShadowRoot) && node !== null
+  ) {
     if (typeof node === "string") {
       target.innerHTML = node;
       return target.lastChild ?? undefined;

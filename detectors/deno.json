@@ -8,7 +8,10 @@
     "./custom-css-property.ts": "./custom-css-property.ts",
     "./custom-element.ts": "./custom-element.ts",
     "./mutation-record.ts": "./mutation-record.ts",
+    "./observe-body.ts": "./observe-body.ts",
+    "./observe-shadow-root.ts": "./observe-shadow-root.ts",
     "./recurse-css-rules.ts": "./recurse-css-rules.ts",
+    "./recurse-document.ts": "./recurse-document.ts",
     "./recurse-element.ts": "./recurse-element.ts",
     "./recurse-shadow-root.ts": "./recurse-shadow-root.ts"
   },

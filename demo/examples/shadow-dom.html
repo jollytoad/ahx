@@ -23,6 +23,9 @@
       .load-via-outside-rule {
         --on-ready: get _loaded.html |> swap inner;
       }
+      #shadow [slot="a-slot"] {
+        --on-ready: get _loaded.html |> swap inner;
+      }
     </style>
   </head>
   <body>
@@ -59,9 +62,16 @@
             >Attempt to load via outside CSS rule</strong>
             <div class="load-via-outside-rule">This should NOT load</div>
           </section>
+
+          <section class="box">
+            <strong class="block titlebar">Loaded via a slot</strong>
+            <slot name="a-slot"></slot>
+          </section>
+
           <link
             rel="stylesheet"
             href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+            ahx-ignore
           />
           <style>
             .load-via-inside-rule {
@@ -69,6 +79,7 @@
             }
           </style>
         </template>
+        <div slot="a-slot"></div>
       </div>
 
       <footer>

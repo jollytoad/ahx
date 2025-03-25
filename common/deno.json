@@ -8,6 +8,7 @@
     "./extended-selector.ts": "./extended-selector.ts",
     "./fetch-action.ts": "./fetch-action.ts",
     "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
+    "./init-features.ts": "./init-features.ts",
     "./logging.ts": "./logging.ts",
     "./potential-bindings.ts": "./potential-bindings.ts",
     "./swap.ts": "./swap.ts"

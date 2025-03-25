@@ -26,6 +26,7 @@ export async function createAction(
   });
 
   const outcome = await loader({
+    kind: "action",
     ...actionDecl,
     bindings: potentialBindings(
       [actionDecl.name, ...actionDecl.args],
@@ -34,7 +35,7 @@ export async function createAction(
   });
 
   if (outcome && "exportValue" in outcome) {
-    log.importAction(outcome);
+    log.importFeature(outcome, " ");
     const { feature: { bindings: _, ...decl }, exportValue, moduleUrl } =
       outcome;
     const fn = await exportValue(...decl.args);

@@ -4,6 +4,7 @@
   "license": "MIT",
   "exports": {
     "./abort.ts": "./abort.ts",
+    "./attach-shadow.ts": "./attach-shadow.ts",
     "./attr.ts": "./attr.ts",
     "./class.ts": "./class.ts",
     "./clone.ts": "./clone.ts",

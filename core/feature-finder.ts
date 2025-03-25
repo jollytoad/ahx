@@ -1,9 +1,13 @@
-import type { Awaitable, FeatureDetector, FeatureFinder } from "@ahx/types";
+import type {
+  FeatureDetector,
+  FeatureFinder,
+  LazyFeatureDetector,
+} from "@ahx/types";
 
 export async function createFeatureFinder(
-  ...lazyDetectors: LazyFn<FeatureDetector>[]
+  lazyDetectors: LazyFeatureDetector[],
 ): Promise<FeatureFinder> {
-  const detectors = await resolveFns<FeatureDetector>(lazyDetectors);
+  const detectors = await resolveFns(lazyDetectors);
   const finder: FeatureFinder = function* (things, context) {
     nextThing:
     for (const thing of things) {
@@ -21,18 +25,15 @@ export async function createFeatureFinder(
   return finder;
 }
 
-type LazyFn<F> = Awaitable<F | { default?: F } | undefined>;
-
-// deno-lint-ignore ban-types
-async function resolveFns<F extends Function>(
-  lazyFns: LazyFn<F>[],
-): Promise<F[]> {
+async function resolveFns(
+  lazyFns: LazyFeatureDetector[],
+): Promise<FeatureDetector[]> {
   return (await Promise.all(lazyFns)).flatMap((resolved) =>
     typeof resolved === "function"
-      ? [resolved as F]
+      ? [resolved as FeatureDetector]
       : resolved && typeof resolved === "object" && "default" in resolved &&
           typeof resolved.default === "function"
-      ? [resolved.default as F]
+      ? [resolved.default as FeatureDetector]
       : []
   );
 }
