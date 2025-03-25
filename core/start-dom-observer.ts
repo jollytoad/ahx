@@ -1,4 +1,4 @@
-import { initFeatures } from "@ahx/common/init-features.ts";
+import { initFeatures } from "./init-features.ts";
 
 const cache = new WeakMap<Node, MutationObserver>();
 

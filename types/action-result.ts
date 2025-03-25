@@ -36,4 +36,8 @@ export interface ActionResult {
    * Stop processing the pipeline.
    */
   break?: boolean;
+  /**
+   * Things to be initialized.
+   */
+  init?: unknown[];
 }

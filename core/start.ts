@@ -4,7 +4,6 @@
 export async function start(
   doc: Document,
 ): Promise<void> {
-  console.log("start");
-  const { initFeatures } = await import("../common/init-features.ts");
+  const { initFeatures } = await import("./init-features.ts");
   await initFeatures(doc);
 }

@@ -2,6 +2,7 @@ import type { ActionContext, ActionResult } from "@ahx/types";
 import { dispatchActionEvent } from "./action-event.ts";
 import * as log from "@ahx/common/logging.ts";
 import { getConfig } from "@ahx/common/config.ts";
+import { initFeatures } from "./init-features.ts";
 
 export async function execPipeline(
   context: ActionContext,
@@ -82,6 +83,11 @@ export async function execPipeline(
       result = { ...result, ...after };
       context = { ...context, ...result, ...immutable };
       log.afterAction(context, result);
+    }
+
+    if (result?.init) {
+      await initFeatures(control.root, result.init);
+      delete context.init;
     }
 
     index++;

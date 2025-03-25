@@ -1,9 +1,8 @@
 import type { ActionConstruct } from "@ahx/types";
-import { initFeatures } from "@ahx/common/init-features.ts";
 import * as log from "@ahx/common/logging.ts";
 
 export const attachShadow: ActionConstruct = () => {
-  return async ({ targets }) => {
+  return ({ targets }) => {
     if (targets) {
       const shadows: ShadowRoot[] = [];
 
@@ -19,9 +18,7 @@ export const attachShadow: ActionConstruct = () => {
         }
       }
 
-      await Promise.all(shadows.map((shadow) => initFeatures(shadow)));
-
-      return { targets: shadows };
+      return { targets: shadows, init: shadows };
     }
   };
 };
