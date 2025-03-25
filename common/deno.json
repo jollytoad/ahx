@@ -1,11 +1,13 @@
 {
   "name": "@ahx/common",
-  "version": "0.5.0-alpha.5",
+  "version": "0.5.0-alpha.6",
   "license": "MIT",
   "exports": {
     "./config.ts": "./config.ts",
     "./controls.ts": "./controls.ts",
     "./extended-selector.ts": "./extended-selector.ts",
+    "./feature-finder.ts": "./feature-finder.ts",
+    "./feature-loader.ts": "./feature-loader.ts",
     "./fetch-action.ts": "./fetch-action.ts",
     "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
     "./init-features.ts": "./init-features.ts",

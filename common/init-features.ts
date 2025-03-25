@@ -15,12 +15,12 @@ export async function initFeatures(
 ): Promise<void> {
   if (!finder) {
     const { default: detectors } = await import("@ahx/custom/detectors.ts");
-    const { createFeatureFinder } = await import("@ahx/core/feature-finder.ts");
+    const { createFeatureFinder } = await import("./feature-finder.ts");
     finder = await createFeatureFinder(detectors);
   }
 
   if (!loader) {
-    const { createFeatureLoader } = await import("@ahx/core/feature-loader.ts");
+    const { createFeatureLoader } = await import("./feature-loader.ts");
     loader = createFeatureLoader();
   }
 

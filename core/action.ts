@@ -7,7 +7,7 @@ import type {
 import { getConfig } from "@ahx/common/config.ts";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
 import * as log from "@ahx/common/logging.ts";
-import { createFeatureLoader } from "./feature-loader.ts";
+import { createFeatureLoader } from "@ahx/common/feature-loader.ts";
 import { ACTION_NAME_REGEXP } from "./parse-pipeline.ts";
 
 export async function createAction(
