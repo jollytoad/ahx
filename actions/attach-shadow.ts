@@ -3,9 +3,8 @@ import * as log from "@ahx/common/logging.ts";
 
 export const attachShadow: ActionConstruct = () => {
   return ({ targets }) => {
+    const shadows: ShadowRoot[] = [];
     if (targets) {
-      const shadows: ShadowRoot[] = [];
-
       for (const target of targets) {
         if (target instanceof Element && !target.shadowRoot) {
           try {
@@ -17,9 +16,11 @@ export const attachShadow: ActionConstruct = () => {
           }
         }
       }
-
-      return { targets: shadows, init: shadows };
     }
+
+    return shadows.length
+      ? { targets: shadows, init: shadows }
+      : { break: true };
   };
 };
 

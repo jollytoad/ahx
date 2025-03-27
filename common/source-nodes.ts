@@ -10,6 +10,12 @@ export async function getSourceNodes(
     const text = await context.response.text();
     return [Document.parseHTMLUnsafe(text)];
   }
+  if (context.event.target instanceof Node) {
+    return [context.event.target];
+  }
+  if (context.control.root) {
+    return [context.control.root];
+  }
   return;
 }
 

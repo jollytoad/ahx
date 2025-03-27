@@ -9,7 +9,7 @@ export interface AhxEventInit extends EventInit {
 export class AhxEvent extends Event {
   control?: Control;
 
-  constructor(type: string, { control, ...init }: AhxEventInit) {
+  constructor(type: string, { control, ...init }: AhxEventInit = {}) {
     super(type, {
       bubbles: true,
       cancelable: false,
@@ -23,11 +23,11 @@ export class AhxEvent extends Event {
 export function dispatchAhxEvent(
   eventType: string,
   target: EventTarget,
-  control?: Control,
+  init?: AhxEventInit,
 ): boolean {
   const { eventPrefix } = getConfig(target, "eventPrefix");
 
-  const event = new AhxEvent(eventPrefix + eventType, { control });
+  const event = new AhxEvent(eventPrefix + eventType, init);
 
   log.event(event, target);
 

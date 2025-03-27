@@ -24,7 +24,10 @@ export async function updateControl(
     if (!ready.has(node)) {
       ready.add(node);
       setTimeout(() => {
-        dispatchAhxEvent("ready", node);
+        dispatchAhxEvent("ready", node, {
+          control: newControl,
+          composed: false,
+        });
       });
     }
   }
@@ -48,7 +51,7 @@ async function doUpdateControl(
     if (isDead || isChange) {
       if (control.eventTarget) {
         control.eventTarget.removeEventListener(eventType, control);
-        dispatchAhxEvent("teardown", control.eventTarget, control);
+        dispatchAhxEvent("teardown", control.eventTarget, { control });
       }
     }
 
@@ -68,7 +71,7 @@ async function doUpdateControl(
 
   if (control.eventTarget) {
     control.eventTarget.addEventListener(eventType, control);
-    dispatchAhxEvent("setup", control.eventTarget, control);
+    dispatchAhxEvent("setup", control.eventTarget, { control });
   }
 
   return control;
