@@ -3,8 +3,9 @@
   :host {
     display: block !important;
   }
-  style {
-    --on-ready: select head link[rel="stylesheet"] |> clone |> swap afterend;
+  :root {
+    --on-ready: select head link[rel="stylesheet"] |> clone |> swap
+      afterbegin;
   }
 </style>
 <div class="box">

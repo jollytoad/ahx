@@ -35,7 +35,11 @@ export const attr_remove: ActionConstruct = (...args) => {
 };
 
 const attrModifyAction = (
-  fn: (oldValue?: string, newValue?: string) => string | undefined,
+  fn: (
+    oldValue: string | undefined,
+    newValue: string | undefined,
+    name: string,
+  ) => string | undefined,
 ): ActionConstruct =>
 (...args) => {
   const [_op, name, ...rest] = validate(args);
@@ -47,7 +51,7 @@ const attrModifyAction = (
     for (const target of targets) {
       if (target instanceof Element) {
         const currValue = target.getAttribute(name) ?? undefined;
-        const newValue = fn(currValue, argsValue ?? texts?.[0]);
+        const newValue = fn(currValue, argsValue ?? texts?.[0], name);
 
         if (newValue !== undefined && newValue !== currValue) {
           target.setAttribute(name, newValue);
@@ -56,6 +60,17 @@ const attrModifyAction = (
     }
   };
 };
+
+export const attr_add: ActionConstruct = attrModifyAction(
+  (oldVal, newVal, name) =>
+    oldVal !== undefined
+      ? oldVal
+      : newVal !== undefined
+      ? newVal
+      : name.startsWith("aria-")
+      ? "true"
+      : "",
+);
 
 export const attr_set: ActionConstruct = attrModifyAction(
   (_, val) => val,

@@ -28,6 +28,7 @@
     "./stream.ts": "./stream.ts",
     "./swap.ts": "./swap.ts",
     "./target.ts": "./target.ts",
+    "./target_attr.ts": "./target_attr.ts",
     "./template.ts": "./template.ts"
   },
   "imports": {

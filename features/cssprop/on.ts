@@ -1,4 +1,4 @@
-import type { Control, CSSPropertyFeature } from "@ahx/types";
+import type { Control, ControlSource, CSSPropertyFeature } from "@ahx/types";
 import { getConfig } from "@ahx/common/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
 
@@ -33,18 +33,36 @@ function isParentNode(node: unknown): node is ParentNode {
 const selectorTextRule = {
   ruleNodes(this: Control): Iterable<Node> {
     const { root, source } = this;
-    if (
-      root && source && "selectorText" in source &&
-      source.selectorText
-    ) {
-      return root.querySelectorAll(source.selectorText);
+    if (root && hasSelectorText(source)) {
+      switch (source.selectorText) {
+        case ":root":
+          return [root];
+        case ":host":
+          return root instanceof ShadowRoot ? [root.host] : [];
+        default:
+          return root.querySelectorAll(source.selectorText);
+      }
     }
     return [];
   },
   ruleApplies(this: Control, node: Node): boolean {
-    const { source } = this;
-    return !!source && "selectorText" in source &&
-      !!source.selectorText && node instanceof Element &&
-      node.matches(source.selectorText);
+    const { root, source } = this;
+    if (hasSelectorText(source)) {
+      switch (source.selectorText) {
+        case ":root":
+          return node === root;
+        case ":host":
+          return root instanceof ShadowRoot && node === root.host;
+        default:
+          return node instanceof Element && node.matches(source.selectorText);
+      }
+    }
+    return false;
   },
 };
+
+function hasSelectorText(
+  source?: ControlSource,
+): source is { selectorText: string } {
+  return !!source && "selectorText" in source && !!source.selectorText;
+}

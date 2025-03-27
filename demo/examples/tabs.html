@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script type="module-shim">
+      import "@ahx/init/mod.ts";
+    </script>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/missing.css@1.1.3/dist/missing.min.css"
+      ahx-ignore
+    />
+
+    <style>
+      [role="tab"]:not([aria-selected]) {
+        --on-click: target closest [role="tablist"] |> target scope
+          [role="tab"] |> attr remove aria-selected |> target attr
+          aria-controls |> attr add hidden |> target this |> attr add
+          aria-selected |> target attr aria-controls |> attr remove hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Tabs</h2>
+
+      <div role="tablist" aria-label="Tabs example 1">
+        <button role="tab" aria-controls="servers" aria-selected="true">
+          Servers
+        </button>
+        <button role="tab" aria-controls="channels">Channels</button>
+        <button role="tab" aria-controls="users">Users</button>
+      </div>
+
+      <div id="servers" role="tabpanel">Tab 1</div>
+      <div id="channels" hidden role="tabpanel">Tab 2</div>
+      <div id="users" hidden role="tabpanel">Tab 3</div>
+
+      <div role="tablist" aria-label="Tabs example 2">
+        <button role="tab" aria-controls="foo" aria-selected="true">Foo</button>
+      </div>
+
+      <div id="foo" role="tabpanel">Foo</div>
+
+      <div>
+        <template shadowrootmode="open">
+          <style>
+            :root {
+              --on-ready: select head link[rel="stylesheet"], style |> clone
+                |> swap afterbegin;
+            }
+          </style>
+
+          <div role="tablist" aria-label="Tabs example 3">
+            <button role="tab" aria-controls="servers" aria-selected="true">
+              Servers
+            </button>
+            <button role="tab" aria-controls="channels">Channels</button>
+            <button role="tab" aria-controls="users">Users</button>
+          </div>
+
+          <div id="servers" role="tabpanel">Tab 1</div>
+          <div id="channels" hidden role="tabpanel">Tab 2</div>
+          <div id="users" hidden role="tabpanel">Tab 3</div>
+        </template>
+      </div>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>

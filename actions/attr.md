@@ -29,6 +29,13 @@ The context is not changed.
 
 Set the value of the named attribute on all target elements.
 
+### `attr add <attribute-name> [...<value>]`
+
+Add the named attribute on all target elements if it's not already set. If a
+value is not given, then a empty value is set, which indicates a boolean true
+for regular HTML attributes. If the attr name starts with `aria-` then the
+literal value of `true` is set instead.
+
 ### `attr append <attribute-name> [...<value>]`
 
 (may also use `join` as an alias for `append` - to mirror the `input` action

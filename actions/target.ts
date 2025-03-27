@@ -1,6 +1,6 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 import {
-  extendedSelectorAll,
+  extendedSelector,
   validateSelector,
 } from "@ahx/common/extended-selector.ts";
 
@@ -11,7 +11,7 @@ export const target: ActionConstruct = (...args) => {
   validateSelector(...args);
 
   return (context): ActionResult => {
-    const targets = extendedSelectorAll(context, ...args);
-    return (targets.length) ? { targets: [...targets] } : { break: true };
+    const targets = extendedSelector(context.targets, context, ...args);
+    return (targets.length) ? { targets } : { break: true };
   };
 };

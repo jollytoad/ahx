@@ -72,11 +72,10 @@ function generateExports(modules: string[]) {
       modulePath.endsWith("bench.ts")
     ) continue;
 
-    const parsed = posixParse(modulePath);
-    const name = parsed.name.replaceAll("_", "-");
+    const { name, dir } = posixParse(modulePath);
     const exportKey = name === "mod"
-      ? (parsed.dir ? `./${parsed.dir}` : ".")
-      : `./${posixJoin(parsed.dir, name)}.ts`;
+      ? (dir ? `./${dir}` : ".")
+      : `./${posixJoin(dir, name)}.ts`;
     exports[exportKey] = `./${modulePath}`;
   }
 

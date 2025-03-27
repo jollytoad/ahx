@@ -1,8 +1,9 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 import {
-  extendedSelectorAll,
+  extendedSelector,
   validateSelector,
 } from "@ahx/common/extended-selector.ts";
+import { getSourceNodes } from "@ahx/common/source-nodes.ts";
 
 /**
  * Select a node for a swap or other action
@@ -10,8 +11,9 @@ import {
 export const select: ActionConstruct = (...args) => {
   validateSelector(...args);
 
-  return (context): ActionResult => {
-    const nodes = extendedSelectorAll(context, ...args);
-    return nodes ? { nodes, texts: undefined } : { break: true };
+  return async (context): Promise<ActionResult> => {
+    const scope = await getSourceNodes(context);
+    const nodes = extendedSelector(scope, context, ...args);
+    return nodes.length ? { nodes, texts: undefined } : { break: true };
   };
 };

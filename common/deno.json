@@ -10,6 +10,7 @@
     "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
     "./logging.ts": "./logging.ts",
     "./potential-bindings.ts": "./potential-bindings.ts",
+    "./source-nodes.ts": "./source-nodes.ts",
     "./swap.ts": "./swap.ts"
   },
   "compilerOptions": {
