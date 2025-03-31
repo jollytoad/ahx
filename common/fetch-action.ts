@@ -1,9 +1,9 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 
-export type MethodName = "get" | "query" | "put" | "post" | "patch" | "delete";
+const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
 export const fetchAction =
-  (method: MethodName, isBodyMethod: boolean): ActionConstruct =>
+  (method?: string): ActionConstruct =>
   (urlArg?: string) =>
   async (
     {
@@ -25,6 +25,12 @@ export const fetchAction =
     if (!urlArg) {
       throw new Error("No URL available for request");
     }
+
+    if (!method) {
+      method = requestInit?.method ?? "get";
+    }
+
+    const isBodyMethod = bodyMethods.has(method.toLowerCase());
 
     const base = targets instanceof Node
       ? targets.baseURI
@@ -66,13 +72,17 @@ export const fetchAction =
       }
     }
 
-    const request = new Request(url, {
-      ...requestInit,
-      headers,
-      body,
-      method,
-      signal,
-    });
+    const request = new Request(
+      url,
+      {
+        ...requestInit,
+        headers,
+        body,
+        duplex: "half",
+        method,
+        signal,
+      } as RequestInit & { duplex?: "half" },
+    );
 
     return {
       request,

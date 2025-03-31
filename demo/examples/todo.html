@@ -27,8 +27,31 @@
         vertical-align: middle !important;
       }
       body {
-        --on-after-swap: target input[autofocus] |> focus |> attr remove
-          autofocus;
+        --on-after-swap: matches .todo-item |> target input[autofocus] |>
+          focus |> attr remove autofocus;
+      }
+      .todo-list {
+        --on-ready: once |> get todos |> swap inner;
+      }
+      .todo-item form {
+        --on-submit: prevent-default |> form |> fetch |> target closest
+          .todo-item |> swap outer;
+        --on-delete: form |> delete |> target closest .todo-item |> swap
+          outer;
+      }
+      .todo-item:has(input[name="id"]) form input[type="checkbox"] {
+        --on-change: prevent-default |> target closest form |> dispatch
+          submit;
+      }
+      .todo-item form .delete {
+        --on-click: target closest form |> dispatch delete;
+      }
+      .todo-item form input[type="text"] {
+        --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
+        --on-keydown-ArrowUp: target closest li |> target previous li |>
+          target scope input[type="text"] |> focus;
+        --on-keydown-ArrowDown: target closest li |> target next li |> target
+          scope input[type="text"] |> focus;
       }
     </style>
   </head>
@@ -43,7 +66,7 @@
       <h2>Todo list</h2>
 
       <section class="box">
-        <ul class="table" on-ready="once |> get todos |> swap inner"></ul>
+        <ul class="table todo-list"></ul>
       </section>
 
       <footer>

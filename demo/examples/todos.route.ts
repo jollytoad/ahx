@@ -55,17 +55,13 @@ function renderTodo(todo: Todo): string {
   const text = escape(todo.text);
   return /*html*/ `
 <li class="todo-item">
-  <form class="row" on-submit="prevent-default |> post todos |> target closest li |> swap outer">
-    <input name="done" type="checkbox" value="true"
-      ${todo.done ? "checked" : ""}
-      on-change="target closest form |> dispatch submit">
-
-    <input name="text" type="text" value="${text}"
-      on-change="target closest form |> dispatch submit">
-
-    <input type="hidden" name="id" value="${id}"/>
-
-    <button type="button" on-click="target closest li |> delete todos?id=${id} |> swap outer">Delete</button>
+  <form class="row" method="post" action="todos">
+    <input name="done" type="checkbox" value="true" ${
+    todo.done ? "checked" : ""
+  }>
+    <input name="text" type="text" value="${text}">
+    <input type="hidden" name="id" value="${id}">
+    <button type="button" class="delete">Delete</button>
   </form>
 </li>
 `;
@@ -74,10 +70,10 @@ function renderTodo(todo: Todo): string {
 function renderBlankTodo(): string {
   return /*html*/ `
 <li class="todo-item">
-  <form class="row" on-submit="prevent-default |> post todos |> target closest li |> swap outer">
+  <form class="row" method="post" action="todos">
     <input name="done" type="checkbox" value="true">
     <input name="text" type="text" value="" autofocus>
-    <button type="submit">Add</button>
+    <button type="submit" class="add">Add</button>
   </form>
 </li>
 `;
