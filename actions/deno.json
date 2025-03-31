@@ -11,6 +11,7 @@
     "./delete.ts": "./delete.ts",
     "./dispatch.ts": "./dispatch.ts",
     "./filter.ts": "./filter.ts",
+    "./focus.ts": "./focus.ts",
     "./get.ts": "./get.ts",
     "./header.ts": "./header.ts",
     "./input.ts": "./input.ts",

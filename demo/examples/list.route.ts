@@ -1,6 +1,5 @@
 import { stream } from "./_stream.ts";
 import { parse } from "@std/path/parse";
-import { delay } from "@std/async/delay";
 
 export default stream(index);
 
@@ -11,7 +10,6 @@ async function* index() {
       const { ext, base, name } = parse(entry.name);
       if (ext === ".html" && !name.startsWith("_")) {
         yield `<li><a href="/examples/${base}">${name}</a></li>\n`;
-        await delay(10);
       }
     }
   } catch (e) {

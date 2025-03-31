@@ -27,7 +27,7 @@
         </h1>
       </header>
 
-      <ul id="list" on-setup="get /examples/list |> stream |> swap inner"></ul>
+      <ul id="list" on-ready="get /examples/list |> swap inner"></ul>
 
       <footer>
         <a href="/">back</a>

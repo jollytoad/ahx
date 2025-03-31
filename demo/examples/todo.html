@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      async
+      src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    ></script>
+    <script src="/importmap.json" type="importmap-shim"></script>
+    <script type="module-shim">
+      import "@ahx/init/mod.ts";
+    </script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/missing.css@1.1.3/dist/missing.min.css"
+      ahx-ignore
+    />
+
+    <style>
+      ul {
+        list-style: none;
+      }
+      li {
+        margin-bottom: var(--gap);
+      }
+      ul .row > * {
+        vertical-align: middle !important;
+      }
+      body {
+        --on-after-swap: target input[autofocus] |> focus |> attr remove
+          autofocus;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Todo list</h2>
+
+      <section class="box">
+        <ul class="table" on-ready="once |> get todos |> swap inner"></ul>
+      </section>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>
