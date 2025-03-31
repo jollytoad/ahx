@@ -1,5 +1,5 @@
 import type { Control } from "@ahx/types";
-import { getConfig } from "@ahx/common/config.ts";
+import { getConfig } from "@ahx/custom/config.ts";
 import * as log from "@ahx/common/logging.ts";
 
 export interface AhxEventInit extends EventInit {

@@ -25,6 +25,23 @@ Example:
 Exports the list of _Feature Detector_ modules to be used by the core of
 **ahx**.
 
-### config.ts _TODO_
+#### detectors-no-css.ts
+
+Provides the standard detectors for the DOM only, without any CSS features.
+
+```json
+{
+  "imports": {
+    "@ahx/": "https://cdn.jsdelivr.net/gh/jollytoad/ahx/",
+    "@ahx/custom/detectors.ts": "https://cdn.jsdelivr.net/gh/jollytoad/ahx/custom/detectors-no-css.ts"
+  }
+}
+```
+
+### config.ts
 
 This module provides configuration to other parts of **ahx**.
+
+#### config-meta.ts
+
+Alternative config to allow configuration via meta elements.

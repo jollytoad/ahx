@@ -3,6 +3,10 @@
   "version": "0.5.0-alpha.8",
   "license": "MIT",
   "exports": {
+    "./config-default.ts": "./config-default.ts",
+    "./config-meta.ts": "./config-meta.ts",
+    "./config.ts": "./config.ts",
+    "./detectors-no-css.ts": "./detectors-no-css.ts",
     "./detectors.ts": "./detectors.ts"
   },
   "compilerOptions": {

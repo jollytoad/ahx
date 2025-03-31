@@ -4,7 +4,7 @@ import type {
   ActionDecl,
   ActionFeature,
 } from "@ahx/types";
-import { getConfig } from "@ahx/common/config.ts";
+import { getConfig } from "@ahx/custom/config.ts";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
 import * as log from "@ahx/common/logging.ts";
 import { createFeatureLoader } from "./feature-loader.ts";

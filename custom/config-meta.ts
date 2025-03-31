@@ -1,15 +1,5 @@
 import type { Config, ConfigKey } from "@ahx/types";
-
-const META_PREFIX = "ahx:";
-
-const DEFAULT_CONFIG: Config = {
-  metaPrefix: META_PREFIX,
-  onAttrPrefix: "on-",
-  onCssPropPrefix: "--on-",
-  eventPrefix: "",
-  actionModulePrefix: "@ahx/actions/",
-  actionModuleExt: ".ts",
-};
+import { DEFAULT_CONFIG, META_PREFIX } from "./config-default.ts";
 
 const documentConfigCache = new WeakMap<Document, Config>();
 

@@ -1,5 +1,5 @@
 import type { AttrFeature } from "@ahx/types";
-import { getConfig } from "@ahx/common/config.ts";
+import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
 
 export default function (feature: AttrFeature): void {

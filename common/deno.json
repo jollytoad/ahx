@@ -3,7 +3,6 @@
   "version": "0.5.0-alpha.8",
   "license": "MIT",
   "exports": {
-    "./config.ts": "./config.ts",
     "./controls.ts": "./controls.ts",
     "./extended-selector.ts": "./extended-selector.ts",
     "./fetch-action.ts": "./fetch-action.ts",

@@ -8,6 +8,8 @@
     "./action.ts": "./action.ts",
     "./config.ts": "./config.ts",
     "./control.ts": "./control.ts",
+    "./custom-config.ts": "./custom-config.ts",
+    "./custom-detectors.ts": "./custom-detectors.ts",
     "./feature.ts": "./feature.ts",
     "./general.ts": "./general.ts",
     ".": "./mod.ts"
