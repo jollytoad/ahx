@@ -6,7 +6,7 @@ import type { ActionConstruct, ActionResult } from "@ahx/types";
  * Example:
  * `target attr aria-controls`
  */
-export const target_attr: ActionConstruct = (...args) => {
+export const target_attr: ActionConstruct = (_op, ...args) => {
   if (!args.length) {
     throw new TypeError("At least one attribute name is required");
   }

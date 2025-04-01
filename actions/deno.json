@@ -34,6 +34,8 @@
     "./swap.ts": "./swap.ts",
     "./target.ts": "./target.ts",
     "./target_attr.ts": "./target_attr.ts",
+    "./target_xpath-class.ts": "./target_xpath-class.ts",
+    "./target_xpath.ts": "./target_xpath.ts",
     "./template.ts": "./template.ts"
   },
   "imports": {

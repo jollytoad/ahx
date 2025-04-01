@@ -48,10 +48,18 @@
       }
       .todo-item form input[type="text"] {
         --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
-        --on-keydown-ArrowUp: target closest li |> target previous li |>
-          target scope input[type="text"] |> focus;
-        --on-keydown-ArrowDown: target closest li |> target next li |> target
-          scope input[type="text"] |> focus;
+
+        --on-keydown-ArrowUp: target xpath-class
+          ancestor::*.todo-item/preceding-sibling::*.todo-item//input[@type="text"]
+          |> focus;
+        --on-keydown-ArrowDown: target xpath-class
+          ancestor::*.todo-item/following-sibling::*.todo-item//input[@type="text"]
+          |> focus;
+
+        /* --on-keydown-ArrowUp: target closest li |> target previous li |>
+          target scope input[type="text"] |> focus; */
+        /* --on-keydown-ArrowDown: target closest li |> target next li |> target
+          scope input[type="text"] |> focus; */
       }
     </style>
   </head>

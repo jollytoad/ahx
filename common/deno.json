@@ -10,7 +10,8 @@
     "./logging.ts": "./logging.ts",
     "./potential-bindings.ts": "./potential-bindings.ts",
     "./source-nodes.ts": "./source-nodes.ts",
-    "./swap.ts": "./swap.ts"
+    "./swap.ts": "./swap.ts",
+    "./xpath-selector.ts": "./xpath-selector.ts"
   },
   "compilerOptions": {
     "lib": [
