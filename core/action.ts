@@ -6,7 +6,7 @@ import type {
 } from "@ahx/types";
 import { getConfig } from "@ahx/custom/config.ts";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
-import * as log from "@ahx/common/logging.ts";
+import * as log from "@ahx/custom/log/feature.ts";
 import { createFeatureLoader } from "./feature-loader.ts";
 import { ACTION_NAME_REGEXP } from "./parse-pipeline.ts";
 

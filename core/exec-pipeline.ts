@@ -1,6 +1,6 @@
 import type { ActionContext, ActionResult } from "@ahx/types";
 import { dispatchActionEvent } from "./action-event.ts";
-import * as log from "@ahx/common/logging.ts";
+import * as log from "@ahx/custom/log/pipeline.ts";
 import { getConfig } from "@ahx/custom/config.ts";
 import { initFeatures } from "./init-features.ts";
 

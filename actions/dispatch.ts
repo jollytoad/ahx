@@ -1,5 +1,5 @@
 import type { ActionConstruct } from "@ahx/types";
-import * as log from "@ahx/common/logging.ts";
+import * as log from "@ahx/custom/log/event.ts";
 
 export const dispatch: ActionConstruct = (...args) => {
   const [eventType] = args;

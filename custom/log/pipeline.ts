@@ -1,14 +1,5 @@
-import type {
-  ActionContext,
-  ActionResult,
-  Control,
-  Feature,
-  FeatureLoaded,
-} from "@ahx/types";
-
-const QUEUE = true;
-const COLLAPSED = true;
-const PREFIX = "";
+import type { ActionContext, ActionResult } from "@ahx/types";
+import { COLLAPSED, PREFIX, QUEUE } from "./config.ts";
 
 const BOLD = "font-weight: bold;";
 const CODE = "background-color: highlight;";
@@ -17,8 +8,6 @@ const PIPELINE = "color: light-dark(blue,skyblue);" + BOLD;
 const ACTION_BEFORE = "color: light-dark(purple,hotpink);" + BOLD;
 const ACTION_CANCEL = "color: red;" + BOLD;
 const ACTION_AFTER = "color: light-dark(green,lime);" + BOLD;
-const ERROR = "color: red;" + BOLD;
-const EVENT = "color: light-dark(teal,cyan);" + BOLD;
 
 type LogLine = [keyof typeof console, ...unknown[]];
 
@@ -116,69 +105,4 @@ export function afterAction(
     RESET,
     result,
   );
-}
-
-const loggedImportCache = new Set<string>();
-
-export function importFeature(
-  outcome: FeatureLoaded<Feature, unknown>,
-  sep = "-",
-) {
-  const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
-  const kind = outcome.feature.kind;
-
-  const actionBinding =
-    (exportBinding && exportBinding.length > moduleBinding.length
-      ? exportBinding
-      : moduleBinding).join(sep);
-
-  if (loggedImportCache.has(actionBinding)) return;
-
-  loggedImportCache.add(actionBinding);
-
-  console.debug(
-    `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
-    kind ?? "unknown",
-    BOLD,
-    actionBinding,
-    RESET,
-    BOLD,
-    exportName,
-    RESET,
-    moduleUrl,
-  );
-}
-
-export function event(event: Event, target?: EventTarget): void {
-  // deno-lint-ignore no-explicit-any
-  const control = (event as any).control as Control;
-  if (control) {
-    console.debug(
-      `${PREFIX}%c%s%c %c%s%c="%c%s%c" %o %O`,
-      EVENT,
-      event.type,
-      RESET,
-      PIPELINE,
-      `on-${control.eventType}`,
-      RESET,
-      CODE,
-      control,
-      RESET,
-      target,
-      control,
-    );
-  } else {
-    console.debug(
-      `${PREFIX}%c%s%c %O %o`,
-      EVENT,
-      event.type,
-      RESET,
-      event,
-      target,
-    );
-  }
-}
-
-export function error(msg: string, err: unknown): void {
-  console.error(`${PREFIX}%c%s%c %O`, ERROR, msg, RESET, err);
 }

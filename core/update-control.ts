@@ -1,6 +1,6 @@
 import type { Control, ControlDecl } from "@ahx/types";
 import { getControl, storeControl } from "@ahx/common/controls.ts";
-import * as log from "@ahx/common/logging.ts";
+import * as log from "@ahx/custom/log/error.ts";
 import { dispatchAhxEvent } from "./ahx-event.ts";
 import { createControl } from "./control.ts";
 import { normalizePipeline } from "./parse-pipeline.ts";

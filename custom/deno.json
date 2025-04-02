@@ -7,7 +7,12 @@
     "./config-meta.ts": "./config-meta.ts",
     "./config.ts": "./config.ts",
     "./detectors-no-css.ts": "./detectors-no-css.ts",
-    "./detectors.ts": "./detectors.ts"
+    "./detectors.ts": "./detectors.ts",
+    "./log/config.ts": "./log/config.ts",
+    "./log/error.ts": "./log/error.ts",
+    "./log/event.ts": "./log/event.ts",
+    "./log/feature.ts": "./log/feature.ts",
+    "./log/pipeline.ts": "./log/pipeline.ts"
   },
   "compilerOptions": {
     "lib": [
