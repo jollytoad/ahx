@@ -11,7 +11,8 @@
     "packages": "./_tools/packages.ts",
     "test:install": "deno install && deno run --allow-all npm:playwright install",
     "test": "PW_DISABLE_TS_ESM=true deno run --allow-all npm:playwright test",
-    "test:ui": "deno task test --ui --ui-host=localhost"
+    "test:ui": "deno task test --ui --ui-host=localhost",
+    "ai": "deno run --no-lock --allow-all npm:@anthropic-ai/claude-code"
   },
   "lint": {
     "plugins": [
