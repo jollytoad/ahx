@@ -10,6 +10,8 @@
   const importmap = {
     "imports": {
       "@ahx/": "/@ahx/",
+      "@ahx/features/element/http/cat.js": "/examples/_http_cat.js",
+      "@ahx/features/element/http/cat.ts": "/examples/_http_cat.js",
       "dompurify":
         "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs",
       "idiomorph":
