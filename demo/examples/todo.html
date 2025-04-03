@@ -23,14 +23,13 @@
         --on-ready: once |> get todos |> swap inner;
       }
       .todo-item form {
-        --on-submit: prevent-default |> form |> fetch |> target closest
-          .todo-item |> swap outer;
-        --on-delete: form |> delete |> target closest .todo-item |> swap
-          outer;
+        --on-submit: prevent-default |> fetch |> target closest .todo-item |>
+          swap outer;
+        --on-delete: delete |> target closest .todo-item |> swap outer;
+        --on-toggle: fetch |> target closest .todo-item |> swap outer;
       }
       .todo-item:has(input[name="id"]) form input[type="checkbox"] {
-        --on-change: prevent-default |> target closest form |> dispatch
-          submit;
+        --on-change: target closest form |> dispatch toggle;
       }
       .todo-item form .delete {
         --on-click: target closest form |> dispatch delete;

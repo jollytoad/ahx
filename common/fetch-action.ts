@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { getFormDetails } from "./form-details.ts";
 
 const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
@@ -7,6 +8,7 @@ export const fetchAction =
   (urlArg?: string) =>
   async (
     {
+      event,
       control,
       action,
       index,
@@ -18,40 +20,47 @@ export const fetchAction =
       trace,
     },
   ): Promise<ActionResult> => {
-    if (!urlArg && requestInit && "url" in requestInit) {
-      urlArg = requestInit.url;
+    let url: string | URL | undefined = urlArg ?? requestInit?.url;
+    const headers = new Headers(requestInit?.headers);
+    let body: BodyInit | ReadableStream<Uint8Array> | null | undefined =
+      requestInit?.body;
+
+    const target = targets?.[0];
+    if (
+      jsonData === undefined && formData === undefined && body === undefined
+    ) {
+      const result = getFormDetails(target, event);
+
+      if (result) {
+        formData ??= result.formData;
+        url ??= result.request.url;
+        method ??= result.request.method;
+        body ??= result.request.body;
+        if (result.request.headers) {
+          Object.entries(result.request.headers).forEach(([key, value]) =>
+            headers.append(key, value)
+          );
+        }
+      }
     }
 
-    if (!urlArg) {
+    if (!url) {
       throw new Error("No URL available for request");
     }
 
-    if (!method) {
-      method = requestInit?.method ?? "get";
-    }
+    method ??= "get";
 
     const isBodyMethod = bodyMethods.has(method.toLowerCase());
 
-    const base = targets instanceof Node
-      ? targets.baseURI
+    const base = target instanceof Node
+      ? target.baseURI
       : control.root?.baseURI;
-    const url = new URL(urlArg, base);
-
-    const headers = new Headers(requestInit?.headers);
-    let body: BodyInit | undefined = requestInit?.body ?? undefined;
+    url = new URL(url, base);
 
     headers.set("ahx-pipeline", control.toString());
     headers.set("ahx-action", action!.toString());
     headers.set("ahx-index", index.toString());
     headers.set("ahx-trace", trace);
-
-    const target = targets?.[0];
-    if (
-      jsonData === undefined && formData === undefined &&
-      target instanceof HTMLFormElement
-    ) {
-      formData = new FormData(target);
-    }
 
     if (isBodyMethod) {
       if (body === undefined) {
@@ -70,6 +79,7 @@ export const fetchAction =
           }
         }
       }
+      body = null;
     }
 
     const request = new Request(

@@ -19,7 +19,7 @@ export interface ActionResult {
   /**
    * Prep for a future fetch request, or a Request that has been made.
    */
-  request?: Request | RequestInit;
+  request?: Request | (RequestInit & { url?: string | URL });
   /**
    * Response from a fetch.
    */

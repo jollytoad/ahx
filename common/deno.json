@@ -6,6 +6,7 @@
     "./controls.ts": "./controls.ts",
     "./extended-selector.ts": "./extended-selector.ts",
     "./fetch-action.ts": "./fetch-action.ts",
+    "./form-details.ts": "./form-details.ts",
     "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
     "./potential-bindings.ts": "./potential-bindings.ts",
     "./source-nodes.ts": "./source-nodes.ts",

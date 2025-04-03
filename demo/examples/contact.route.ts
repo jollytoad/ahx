@@ -84,7 +84,7 @@ function edit({ firstName, lastName, email }: Contact) {
   </p>
   <div class="tool-bar">
     <button>Submit</button>
-    <button on-click="get contact |> target closest .contact |> swap outer">Cancel</button>
+    <button type="button" on-click="get contact |> target closest .contact |> swap outer">Cancel</button>
   </div>
 </form>
 `;
