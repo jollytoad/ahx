@@ -37,12 +37,6 @@ export interface Config {
    * Defaults to `@ahx/actions/`
    */
   actionModulePrefix: string;
-
-  /**
-   * Extension to add to an action module specifier.
-   * Defaults to `.ts`
-   */
-  actionModuleExt: string;
 }
 
 export type ConfigKey = keyof Config;

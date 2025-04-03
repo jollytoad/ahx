@@ -92,11 +92,13 @@ export function createFeatureLoader<
   };
 }
 
+const EXT = import.meta.url.slice(import.meta.url.lastIndexOf("."));
+
 export function defaultFeatureModuleSpec(
   feature: Feature,
   binding: string[],
 ): string {
-  return `@ahx/features/${feature.kind}/${binding.join("/")}.ts`;
+  return `@ahx/features/${feature.kind}/${binding.join("/")}${EXT}`;
 }
 
 export function defaultFeatureExportName(

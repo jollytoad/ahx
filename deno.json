@@ -5,13 +5,14 @@
     "start:gh": "AHX_URL=https://raw.githubusercontent.com/jollytoad/ahx/v0.5.0-alpha.4/ deno run --allow-all --watch demo/dev.ts",
     "start:jsd": "AHX_URL=https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.4/ deno run --allow-all --watch demo/dev.ts",
     "start:esm": "AHX_URL=https://esm.sh/jsr/@ahx/ deno run --allow-all --watch demo/dev.ts",
-    "ok": "deno fmt && deno lint && deno task check && deno publish --dry-run --allow-dirty",
+    "ok": "deno fmt && deno lint && deno task check && deno task build && deno publish --dry-run --allow-dirty",
     "check": "deno check common/**/*.ts actions/**/*.ts core/**/*.ts demo/**/*.ts init/**/*.ts",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
     "packages": "./_tools/packages.ts",
     "test:install": "deno install && deno run --allow-all npm:playwright install",
     "test": "PW_DISABLE_TS_ESM=true deno run --allow-all npm:playwright test",
     "test:ui": "deno task test --ui --ui-host=localhost",
+    "build": "./_tools/build.ts",
     "ai": "deno run --no-lock --allow-all npm:@anthropic-ai/claude-code"
   },
   "lint": {
@@ -19,6 +20,9 @@
       "jsr:@jollytoad/lint-no-cross-package-imports"
     ]
   },
+  "exclude": [
+    "dist"
+  ],
   "nodeModulesDir": "auto",
   "workspace": [
     "./_tools",
@@ -33,6 +37,7 @@
     "./types"
   ],
   "imports": {
-    "@playwright/test": "npm:@playwright/test@^1.51.1"
+    "@playwright/test": "npm:@playwright/test@^1.51.1",
+    "typescript": "npm:typescript@^5.8.2"
   }
 }

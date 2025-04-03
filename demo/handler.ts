@@ -1,6 +1,7 @@
 import { handle } from "@http/route/handle";
 import { staticRoute } from "@http/route/static-route";
 import { interceptResponse } from "@http/interceptor/intercept-response";
+import { skip } from "@http/interceptor/skip";
 import { byPattern } from "@http/route/by-pattern";
 import { dynamicRoute } from "@http/discovery/dynamic-route";
 import { setHeaders } from "@http/response/set-headers";
@@ -60,6 +61,10 @@ export default handle([
   staticRoute("/examples", import.meta.resolve("./examples"), {
     showIndex: true,
   }),
+  interceptResponse(
+    staticRoute("/@ahx", import.meta.resolve("../dist/@ahx/")),
+    skip(404),
+  ),
   interceptResponse(
     staticRoute("/@ahx", import.meta.resolve("../")),
     (_req, res) => {

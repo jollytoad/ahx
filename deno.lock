@@ -1,6 +1,7 @@
 {
   "version": "4",
   "specifiers": {
+    "jsr:@fcrozatier/type-strip@^1.2.0": "1.2.0",
     "jsr:@http/discovery@0.26": "0.26.0",
     "jsr:@http/fs@0.26": "0.26.0",
     "jsr:@http/host-deno-local@0.26": "0.26.0",
@@ -11,7 +12,8 @@
     "jsr:@std/async@^1.0.11": "1.0.11",
     "jsr:@std/collections@^1.0.10": "1.0.10",
     "jsr:@std/encoding@^1.0.7": "1.0.7",
-    "jsr:@std/fs@1": "1.0.14",
+    "jsr:@std/fs@1": "1.0.15",
+    "jsr:@std/fs@^1.0.15": "1.0.15",
     "jsr:@std/html@^1.0.3": "1.0.3",
     "jsr:@std/http@^1.0.13": "1.0.13",
     "jsr:@std/media-types@^1.1.0": "1.1.0",
@@ -21,9 +23,17 @@
     "jsr:@std/streams@^1.0.9": "1.0.9",
     "npm:@playwright/test@^1.51.1": "1.51.1",
     "npm:dompurify@3.2.4": "3.2.4",
-    "npm:idiomorph@0.7.3": "0.7.3"
+    "npm:idiomorph@0.7.3": "0.7.3",
+    "npm:typescript@^5.7.2": "5.8.2",
+    "npm:typescript@^5.8.2": "5.8.2"
   },
   "jsr": {
+    "@fcrozatier/type-strip@1.2.0": {
+      "integrity": "aba8d7424787a30113cad06237badd81148b3e48125e875928a84a99339121c8",
+      "dependencies": [
+        "npm:typescript@^5.7.2"
+      ]
+    },
     "@http/discovery@0.26.0": {
       "integrity": "98096ad0c43d7dff5a5bf851e3afd107b1aafcd0a959c9036ceb0ffcbc5d98b0",
       "dependencies": [
@@ -76,7 +86,7 @@
     "@jollytoad/lint-no-cross-package-imports@0.1.0": {
       "integrity": "43e2e3240005ab856da9bb4ba0e841d0690d03fd3c6eab35b376987a19de460e",
       "dependencies": [
-        "jsr:@std/fs",
+        "jsr:@std/fs@1",
         "jsr:@std/path@1"
       ]
     },
@@ -89,8 +99,11 @@
     "@std/encoding@1.0.7": {
       "integrity": "f631247c1698fef289f2de9e2a33d571e46133b38d042905e3eac3715030a82d"
     },
-    "@std/fs@1.0.14": {
-      "integrity": "1e84bf0b95fe08f41f1f4aea9717bbf29f45408a56ce073b0114474ce1c9fccf"
+    "@std/fs@1.0.15": {
+      "integrity": "c083fb479889d6440d768e498195c3fc499d426fbf9a6592f98f53884d1d3f41",
+      "dependencies": [
+        "jsr:@std/path@^1.0.8"
+      ]
     },
     "@std/html@1.0.3": {
       "integrity": "7a0ac35e050431fb49d44e61c8b8aac1ebd55937e0dc9ec6409aa4bab39a7988"
@@ -145,15 +158,28 @@
         "fsevents",
         "playwright-core"
       ]
+    },
+    "typescript@5.8.2": {
+      "integrity": "sha512-aJn6wq13/afZp/jT9QZmwEjDqqvSGp1VT5GVg+f/t6/oVyrgXM6BY1h9BRh/O5p3PlUPAe+WuiEZOmb/49RqoQ=="
     }
+  },
+  "redirects": {
+    "https://ghuc.cc/jollytoad/type-strip@fix-this-param-and-generic-issues/index.ts": "https://raw.githubusercontent.com/jollytoad/type-strip/fix-this-param-and-generic-issues/index.ts"
+  },
+  "remote": {
+    "https://raw.githubusercontent.com/jollytoad/type-strip/fix-this-param-and-generic-issues/errors.ts": "0b3a2b8af3c5e05068a3311c115fd28692546632244cc2353644a1d4acdb6906",
+    "https://raw.githubusercontent.com/jollytoad/type-strip/fix-this-param-and-generic-issues/index.ts": "2f03744964ba839300b3b2b50e1c211e87499b2f216cf62322bd1e9caf4f8996"
   },
   "workspace": {
     "dependencies": [
-      "npm:@playwright/test@^1.51.1"
+      "npm:@playwright/test@^1.51.1",
+      "npm:typescript@^5.8.2"
     ],
     "members": {
       "_tools": {
         "dependencies": [
+          "jsr:@fcrozatier/type-strip@^1.2.0",
+          "jsr:@std/fs@^1.0.15",
           "jsr:@std/path@^1.0.8"
         ]
       },

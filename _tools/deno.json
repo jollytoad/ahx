@@ -3,6 +3,8 @@
     "verbatimModuleSyntax": true
   },
   "imports": {
+    "@fcrozatier/type-strip": "jsr:@fcrozatier/type-strip@^1.2.0",
+    "@std/fs": "jsr:@std/fs@^1.0.15",
     "@std/path": "jsr:@std/path@^1.0.8"
   }
 }

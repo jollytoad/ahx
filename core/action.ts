@@ -10,19 +10,17 @@ import * as log from "@ahx/custom/log/feature.ts";
 import { createFeatureLoader } from "./feature-loader.ts";
 import { ACTION_NAME_REGEXP } from "./parse-pipeline.ts";
 
+const EXT = import.meta.url.slice(import.meta.url.lastIndexOf("."));
+
 export async function createAction(
   actionDecl: ActionDecl,
   root: ParentNode,
 ): Promise<Action> {
-  const { actionModulePrefix, actionModuleExt } = getConfig(
-    root,
-    "actionModulePrefix",
-    "actionModuleExt",
-  );
+  const { actionModulePrefix } = getConfig(root, "actionModulePrefix");
 
   const loader = createFeatureLoader<ActionFeature, ActionConstruct>({
     toModuleSpec: (_feature, binding) =>
-      `${actionModulePrefix}${binding.join("_")}${actionModuleExt}`,
+      `${actionModulePrefix}${binding.join("_")}${EXT}`,
   });
 
   const outcome = await loader({

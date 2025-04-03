@@ -8,7 +8,6 @@ export const DEFAULT_CONFIG: Config = {
   onCssPropPrefix: "--on-",
   eventPrefix: "",
   actionModulePrefix: "@ahx/actions/",
-  actionModuleExt: ".ts",
 };
 
 export function getConfig<K extends ConfigKey>(
