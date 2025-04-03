@@ -43,4 +43,8 @@
       `<script type="module">import "@ahx/init/mod.js";</script>`,
     );
   }
+
+  document.writeln(
+    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.1.3/dist/missing.min.css" ahx-ignore>`,
+  );
 })();
