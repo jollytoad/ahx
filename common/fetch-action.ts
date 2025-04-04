@@ -3,6 +3,10 @@ import { getFormDetails } from "./form-details.ts";
 
 const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
+// TODO: this should probably not implicitly gather any data itself,
+// to allow a before to check the data passed to a request.
+// Alternatively dispatch a dedicated pre-request event that can be cancelled.
+
 export const fetchAction =
   (method?: string): ActionConstruct =>
   (urlArg?: string) =>

@@ -16,8 +16,8 @@ Retrieve the values of the named attribute from all target elements.
 **Output**
 
 - `texts`: the attributes values
-- `nodes`: the actual
-  [Attr](https://developer.mozilla.org/en-US/docs/Web/API/Attr) nodes
+- `nodes`: the actual [Attr](https://developer.mozilla.org/docs/Web/API/Attr)
+  nodes
 
 ### `attr remove <attribute-name>`
 
@@ -52,3 +52,9 @@ Add the value to the existing attribute, if it doesn't contain it. Acts like
 ### `attr exclude <attribute-name> [...<value>]`
 
 Remove the given value from an existing attribute.
+
+## References
+
+- [`getAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/getAttribute)
+- [`setAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/setAttribute)
+- [`removeAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/removeAttribute)
