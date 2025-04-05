@@ -36,18 +36,17 @@
       }
       .todo-item form input[type="text"] {
         --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
-
-        --on-keydown-ArrowUp: target xpath-class
-          ancestor::*.todo-item/preceding-sibling::*.todo-item[1]//input[@type="text"]
+        --on-keydown-ArrowUp: target xpath preceding::input[@type="text"][1]
           |> focus;
-        --on-keydown-ArrowDown: target xpath-class
-          ancestor::*.todo-item/following-sibling::*.todo-item[1]//input[@type="text"]
+        --on-keydown-ArrowDown: target xpath following::input[@type="text"][1]
           |> focus;
-
-        /* --on-keydown-ArrowUp: target closest li |> target previous li |>
-          target scope input[type="text"] |> focus; */
-        /* --on-keydown-ArrowDown: target closest li |> target next li |> target
-          scope input[type="text"] |> focus; */
+      }
+      .todo-item form input[type="checkbox"] {
+        --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
+        --on-keydown-ArrowUp: target xpath
+          preceding::input[@type="checkbox"][1] |> focus;
+        --on-keydown-ArrowDown: target xpath
+          following::input[@type="checkbox"][1] |> focus;
       }
     </style>
   </head>
