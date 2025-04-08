@@ -7,6 +7,7 @@ import { dynamicRoute } from "@http/discovery/dynamic-route";
 import { setHeaders } from "@http/response/set-headers";
 import { serveFile } from "@http/fs/serve-file";
 import { fromFileUrl } from "@std/path/from-file-url";
+import { prerender } from "@ahx/prerender/interceptor.ts";
 
 export default handle([
   byPattern("/huge", () => {
@@ -58,9 +59,12 @@ export default handle([
     },
     verbose: true,
   }),
-  staticRoute("/examples", import.meta.resolve("./examples"), {
-    showIndex: true,
-  }),
+  interceptResponse(
+    staticRoute("/examples", import.meta.resolve("./examples"), {
+      showIndex: true,
+    }),
+    prerender(Deno.args.includes("--prerender")),
+  ),
   interceptResponse(
     staticRoute("/@ahx", import.meta.resolve("../dist/@ahx/")),
     skip(404),

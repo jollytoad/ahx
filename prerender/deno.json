@@ -1,0 +1,25 @@
+{
+  "name": "@ahx/prerender",
+  "version": "0.5.0-alpha.8",
+  "license": "MIT",
+  "exports": {
+    "./detectors.ts": "./detectors.ts",
+    "./detectors/on-ready-attr.ts": "./detectors/on-ready-attr.ts",
+    "./exec-ready-controls.ts": "./exec-ready-controls.ts",
+    "./interceptor.ts": "./interceptor.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "esnext"
+    ],
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.49",
+    "@http/interceptor": "jsr:@http/interceptor@^0.26.0"
+  }
+}
