@@ -1,6 +1,7 @@
 /// <reference types="./_idiomorph.d.ts" />
 // deno-lint-ignore-file no-window
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 export type MorphOp =
   | "inner"
@@ -32,7 +33,7 @@ export const morph: ActionConstruct = async (...args) => {
     }
 
     if (
-      !nodes && !texts && event.target instanceof Element &&
+      !nodes && !texts && isElement(event.target) &&
       event.target !== control.root
     ) {
       nodes = [event.target];
@@ -51,7 +52,7 @@ export const morph: ActionConstruct = async (...args) => {
 
     if (content !== undefined) {
       for (const target of targets) {
-        if (target instanceof Element) {
+        if (isElement(target)) {
           Idiomorph.morph(target, content, {
             morphStyle,
             ignoreActiveValue: true,

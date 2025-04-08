@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 const classModifyAction = (
   fn: (target: Element, ...tokens: string[]) => void,
@@ -17,7 +18,7 @@ const classModifyAction = (
     if (!targets) return;
 
     for (const target of targets) {
-      if (target instanceof Element) {
+      if (isElement(target)) {
         fn(target, ...tokens);
       }
     }

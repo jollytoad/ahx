@@ -2,7 +2,9 @@
   "compilerOptions": {
     "lib": [
       "deno.window",
-      "dom"
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable"
     ],
     "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true

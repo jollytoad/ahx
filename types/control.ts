@@ -1,4 +1,11 @@
+import type { ActionResult } from "./action-result.ts";
 import type { Action } from "./action.ts";
+import type {
+  ControlNodes,
+  RootNode,
+  SourceElement,
+  SourceRule,
+} from "./dom.ts";
 
 export type EventType = string;
 
@@ -18,11 +25,11 @@ export interface ElementControlDecl {
   /**
    * The root node of this control.
    */
-  root: ParentNode;
+  root: RootNode;
   /**
    * The source of this control.
    */
-  source: Element;
+  source: SourceElement;
   /**
    * The event type that trigger this pipeline.
    */
@@ -40,7 +47,7 @@ export interface RuleControlDecl extends Omit<ElementControlDecl, "source"> {
   /**
    * The source of this control, may be a CSS style rule.
    */
-  source: CSSStyleRule | { selectorText: string };
+  source: SourceRule;
   /**
    * Function to return the nodes to which this rule applies,
    * at the current point in time.
@@ -66,7 +73,7 @@ export interface Control extends AbortController, EventListenerObject {
   /**
    * The root node of this control.
    */
-  readonly root?: ParentNode;
+  readonly root?: RootNode;
   /**
    * The source of this control, may be an element attribute, or
    * a CSS style rule.
@@ -87,9 +94,13 @@ export interface Control extends AbortController, EventListenerObject {
   /**
    * Return the nodes that this Control applies to.
    */
-  nodes(): Iterable<Node>;
+  nodes(): ControlNodes;
   /**
    * Determines whether the control is no longer active.
    */
   isDead(): boolean;
+  /**
+   * Execute the pipeline of the control and return the final result
+   */
+  execPipeline(event: Event): Promise<ActionResult | void>;
 }

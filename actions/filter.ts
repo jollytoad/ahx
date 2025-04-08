@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 export const filter_nodes: ActionConstruct = (...args) => {
   const [, cssPropName, ...values] = validate(args);
@@ -27,7 +28,7 @@ export const filter_targets: ActionConstruct = (...args) => {
 
 const hasStylePropValue =
   (cssPropName: string, values: string[]) => (node: Node): boolean => {
-    if (!(node instanceof Element)) return false;
+    if (!(isElement(node))) return false;
     const value = getComputedStyle(node).getPropertyValue(cssPropName!);
     if (values.length === 0) {
       return !!value;

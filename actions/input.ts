@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement, isNode } from "@ahx/common/guards.ts";
 
 export const input: ActionConstruct = (...args) => {
   const [op, name, ...rest] = args;
@@ -15,9 +16,12 @@ export const input: ActionConstruct = (...args) => {
       case "remove":
         // Only remove hidden input element
         for (const target of targets) {
-          if (target instanceof HTMLFormElement) {
+          if (isFormElement(target)) {
             const input = target.elements.namedItem(name);
-            if (input instanceof HTMLInputElement && input.type === "hidden") {
+            if (
+              isElement<HTMLInputElement>(input, "input") &&
+              input.type === "hidden"
+            ) {
               input.remove();
             }
             // TODO: what would be the expected behaviour for visible elements?
@@ -27,25 +31,23 @@ export const input: ActionConstruct = (...args) => {
       case "get": {
         const result = { nodes: [] as Node[], texts: [] as string[] };
         for (const target of targets) {
-          if (target instanceof HTMLFormElement) {
+          if (isFormElement(target)) {
             const input = target.elements.namedItem(name);
-            if (input instanceof NodeList) {
-              result.nodes.push(...input);
-            } else if (input instanceof Node) {
+            if (isNode(input)) {
               result.nodes.push(input);
+            } else if (input) {
+              result.nodes.push(...input);
             }
-            if (input instanceof RadioNodeList) {
-              if (input.value) {
+            if (hasValue(input) && input.value) {
+              if (typeof input.value === "string") {
                 result.texts.push(input.value);
               } else {
                 result.texts.push(
                   ...[...input].flatMap((node) =>
-                    node instanceof HTMLInputElement ? [node.value] : []
+                    hasValue(node) ? [node.value] : []
                   ),
                 );
               }
-            } else if (input instanceof HTMLInputElement) {
-              result.texts.push(input.value);
             }
           }
         }
@@ -54,13 +56,13 @@ export const input: ActionConstruct = (...args) => {
     }
 
     for (const target of targets) {
-      if (target instanceof HTMLFormElement) {
+      if (isFormElement(target)) {
         const input = target.elements.namedItem(name);
         const newValues = (argsValue ? [argsValue] : texts) ?? [];
 
         switch (op) {
           case "join": {
-            if (input instanceof HTMLInputElement) {
+            if (hasValue(input)) {
               const currValue = input.value;
               input.value = (currValue ? [currValue, ...newValues] : newValues)
                 .join(" ");
@@ -89,4 +91,12 @@ function createInput(name: string, value: string, document: Document) {
   input.name = name;
   input.value = value;
   return input;
+}
+
+function isFormElement(node: unknown): node is HTMLFormElement {
+  return isElement<HTMLFormElement>(node, "form");
+}
+
+function hasValue(node: unknown): node is { value: string } {
+  return !!node && typeof node === "object" && "value" in node;
 }

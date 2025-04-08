@@ -1,3 +1,5 @@
+import type { PayloadNodes, TargetNodes } from "./dom.ts";
+
 /**
  * The result object that an Action can return.
  * This is merged into the ActionContext before being
@@ -7,7 +9,7 @@ export interface ActionResult {
   /**
    * The target for any DOM actions
    */
-  targets?: Node[];
+  targets?: TargetNodes;
   /**
    * A text representation of the payload.
    */
@@ -15,7 +17,7 @@ export interface ActionResult {
   /**
    * A DOM Nodes payload (should be accompanied by a text payload if possible)
    */
-  nodes?: Array<Node> | NodeList | Iterable<Node> | AsyncIterable<Node>;
+  nodes?: PayloadNodes;
   /**
    * Prep for a future fetch request, or a Request that has been made.
    */

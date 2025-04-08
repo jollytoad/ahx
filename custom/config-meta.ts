@@ -1,5 +1,6 @@
 import type { Config, ConfigKey } from "@ahx/types";
 import { DEFAULT_CONFIG, META_PREFIX } from "./config-default.ts";
+import { isAttr, isDocument, isElement, isNode } from "@ahx/common/guards.ts";
 
 const documentConfigCache = new WeakMap<Document, Config>();
 
@@ -10,10 +11,10 @@ export function getConfig<K extends ConfigKey>(
   const config = documentConfig(document);
   const exclude = new Set<ConfigKey>();
 
-  if (node instanceof Attr) {
+  if (isAttr(node)) {
     node = node.ownerElement;
   }
-  if (node instanceof Node && !(node instanceof Element)) {
+  if (isNode(node) && !isElement(node)) {
     node = node.parentElement ?? node.parentNode ?? null;
   }
 
@@ -23,9 +24,9 @@ export function getConfig<K extends ConfigKey>(
 }
 
 function documentConfig(node: unknown): Config {
-  const document = node instanceof Document
+  const document = isDocument(node)
     ? node
-    : node instanceof Node
+    : isNode(node)
     ? node.ownerDocument
     : null;
   if (!document) return DEFAULT_CONFIG;

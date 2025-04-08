@@ -1,4 +1,5 @@
 import type { ActionContext } from "@ahx/types";
+import { isDocument, isElement, isNode, isShadowRoot } from "./guards.ts";
 
 export function validateSelector(...args: string[]) {
   // TODO: better validation
@@ -28,8 +29,8 @@ export function extendedSelector(
   { control, event }: ActionContext,
   ...args: string[]
 ): Node[] {
-  const rootScope = control.root instanceof Node ? [control.root] : [];
-  const eventScope = event.target instanceof Node ? [event.target] : [];
+  const rootScope = isNode(control.root) ? [control.root] : [];
+  const eventScope = isNode(event.target) ? [event.target] : [];
 
   let [op, ...rest] = args;
   let limit: "first" | "last" | "all" = "all";
@@ -73,7 +74,7 @@ export function extendedSelector(
     case "closest": {
       return forScope(
         relativeScope,
-        (node) => node instanceof Element ? node.closest(selector) : null,
+        (node) => isElement(node) ? node.closest(selector) : null,
       );
     }
     case "previous": {
@@ -131,9 +132,9 @@ const forScopeFns = {
   all(scope: Scope, callback: (node: Node) => Node[] | Node | null): Node[] {
     const results = new Set<Node>();
     for (const node of scope) {
-      if (node instanceof Node) {
+      if (isNode(node)) {
         const found = callback(node);
-        if (found instanceof Node) {
+        if (isNode(found)) {
           results.add(found);
         } else if (found) {
           found.forEach((n) => results.add(n));
@@ -145,9 +146,9 @@ const forScopeFns = {
 
   first(scope: Scope, callback: (node: Node) => Node[] | Node | null): Node[] {
     for (const node of scope) {
-      if (node instanceof Node) {
+      if (isNode(node)) {
         const found = callback(node);
-        if (found instanceof Node) {
+        if (isNode(found)) {
           return [found];
         } else if (found && found[0]) {
           return [found[0]];
@@ -160,9 +161,9 @@ const forScopeFns = {
   last(scope: Scope, callback: (node: Node) => Node[] | Node | null): Node[] {
     let last: Node | undefined;
     for (const node of scope) {
-      if (node instanceof Node) {
+      if (isNode(node)) {
         const found = callback(node);
-        if (found instanceof Node) {
+        if (isNode(found)) {
           last = found;
         } else if (found && found.length) {
           last = found[found.length - 1]!;
@@ -178,11 +179,11 @@ function findSibling(
   method: "previousSibling" | "nextSibling",
   selector?: string,
 ) {
-  if (start instanceof Node) {
+  if (isNode(start)) {
     let sibling = start[method];
     while (sibling) {
       if (
-        !selector || (sibling instanceof Element && sibling.matches(selector))
+        !selector || (isElement(sibling) && sibling.matches(selector))
       ) {
         return [sibling];
       }
@@ -193,21 +194,17 @@ function findSibling(
 }
 
 function getDocument(node: Node): Document | null {
-  return node instanceof Document ? node : node.ownerDocument;
+  return isDocument(node) ? node : node.ownerDocument;
 }
 
 function getShadowRoot(node: Node): ShadowRoot | null {
-  return node instanceof ShadowRoot
-    ? node
-    : node instanceof Element
-    ? node.shadowRoot
-    : null;
+  return isShadowRoot(node) ? node : isElement(node) ? node.shadowRoot : null;
 }
 
 function getHost(node: Node): Element | null {
-  return node instanceof ShadowRoot
+  return isShadowRoot(node)
     ? node.host
-    : node instanceof Element
+    : isElement(node)
     ? node.shadowRoot?.host ?? null
     : null;
 }

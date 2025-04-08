@@ -1,5 +1,6 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 import { getFormDetails } from "./form-details.ts";
+import { isNode } from "./guards.ts";
 
 const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
@@ -56,9 +57,7 @@ export const fetchAction =
 
     const isBodyMethod = bodyMethods.has(method.toLowerCase());
 
-    const base = target instanceof Node
-      ? target.baseURI
-      : control.root?.baseURI;
+    const base = isNode(target) ? target.baseURI : control.root?.baseURI;
     url = new URL(url, base);
 
     headers.set("ahx-pipeline", control.toString());

@@ -1,11 +1,12 @@
 import type { AttrFeature, Context, RecurseFeature } from "@ahx/types";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
+import { isElement } from "@ahx/common/guards.ts";
 
 export function* mutationRecordDetector(
   node: unknown,
   context?: Context,
 ): Iterable<RecurseFeature | AttrFeature> {
-  if (node instanceof MutationRecord) {
+  if (isMutationRecord(node)) {
     switch (node.type) {
       case "childList": {
         if (node.removedNodes?.length) {
@@ -27,7 +28,7 @@ export function* mutationRecordDetector(
       case "attributes": {
         const element = node.target;
         const name = node.attributeName;
-        if (name && name.includes("-") && element instanceof Element) {
+        if (name && name.includes("-") && isElement(element)) {
           const attr = element.getAttributeNode(node.attributeName) ??
             undefined;
           yield {
@@ -47,3 +48,7 @@ export function* mutationRecordDetector(
 }
 
 export default mutationRecordDetector;
+
+function isMutationRecord(node: unknown): node is MutationRecord {
+  return globalThis.MutationRecord && node instanceof globalThis.MutationRecord;
+}

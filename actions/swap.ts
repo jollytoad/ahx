@@ -1,5 +1,6 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 import { swap as doSwap, type SwapOp } from "@ahx/common/swap.ts";
+import { isElement } from "@ahx/common/guards.ts";
 
 export const swap: ActionConstruct = (...args) => {
   const op: SwapOp = args[0] as SwapOp ?? "inner";
@@ -14,7 +15,7 @@ export const swap: ActionConstruct = (...args) => {
     }
 
     if (
-      !nodes && !texts && event.target instanceof Element &&
+      !nodes && !texts && isElement(event.target) &&
       event.target !== control.root
     ) {
       nodes = [event.target];

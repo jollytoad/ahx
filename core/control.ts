@@ -2,6 +2,7 @@ import type {
   Action,
   ActionContext,
   ActionDecl,
+  ActionResult,
   Control,
   ControlDecl,
   ControlSource,
@@ -12,6 +13,8 @@ import { parsePipeline, stringifyPipeline } from "./parse-pipeline.ts";
 import { execPipeline } from "./exec-pipeline.ts";
 import { isActionEvent } from "./action-event.ts";
 import { createAction } from "./action.ts";
+import { getConfig } from "@ahx/custom/config.ts";
+import { isDocument, isNode, isShadowRoot } from "@ahx/common/guards.ts";
 
 export async function createControl(decl: ControlDecl): Promise<Control> {
   const { root, pipelineStr } = decl;
@@ -26,7 +29,8 @@ function createActions(
   decls: ActionDecl[],
   root: ParentNode,
 ): Promise<Action[]> {
-  return Promise.all(decls.map((decl) => createAction(decl, root)));
+  const config = getConfig(root, "actionModulePrefix");
+  return Promise.all(decls.map((decl) => createAction(decl, config)));
 }
 
 class ControlImpl implements Control {
@@ -75,14 +79,14 @@ class ControlImpl implements Control {
   nodes(): Iterable<Node> {
     return this.#ruleNodes
       ? this.#ruleNodes?.apply(this)
-      : this.source instanceof Node
+      : isNode(this.source)
       ? [this.source]
       : [];
   }
 
   #doNotHandle(event: Event): boolean {
     return this.isDead() ||
-      !(event.target instanceof Node) ||
+      !isNode(event.target) ||
       (isActionEvent(event) &&
         (event.eventPhase !== Event.AT_TARGET || event.context.break ||
           event.context.signal.aborted)) ||
@@ -91,17 +95,16 @@ class ControlImpl implements Control {
 
   #initialTarget(event: Event): Node | undefined {
     const target = this.isRule ? event.target : this.source;
-    if (target instanceof Node && !this.#doNotHandle(event)) {
+    if (isNode(target) && !this.#doNotHandle(event)) {
       return target;
     }
   }
 
-  handleEvent(event: Event): void {
+  #initialContext(event: Event): ActionContext | undefined {
     const target = this.#initialTarget(event);
-
     if (!target) return;
 
-    const context: ActionContext = {
+    return {
       trace: crypto.randomUUID(),
       event,
       targets: [target],
@@ -110,8 +113,15 @@ class ControlImpl implements Control {
       control: this,
       index: 0,
     };
+  }
 
-    const resultPromise = execPipeline(context);
+  execPipeline(event: Event): Promise<ActionResult | void> {
+    const context = this.#initialContext(event);
+    return context ? execPipeline(context) : Promise.resolve();
+  }
+
+  handleEvent(event: Event): void {
+    const resultPromise = this.execPipeline(event);
 
     if (isActionEvent(event)) {
       event.addResult(resultPromise);
@@ -121,9 +131,9 @@ class ControlImpl implements Control {
   #isDetached(): boolean {
     const target = this.eventTarget;
     if (!target) return true;
-    if (target instanceof Document) return false;
-    if (target instanceof ShadowRoot) return !target.host;
-    if (target instanceof Node) return !target.parentNode;
+    if (isDocument(target)) return false;
+    if (isShadowRoot(target)) return !target.host;
+    if (isNode(target)) return !target.parentNode;
     return false;
   }
 

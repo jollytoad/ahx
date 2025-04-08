@@ -1,3 +1,5 @@
+import { isElement } from "./guards.ts";
+
 export interface FormDetails {
   formData: FormData;
   request: {
@@ -12,18 +14,18 @@ export function getFormDetails(
   node?: EventTarget | null,
   event?: Event,
 ): FormDetails | undefined {
-  const form = node instanceof HTMLFormElement
+  const form = isElement<HTMLFormElement>(node, "form")
     ? node
-    : node && "form" in node && node.form instanceof HTMLFormElement
+    : node && "form" in node && isElement<HTMLFormElement>(node.form, "form")
     ? node.form
-    : node instanceof Element
+    : isElement(node)
     ? node.closest("form")
     : null;
 
   if (form) {
     const submitter = event instanceof SubmitEvent && event.submitter
       ? event.submitter
-      : node instanceof Element
+      : isElement(node)
       ? node
       : null;
     const method = submitter?.getAttribute("formmethod") ?? form.method;

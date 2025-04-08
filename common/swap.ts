@@ -1,3 +1,5 @@
+import { isElement, isNode, isShadowRoot } from "./guards.ts";
+
 export type SwapOp =
   | "none"
   | "inner"
@@ -20,19 +22,19 @@ export function swap(
   target?: Node | null,
   node?: Node | string | null,
 ): Node | undefined {
-  return (target instanceof Node && swapHandlers[op]?.(target, node ?? null)) ||
+  return (isNode(target) && swapHandlers[op]?.(target, node ?? null)) ||
     undefined;
 }
 
 type SwapHandler = (target: Node, node: Node | string | null) => Node | void;
 
 const swapAdjacent = (pos: InsertPosition): SwapHandler => (target, node) => {
-  if (target instanceof Element && typeof node === "string") {
+  if (isElement(target) && typeof node === "string") {
     target.insertAdjacentHTML(pos, node);
     // TODO: return last element inserted
-  } else if (target instanceof Element && node instanceof Element) {
+  } else if (isElement(target) && isElement(node)) {
     return target.insertAdjacentElement(pos, node) ?? undefined;
-  } else if (target instanceof Node && node instanceof Node) {
+  } else if (isNode(target) && isNode(node)) {
     switch (pos) {
       case "beforebegin":
         return target.parentNode?.insertBefore(node, target);
@@ -52,16 +54,16 @@ const swapAdjacent = (pos: InsertPosition): SwapHandler => (target, node) => {
 
 const swapInner: SwapHandler = (target, node) => {
   if (
-    (target instanceof Element || target instanceof ShadowRoot) && node !== null
+    (isElement(target) || isShadowRoot(target)) && node !== null
   ) {
     if (typeof node === "string") {
       target.innerHTML = node;
       return target.lastChild ?? undefined;
-    } else if (node instanceof Node) {
+    } else if (isNode(node)) {
       target.replaceChildren(node);
       return node;
     }
-  } else if (node instanceof Node) {
+  } else if (isNode(node)) {
     while (target.lastChild) {
       target.removeChild(target.lastChild);
     }
@@ -71,18 +73,18 @@ const swapInner: SwapHandler = (target, node) => {
 };
 
 const swapOuter: SwapHandler = (target, node) => {
-  if (target instanceof Element) {
+  if (isElement(target)) {
     const { parentNode, nextSibling } = target;
     if (typeof node === "string") {
       target.outerHTML = node;
       return (nextSibling
         ? nextSibling.previousSibling
         : parentNode?.lastChild) ?? undefined;
-    } else if (node instanceof Node) {
+    } else if (isNode(node)) {
       target.replaceWith(node);
       return node;
     }
-  } else if (target.parentNode && node instanceof Node) {
+  } else if (target.parentNode && isNode(node)) {
     target.parentNode.replaceChild(target, node);
     return node;
   }
@@ -91,9 +93,10 @@ const swapOuter: SwapHandler = (target, node) => {
 const swapText: SwapHandler = (target, node) => {
   const text = typeof node === "string"
     ? node
-    : node instanceof HTMLElement
+    : isElement(node) && "innerText" in node &&
+        typeof node.innerText === "string"
     ? node.innerText
-    : node instanceof Node
+    : node
     ? node.textContent
     : null;
 
@@ -111,7 +114,7 @@ const swapHandlers: Record<SwapOp, SwapHandler> = {
     target.parentNode?.removeChild(target);
   },
   empty(target) {
-    if (target instanceof Element) {
+    if (isElement(target)) {
       target.replaceChildren();
     } else {
       while (target.lastChild) {

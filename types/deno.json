@@ -10,6 +10,7 @@
     "./control.ts": "./control.ts",
     "./custom-config.ts": "./custom-config.ts",
     "./custom-detectors.ts": "./custom-detectors.ts",
+    "./dom.ts": "./dom.ts",
     "./feature.ts": "./feature.ts",
     "./general.ts": "./general.ts",
     ".": "./mod.ts"

@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-window
 import type { ActionConstruct, ActionResult } from "@ahx/types";
 import type { DOMPurify } from "dompurify";
+import { isNode } from "@ahx/common/guards.ts";
 
 export type SanitizeOp = "fragment" | "node" | "html";
 
@@ -42,7 +43,7 @@ export const sanitize: ActionConstruct = async (...args) => {
 
     const sanitized: unknown = DOMPurify.sanitize(content);
 
-    if (sanitized instanceof Node) {
+    if (isNode(sanitized)) {
       return { nodes: [sanitized], texts: undefined };
     } else if (typeof sanitized === "string") {
       return { nodes: undefined, texts: [sanitized] };

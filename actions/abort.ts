@@ -1,5 +1,6 @@
 import type { ActionConstruct } from "@ahx/types";
 import { getControl } from "@ahx/common/controls.ts";
+import { isElement } from "@ahx/common/guards.ts";
 
 /**
  * Abort an active control pipeline.
@@ -21,7 +22,7 @@ export const abort: ActionConstruct = (...args) => {
       targetControl?.abort(context);
     } else if (targets) {
       for (const target of targets) {
-        if (target instanceof Element) {
+        if (isElement(target)) {
           (await getControl(target, eventType ?? event.type))?.abort();
         }
       }

@@ -1,4 +1,5 @@
 import type { ActionContext } from "@ahx/types";
+import { isNode } from "./guards.ts";
 
 export async function getSourceNodes(
   context: ActionContext,
@@ -10,7 +11,7 @@ export async function getSourceNodes(
     const text = await context.response.text();
     return [Document.parseHTMLUnsafe(text)];
   }
-  if (context.event.target instanceof Node) {
+  if (isNode(context.event.target)) {
     return [context.event.target];
   }
   if (context.control.root) {

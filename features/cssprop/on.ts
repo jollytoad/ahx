@@ -1,6 +1,7 @@
 import type { Control, ControlSource, CSSPropertyFeature } from "@ahx/types";
 import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
+import { isElement, isNode, isShadowRoot } from "@ahx/common/guards.ts";
 
 export default function (feature: CSSPropertyFeature): void {
   if (!isParentNode(feature.context)) return;
@@ -27,7 +28,7 @@ export default function (feature: CSSPropertyFeature): void {
 }
 
 function isParentNode(node: unknown): node is ParentNode {
-  return node instanceof Node && "children" in node;
+  return isNode(node) && "children" in node;
 }
 
 const selectorTextRule = {
@@ -38,7 +39,7 @@ const selectorTextRule = {
         case ":root":
           return [root];
         case ":host":
-          return root instanceof ShadowRoot ? [root.host] : [];
+          return isShadowRoot(root) ? [root.host] : [];
         default:
           return root.querySelectorAll(source.selectorText);
       }
@@ -52,9 +53,9 @@ const selectorTextRule = {
         case ":root":
           return node === root;
         case ":host":
-          return root instanceof ShadowRoot && node === root.host;
+          return isShadowRoot(root) && node === root.host;
         default:
-          return node instanceof Element && node.matches(source.selectorText);
+          return isElement(node) && node.matches(source.selectorText);
       }
     }
     return false;

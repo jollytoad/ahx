@@ -1,11 +1,12 @@
 import type { AttrFeature, Context } from "@ahx/types";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
+import { isElement } from "@ahx/common/guards.ts";
 
 export function* customAttrDetector(
   node: unknown,
   context?: Context,
 ): Iterable<AttrFeature> {
-  if (node instanceof Element && node.hasAttributes()) {
+  if (isElement(node)) {
     for (const attr of node.attributes) {
       if (attr.name.includes("-")) {
         yield {

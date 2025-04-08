@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement, isNode } from "@ahx/common/guards.ts";
 
 // TODO: selecting the content of a template could be a feature of the extended selector
 
@@ -14,9 +15,14 @@ export const template: ActionConstruct = (...args) => {
 
   return ({ control }): ActionResult => {
     const template = control.root?.querySelector(selector);
-    if (template instanceof HTMLTemplateElement) {
+    if (isTemplateElement(template)) {
       return { nodes: template.content.children, texts: undefined };
     }
     return { break: true };
   };
 };
+
+function isTemplateElement(node: unknown): node is HTMLTemplateElement {
+  return isElement<HTMLTemplateElement>(node, "template") &&
+    isNode(node.content, 11);
+}

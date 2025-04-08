@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 export const attr_get: ActionConstruct = (...args) => {
   const [_op, name] = validate(args);
@@ -8,7 +9,7 @@ export const attr_get: ActionConstruct = (...args) => {
 
     const result = { nodes: [] as Node[], texts: [] as string[] };
     for (const target of targets) {
-      if (target instanceof Element) {
+      if (isElement(target)) {
         const attr = target.getAttributeNode(name);
         if (attr) {
           result.nodes.push(attr);
@@ -27,7 +28,7 @@ export const attr_remove: ActionConstruct = (...args) => {
     if (!targets) return;
 
     for (const target of targets) {
-      if (target instanceof Element) {
+      if (isElement(target)) {
         target.removeAttribute(name);
       }
     }
@@ -49,7 +50,7 @@ const attrModifyAction = (
     if (!targets) return;
 
     for (const target of targets) {
-      if (target instanceof Element) {
+      if (isElement(target)) {
         const currValue = target.getAttribute(name) ?? undefined;
         const newValue = fn(currValue, argsValue ?? texts?.[0], name);
 

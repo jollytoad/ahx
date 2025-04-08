@@ -1,5 +1,6 @@
 import type { ActionContext, ActionResult } from "@ahx/types";
 import { COLLAPSED, PREFIX, QUEUE } from "./config.ts";
+import { isNode } from "@ahx/common/guards.ts";
 
 const BOLD = "font-weight: bold;";
 const CODE = "background-color: highlight;";
@@ -35,7 +36,7 @@ function dump(trace: string) {
 
 export function beforePipeline(context: ActionContext): void {
   const source = context.control.source;
-  const s = source instanceof Node ? "%o" : "%O";
+  const s = isNode(source) ? "%o" : "%O";
 
   log(
     context.trace,

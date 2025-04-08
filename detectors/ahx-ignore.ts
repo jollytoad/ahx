@@ -1,13 +1,14 @@
 import type { IgnoreFeature } from "@ahx/types";
+import { isCSSStyleRule, isElement } from "@ahx/common/guards.ts";
 
 export function* ahxIgnoreDetector(
   node: unknown,
 ): Iterable<IgnoreFeature> {
-  if (node instanceof Element) {
+  if (isElement(node)) {
     if (node.hasAttribute("ahx-ignore")) {
       yield { ignore: true };
     }
-  } else if (node instanceof CSSStyleRule) {
+  } else if (isCSSStyleRule(node)) {
     if (node.style.getPropertyValue("--ahx-ignore")) {
       yield { ignore: true };
     }

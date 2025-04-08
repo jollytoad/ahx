@@ -1,12 +1,13 @@
 import type { Context, RecurseFeature } from "@ahx/types";
+import { isElement, isShadowRoot } from "@ahx/common/guards.ts";
 
 export function* recurseShadowRoot(
   node: unknown,
   _context?: Context,
 ): Iterable<RecurseFeature> {
-  const shadow = node instanceof ShadowRoot
+  const shadow = isShadowRoot(node)
     ? node
-    : node instanceof Element && node.shadowRoot
+    : isElement(node) && node.shadowRoot
     ? node.shadowRoot
     : null;
 

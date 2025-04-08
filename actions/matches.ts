@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 /**
  * Filter the targets that match the given selector,
@@ -13,7 +14,7 @@ export const matches: ActionConstruct = (...args) => {
 
   return ({ targets }): ActionResult | undefined => {
     const filtered = targets?.filter((target) =>
-      target instanceof Element && target.matches(selector)
+      isElement(target) && target.matches(selector)
     );
     return filtered?.length ? { targets: filtered } : { break: true };
   };

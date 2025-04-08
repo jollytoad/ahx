@@ -1,4 +1,5 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
+import { isElement } from "@ahx/common/guards.ts";
 
 /**
  * Select nodes by the id supplied in an attribute(s) of the current target(s).
@@ -15,9 +16,9 @@ export const target_attr: ActionConstruct = (_op, ...args) => {
     const targets = new Set<Node>();
 
     for (const node of context.targets ?? []) {
-      if (node instanceof Element) {
+      if (isElement(node)) {
         const root = node.getRootNode();
-        if (root instanceof Document || root instanceof DocumentFragment) {
+        if (isDocumentOrFragment(root)) {
           for (const attr of args) {
             const ids = node.getAttribute(attr)?.split(/\s+/) ?? [];
             for (const id of ids) {
@@ -32,3 +33,10 @@ export const target_attr: ActionConstruct = (_op, ...args) => {
     return targets.size ? { targets: [...targets] } : { break: true };
   };
 };
+
+function isDocumentOrFragment(
+  node: unknown,
+): node is { getElementById(id: string): Element | null } {
+  // deno-lint-ignore no-explicit-any
+  return typeof (node as any)?.getElementById === "function";
+}

@@ -1,11 +1,12 @@
 import type { Context, ElementFeature } from "@ahx/types";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
+import { isElement } from "@ahx/common/guards.ts";
 
 export function* customElementDetector(
   node: unknown,
   context?: Context,
 ): Iterable<ElementFeature> {
-  if (node instanceof Element && node.localName.includes("-")) {
+  if (isElement(node) && node.localName.includes("-")) {
     yield {
       kind: "element",
       context,
