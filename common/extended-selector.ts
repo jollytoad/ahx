@@ -26,11 +26,11 @@ export function validateSelector(...args: string[]) {
  */
 export function extendedSelector(
   scope: Node[] | undefined,
-  { control, event }: ActionContext,
+  { control, initialTarget }: ActionContext,
   ...args: string[]
 ): Node[] {
   const rootScope = isNode(control.root) ? [control.root] : [];
-  const eventScope = isNode(event.target) ? [event.target] : [];
+  const eventScope = isNode(initialTarget) ? [initialTarget] : [];
 
   let [op, ...rest] = args;
   let limit: "first" | "last" | "all" = "all";

@@ -8,13 +8,13 @@ import { isElement } from "@ahx/common/guards.ts";
 export const abort: ActionConstruct = (...args) => {
   const [eventType] = args;
   return async (context): Promise<void> => {
-    const { control, targets, event } = context;
+    const { control, targets, event, initialTarget } = context;
     const source = control.source;
 
-    // If we are in a rule control with a single target matching the event target,
+    // If we are in a rule control with a single target matching the initial target,
     // then assume we should abort the source of the control
     if (
-      control.isRule && targets?.length === 1 && targets[0] === event.target
+      control.isRule && targets?.length === 1 && targets[0] === initialTarget
     ) {
       const targetControl = eventType
         ? await getControl(source, eventType)

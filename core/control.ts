@@ -107,6 +107,7 @@ class ControlImpl implements Control {
     return {
       trace: crypto.randomUUID(),
       event,
+      initialTarget: target,
       targets: [target],
       signal: this.signal,
       ...isActionEvent(event) ? event.context : undefined,

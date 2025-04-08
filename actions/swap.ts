@@ -6,7 +6,7 @@ export const swap: ActionConstruct = (...args) => {
   const op: SwapOp = args[0] as SwapOp ?? "inner";
 
   return async (
-    { targets, texts, nodes, response, event, control },
+    { targets, texts, nodes, response, initialTarget, control },
   ): Promise<ActionResult | undefined> => {
     if (!targets) return;
 
@@ -15,10 +15,10 @@ export const swap: ActionConstruct = (...args) => {
     }
 
     if (
-      !nodes && !texts && isElement(event.target) &&
-      event.target !== control.root
+      !nodes && !texts && isElement(initialTarget) &&
+      initialTarget !== control.root
     ) {
-      nodes = [event.target];
+      nodes = [initialTarget];
     }
 
     if (nodes) {

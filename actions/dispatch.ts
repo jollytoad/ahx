@@ -1,5 +1,5 @@
 import type { ActionConstruct } from "@ahx/types";
-import * as log from "@ahx/custom/log/event.ts";
+import { dispatchToAll } from "@ahx/common/dispatch-to-all.ts";
 
 export const dispatch: ActionConstruct = (...args) => {
   const [eventType] = args;
@@ -8,25 +8,12 @@ export const dispatch: ActionConstruct = (...args) => {
     throw new TypeError("An event type is required");
   }
 
-  return (context) => {
-    if (!context.targets) return;
-
-    let shouldBreak = false;
-
-    for (const target of context.targets) {
-      const event = new CustomEvent(eventType, {
+  return (context) =>
+    dispatchToAll(context.targets, () =>
+      new CustomEvent(eventType, {
         bubbles: true,
         cancelable: true,
+        composed: true,
         detail: context,
-      });
-
-      log.event(event, target);
-
-      if (target.dispatchEvent(event) === false) {
-        shouldBreak = true;
-      }
-    }
-
-    return shouldBreak ? { break: true } : undefined;
-  };
+      }));
 };

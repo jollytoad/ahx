@@ -11,8 +11,8 @@ export async function getSourceNodes(
     const text = await context.response.text();
     return [Document.parseHTMLUnsafe(text)];
   }
-  if (isNode(context.event.target)) {
-    return [context.event.target];
+  if (isNode(context.initialTarget)) {
+    return [context.initialTarget];
   }
   if (context.control.root) {
     return [context.control.root];

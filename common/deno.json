@@ -4,6 +4,7 @@
   "license": "MIT",
   "exports": {
     "./controls.ts": "./controls.ts",
+    "./dispatch-to-all.ts": "./dispatch-to-all.ts",
     "./extended-selector.ts": "./extended-selector.ts",
     "./fetch-action.ts": "./fetch-action.ts",
     "./form-details.ts": "./form-details.ts",

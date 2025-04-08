@@ -12,6 +12,13 @@
           aria-controls |> attr add hidden |> target this |> attr add
           aria-selected |> target attr aria-controls |> attr remove hidden;
       }
+      [role="tab"] {
+        --on-keyup: key dispatch ArrowLeft ArrowRight;
+        --on-keyup-ArrowLeft: target xpath
+          preceding-sibling::*[@role="tab"][1] |> focus |> dispatch click;
+        --on-keyup-ArrowRight: target xpath
+          following-sibling::*[@role="tab"][1] |> focus |> dispatch click;
+      }
     </style>
   </head>
   <body>

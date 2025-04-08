@@ -19,6 +19,10 @@ export interface ActionContext extends ActionResult {
    */
   event: Event;
   /**
+   * The initial target of the pipeline
+   */
+  initialTarget: EventTarget;
+  /**
    * The current Action being executed
    */
   action?: Action;
