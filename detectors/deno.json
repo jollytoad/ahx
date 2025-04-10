@@ -1,6 +1,6 @@
 {
   "name": "@ahx/detectors",
-  "version": "0.5.0-alpha.10",
+  "version": "0.5.0-alpha.11",
   "license": "MIT",
   "exports": {
     "./ahx-ignore.ts": "./ahx-ignore.ts",
