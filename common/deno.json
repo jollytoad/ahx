@@ -11,6 +11,7 @@
     "./guards.ts": "./guards.ts",
     "./html-body-element-parser-stream.ts": "./html-body-element-parser-stream.ts",
     "./potential-bindings.ts": "./potential-bindings.ts",
+    "./roots.ts": "./roots.ts",
     "./source-nodes.ts": "./source-nodes.ts",
     "./swap.ts": "./swap.ts",
     "./xpath-selector.ts": "./xpath-selector.ts"

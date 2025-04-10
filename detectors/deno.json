@@ -13,6 +13,7 @@
     "./recurse-css-rules.ts": "./recurse-css-rules.ts",
     "./recurse-document.ts": "./recurse-document.ts",
     "./recurse-element.ts": "./recurse-element.ts",
+    "./recurse-feature.ts": "./recurse-feature.ts",
     "./recurse-shadow-root.ts": "./recurse-shadow-root.ts"
   },
   "compilerOptions": {

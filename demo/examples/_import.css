@@ -1,0 +1,8 @@
+h1 {
+  color: green;
+}
+
+button#magic {
+  --on-ready: attr remove disabled;
+  --on-click: swap delete;
+}

@@ -2,6 +2,7 @@ import type { LazyFeatureDetector } from "@ahx/types";
 
 const detectors: LazyFeatureDetector[] = [
   import("@ahx/detectors/ahx-ignore.ts"),
+  import("@ahx/detectors/recurse-feature.ts"),
   import("@ahx/detectors/mutation-record.ts"),
   import("@ahx/detectors/recurse-document.ts"),
   import("@ahx/detectors/observe-body.ts"),

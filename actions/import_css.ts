@@ -1,20 +1,25 @@
-import type { ActionConstruct, ActionResult } from "@ahx/types";
+import type { ActionConstruct, ActionResult, RecurseFeature } from "@ahx/types";
+import { getRoots } from "@ahx/common/roots.ts";
 
 export const import_css: ActionConstruct = (_op, url) => {
   if (!url) {
     throw new TypeError("A URL for a stylesheet is required");
   }
 
-  return ({ targets }): ActionResult | void => {
+  return async ({ targets }): Promise<ActionResult | void> => {
     if (!targets?.length) return;
 
-    for (const target of targets) {
-      if (target.ownerDocument) {
-        const el = target.ownerDocument.createElement("link");
-        el.setAttribute("rel", "stylesheet");
-        el.setAttribute("href", url);
-        target.appendChild(el);
+    const sheet = (await import(url, { with: { type: "css" } })).default;
+
+    const init: RecurseFeature[] = [];
+
+    for (const root of getRoots(targets)) {
+      if (!root.adoptedStyleSheets.includes(sheet)) {
+        root.adoptedStyleSheets.push(sheet);
+        init.push(sheet);
       }
     }
+
+    return { init };
   };
 };
