@@ -10,14 +10,15 @@ export function* recurseFeature(
     } else {
       yield {
         context,
-        ...node
-      }
+        ...node,
+      };
     }
   }
 }
 
 function isRecurseFeature(node: unknown): node is RecurseFeature {
-  return (node as RecurseFeature)?.kind === "recurse" && typeof (node as RecurseFeature)?.children?.[Symbol.iterator] === "function";
+  return (node as RecurseFeature)?.kind === "recurse" &&
+    typeof (node as RecurseFeature)?.children?.[Symbol.iterator] === "function";
 }
 
 export default recurseFeature;
