@@ -8,7 +8,7 @@ export function* recurseDocument(
   if (isDocument(node)) {
     yield {
       kind: "recurse",
-      context: node.body,
+      context: document,
       children: [node.documentElement],
     };
   }

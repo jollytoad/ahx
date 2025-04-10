@@ -1,11 +1,11 @@
 {
   "name": "@ahx/features",
-  "version": "0.5.0-alpha.11",
+  "version": "0.5.0-alpha.12",
   "license": "MIT",
   "exports": {
     "./attr/on.ts": "./attr/on.ts",
     "./cssprop/on.ts": "./cssprop/on.ts",
-    "./observe/body.ts": "./observe/body.ts",
+    "./observe/html.ts": "./observe/html.ts",
     "./observe/shadow.ts": "./observe/shadow.ts"
   },
   "compilerOptions": {

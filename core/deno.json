@@ -1,6 +1,6 @@
 {
   "name": "@ahx/core",
-  "version": "0.5.0-alpha.11",
+  "version": "0.5.0-alpha.12",
   "license": "MIT",
   "exports": {
     "./action-event.ts": "./action-event.ts",

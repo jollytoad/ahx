@@ -1,6 +1,6 @@
 {
   "name": "@ahx/detectors",
-  "version": "0.5.0-alpha.11",
+  "version": "0.5.0-alpha.12",
   "license": "MIT",
   "exports": {
     "./ahx-ignore.ts": "./ahx-ignore.ts",
@@ -8,7 +8,7 @@
     "./custom-css-property.ts": "./custom-css-property.ts",
     "./custom-element.ts": "./custom-element.ts",
     "./mutation-record.ts": "./mutation-record.ts",
-    "./observe-body.ts": "./observe-body.ts",
+    "./observe-html.ts": "./observe-html.ts",
     "./observe-shadow-root.ts": "./observe-shadow-root.ts",
     "./recurse-css-rules.ts": "./recurse-css-rules.ts",
     "./recurse-document.ts": "./recurse-document.ts",

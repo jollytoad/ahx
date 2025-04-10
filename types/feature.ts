@@ -36,7 +36,8 @@ export interface RecurseFeature {
 
 export interface ObserveFeature {
   kind: "observe";
-  context: Node;
+  context?: Context;
+  node: Node;
   bindings?: string[][];
 }
 

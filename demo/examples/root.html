@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html on-ready="class add ahx-ready-from-attr">
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="/inject-ahx.js"></script>
+
+    <style>
+      :root {
+        --on-ready: target html |> class add ahx-ready-from-css;
+      }
+
+      .box {
+        visibility: hidden;
+      }
+
+      .ahx-ready-from-css .show-ready-from-css {
+        visibility: visible !important;
+      }
+      .ahx-ready-from-attr .show-ready-from-attr {
+        visibility: visible !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Controls on the root element</h2>
+
+      <section class="box show-ready-from-css">
+        <p>Control on :root rule</p>
+      </section>
+
+      <section class="box show-ready-from-attr">
+        <p>Control on html attr</p>
+      </section>
+    </main>
+
+    <footer>
+      <a href="/examples">back</a>
+    </footer>
+  </body>
+</html>

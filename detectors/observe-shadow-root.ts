@@ -15,6 +15,7 @@ export function* observeShadowRoot(
     yield {
       kind: "observe",
       context: shadow,
+      node: shadow,
       bindings: [["shadow"]],
     };
   }
