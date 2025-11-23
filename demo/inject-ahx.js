@@ -25,7 +25,7 @@
     // Yeah, I know you're not meant to do this, but this is for the purpose of a hackable demo,
     // I don't recommend doing this on a production site!
     document.writeln(
-      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"></script>`,
+      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.6.2/dist/es-module-shims.js"></script>`,
     );
     document.writeln(
       `<script type="importmap-shim">${JSON.stringify(importmap)}</script>`,
@@ -45,6 +45,6 @@
   }
 
   document.writeln(
-    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.1.3/dist/missing.min.css" ahx-ignore>`,
+    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.2.0/dist/missing.min.css" ahx-ignore>`,
   );
 })();

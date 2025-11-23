@@ -5,7 +5,7 @@ import { relative } from "@std/path/relative";
 import { ensureDir } from "@std/fs/ensure-dir";
 import { walk } from "@std/fs/walk";
 import { readDenoConfig } from "./_utils.ts";
-import strip from "https://ghuc.cc/jollytoad/type-strip@fix-this-param-and-generic-issues/index.ts";
+import strip from "@fcrozatier/type-strip";
 
 const rootPath = import.meta.dirname
   ? resolve(import.meta.dirname, "..")

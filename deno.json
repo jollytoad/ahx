@@ -39,7 +39,8 @@
     "./types"
   ],
   "imports": {
-    "@playwright/test": "npm:@playwright/test@^1.51.1",
-    "typescript": "npm:typescript@^5.8.2"
+    "@fcrozatier/type-strip": "jsr:@fcrozatier/type-strip@^1.4.1",
+    "@playwright/test": "npm:@playwright/test@^1.56.1",
+    "typescript": "npm:typescript@^5.9.3"
   }
 }
