@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("chatbot", async ({ page }) => {
-  const startButton = page.getByText("Start", { exact: true });
+  const startButton = page.getByTestId("start");
   const target = page.getByTestId("target");
   const msg = page.getByTestId("msg");
   const control = page.getByTestId("control");

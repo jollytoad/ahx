@@ -44,7 +44,10 @@
       <h2>Harvest data into forms</h2>
 
       <section class="tool-bar">
-        <button on-click="target .source, [on-harvest] |> dispatch harvest">
+        <button
+          on-click="target .source, [on-harvest] |> dispatch harvest"
+          data-testid="harvest"
+        >
           Harvest
         </button>
         <p on-harvest="attr remove hidden" hidden>
@@ -63,7 +66,7 @@
         <div class="source" data-id="three"></div>
       </section>
 
-      <form class="target1 box">
+      <form class="target1 box" data-testid="rule-input-append">
         <legend class="block titlebar">Target 1 - form</legend>
         <p>
           This should three separate hidden inputs after harvesting, each with a
@@ -76,7 +79,7 @@
         <button>Submit</button>
       </form>
 
-      <form class="target2 box">
+      <form class="target2 box" data-testid="rule-input-join">
         <legend class="block titlebar">Target 2 - form</legend>
         <p>
           This should have one hidden inputs after harvesting of all values,
@@ -99,7 +102,7 @@
         <button>Submit</button>
       </form>
 
-      <div class="target3 box">
+      <div class="target3 box" data-testid="rule-attr-include">
         <strong class="block titlebar">Target 3 - div</strong>
         <p>
           This should have a data-ids attribute containing the three space
@@ -115,6 +118,7 @@
       <form
         class="target4 box"
         on-harvest="target .source |> attr get data-id |> target this |> input append ids"
+        data-testid="inline-input-append"
       >
         <legend class="block titlebar">Target 4 - form</legend>
         <p>This should be like Target 1, but uses an inline event handler.</p>

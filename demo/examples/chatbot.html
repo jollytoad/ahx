@@ -33,7 +33,11 @@
 
       <h2>Test streaming content, like a chatbot</h2>
 
-      <button id="stream" on-click="target #target |> dispatch stream">
+      <button
+        id="stream"
+        on-click="target #target |> dispatch stream"
+        data-testid="start"
+      >
         Start stream
       </button>
       <button id="fetch" on-click="target #target |> dispatch fetch">

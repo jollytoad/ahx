@@ -1,5 +1,12 @@
 import type { ActionResult } from "@ahx/types";
 
+/**
+ * Dispatch an event to all given targets
+ *
+ * @param targets the set of targets
+ * @param createEvent a function to create a unique event for each target
+ * @returns a `break` indicator if any dispatch returns false, otherwise nothing
+ */
 export function dispatchToAll<T extends EventTarget>(
   targets: T[] | undefined,
   createEvent: (target: T) => Event,
