@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="/inject-ahx.js"></script>
+
+    <meta name="color-scheme" content="light dark">
+
+    <style>
+      button[data-color-scheme] {
+        --on-click: attr get data-color-scheme |> target head
+          meta[name="color-scheme"] |> attr set content;
+      }
+      menu {
+        display: flex;
+        justify-content: space-around;
+        list-style-type: none;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Theme picker</h2>
+
+      <menu>
+        <li><button type="button" data-color-scheme="light">Light</button></li>
+        <li><button type="button" data-color-scheme="dark">Dark</button></li>
+        <li>
+          <button type="button" data-color-scheme="light dark">Auto</button>
+        </li>
+      </menu>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>
