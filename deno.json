@@ -40,6 +40,7 @@
     "./types"
   ],
   "imports": {
+    "@deno/graph": "jsr:@deno/graph@^0.104.0",
     "@fcrozatier/type-strip": "jsr:@fcrozatier/type-strip@^1.4.1",
     "@playwright/test": "npm:@playwright/test@1.56.1",
     "typescript": "npm:typescript@^5.9.3"

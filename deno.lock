@@ -2,6 +2,7 @@
   "version": "5",
   "specifiers": {
     "jsr:@b-fuze/deno-dom@~0.1.49": "0.1.49",
+    "jsr:@deno/graph@0.104": "0.104.0",
     "jsr:@denosaurs/plug@1.0.3": "1.0.3",
     "jsr:@fcrozatier/type-strip@^1.2.0": "1.4.1",
     "jsr:@fcrozatier/type-strip@^1.4.1": "1.4.1",
@@ -46,6 +47,9 @@
       "dependencies": [
         "jsr:@denosaurs/plug"
       ]
+    },
+    "@deno/graph@0.104.0": {
+      "integrity": "8e4822b07ea65c8fda34852940ec26ab57686dc74255a13fa63f58e2cba52a4f"
     },
     "@denosaurs/plug@1.0.3": {
       "integrity": "b010544e386bea0ff3a1d05e0c88f704ea28cbd4d753439c2f1ee021a85d4640",
@@ -252,6 +256,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@deno/graph@0.104",
       "jsr:@fcrozatier/type-strip@^1.4.1",
       "npm:@playwright/test@1.56.1",
       "npm:typescript@^5.9.3"
