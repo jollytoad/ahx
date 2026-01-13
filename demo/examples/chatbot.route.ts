@@ -17,7 +17,7 @@ async function* chatty() {
   yield `<span on-ready="target .msg-content |> swap inner"></span>`;
 
   for (let i = 0; i < 20; i++) {
-    yield `<span on-ready="target .msg-content |> swap beforeend">blah-${i} </span>`;
+    yield `<span on-ready="target .msg-content |> swap append">blah-${i} </span>`;
 
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
@@ -27,5 +27,5 @@ async function* chatty() {
   // Revert the target for following top-level elements
   // TODO
 
-  yield `<div on-ready="target .msg |> swap afterend" data-testid="done">Done (should be outside of the message div)</div>`;
+  yield `<div on-ready="target .msg |> swap after" data-testid="done">Done (should be outside of the message div)</div>`;
 }

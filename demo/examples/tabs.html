@@ -54,7 +54,7 @@
           <style>
             :root {
               --on-ready: select head link[rel="stylesheet"], style |> clone
-                |> swap afterbegin;
+                |> swap prepend;
             }
           </style>
 

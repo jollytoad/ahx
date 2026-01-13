@@ -10,31 +10,34 @@ export function createFeatureLoader<
   F extends Feature = Feature,
   V = FeatureInit,
 >(options?: FeatureLoaderOptions<F, V>): FeatureLoader<F, V> {
-
   const options_ = {
-    isValidExport: (detail: FeatureLoaded<F, unknown>): detail is FeatureLoaded<F, V> =>
+    isValidExport: (
+      detail: FeatureLoaded<F, unknown>,
+    ): detail is FeatureLoaded<F, V> =>
       typeof detail.exportValue === "function",
     toModuleSpec: defaultFeatureModuleSpec,
     toExportName: defaultFeatureExportName,
     importModule: defaultImportModule,
-    ...options
-  }
+    ...options,
+  };
 
   return async (feature) => {
     if (!hasBindings(feature)) return { feature };
 
     // Attempt to load all bindings concurrently
-    const promises = feature.bindings.map(moduleBinding => loadBinding(feature, moduleBinding, options_));
+    const promises = feature.bindings.map((moduleBinding) =>
+      loadBinding(feature, moduleBinding, options_)
+    );
 
     // Await the loaded bindings in order, returning the first, most specific binding that loads
     for (const featurePromise of promises) {
-      const loadedFeature = await featurePromise
-      if ('exportValue' in loadedFeature) {
+      const loadedFeature = await featurePromise;
+      if ("exportValue" in loadedFeature) {
         // TODO: record binding
-        return loadedFeature
+        return loadedFeature;
       } else {
         // TODO: record non-binding
-        console.warn('Feature not found', loadedFeature)
+        console.warn("Feature not found", loadedFeature);
       }
     }
 
@@ -43,14 +46,23 @@ export function createFeatureLoader<
   };
 }
 
-function hasBindings<F extends Feature>(feature: F): feature is F & { bindings: string[][] } {
-  return "bindings" in feature && !!feature.bindings && !!feature.bindings.length
+function hasBindings<F extends Feature>(
+  feature: F,
+): feature is F & { bindings: string[][] } {
+  return "bindings" in feature && !!feature.bindings &&
+    !!feature.bindings.length;
 }
 
 async function loadBinding<
   F extends Feature = Feature,
   V = FeatureInit,
->(feature: F, moduleBinding: string[], { toModuleSpec, importModule, isValidExport, toExportName }: Required<FeatureLoaderOptions<F, V>>) {
+>(
+  feature: F,
+  moduleBinding: string[],
+  { toModuleSpec, importModule, isValidExport, toExportName }: Required<
+    FeatureLoaderOptions<F, V>
+  >,
+) {
   let moduleUrl: string | undefined = undefined;
   try {
     const moduleSpec = toModuleSpec(feature, moduleBinding);
