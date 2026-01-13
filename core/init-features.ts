@@ -6,28 +6,37 @@ import type {
 } from "@ahx/types";
 import * as log from "@ahx/custom/log/feature.ts";
 
-let finder: FeatureFinder | undefined;
-let loader: FeatureLoader | undefined;
+let finderPromise: Promise<FeatureFinder> | undefined;
+let loaderPromise: Promise<FeatureLoader> | undefined;
 
 export async function initFeatures(
   context: unknown,
   things: Iterable<unknown> = [context],
 ): Promise<void> {
-  if (!finder) {
-    const { default: detectors } = await import("@ahx/custom/detectors.ts");
-    const { createFeatureFinder } = await import("./feature-finder.ts");
-    finder = await createFeatureFinder(detectors);
+  if (!finderPromise) {
+    finderPromise = (async () => {
+      const [{ default: detectors }, { createFeatureFinder }] = await Promise
+        .all([
+          import("@ahx/custom/detectors.ts"),
+          import("./feature-finder.ts"),
+        ]);
+      return await createFeatureFinder(detectors);
+    })();
   }
 
-  if (!loader) {
-    const { createFeatureLoader } = await import("./feature-loader.ts");
-    loader = createFeatureLoader();
+  if (!loaderPromise) {
+    loaderPromise = (async () => {
+      const { createFeatureLoader } = await import("./feature-loader.ts");
+      return createFeatureLoader();
+    })();
   }
 
+  const finder = await finderPromise;
   const features = finder(things, context);
 
   const loading = new Map<Feature, Promise<FeatureOutcome>>();
 
+  const loader = await loaderPromise;
   for (const feature of features) {
     loading.set(feature, loader(feature));
   }
