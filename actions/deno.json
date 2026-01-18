@@ -40,8 +40,8 @@
     "./template.ts": "./template.ts"
   },
   "imports": {
-    "dompurify": "npm:dompurify@3.2.4",
-    "idiomorph": "npm:idiomorph@0.7.3"
+    "dompurify": "npm:dompurify@3.3.1",
+    "idiomorph": "npm:idiomorph@0.7.4"
   },
   "compilerOptions": {
     "lib": [

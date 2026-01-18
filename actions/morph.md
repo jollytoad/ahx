@@ -16,7 +16,7 @@ Idiomorph module, eg:
 ```json
 {
   "imports": {
-    "idiomorph": "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.3/dist/idiomorph.esm.js"
+    "idiomorph": "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js"
   }
 }
 ```

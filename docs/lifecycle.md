@@ -16,12 +16,12 @@ Here is an example of the head elements required for this situation:
 <head>
   <script
     async
-    src="https://ga.jspm.io/npm:es-module-shims@2.0.10/dist/es-module-shims.js"
+    src="https://ga.jspm.io/npm:es-module-shims@2.8.0/dist/es-module-shims.js"
   ></script>
   <script type="importmap-shim">
     {
       "imports": {
-        "@ahx/": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.8/"
+        "@ahx/": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.13/"
       }
     }
   </script>
@@ -95,7 +95,7 @@ properties:
 {
   "imports": {
     ...
-    "@ahx/custom/detectors.ts": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.8/custom/detectors-no-css.ts"
+    "@ahx/custom/detectors.ts": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.13/custom/detectors-no-css.ts"
   }
 }
 ```

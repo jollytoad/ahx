@@ -13,9 +13,9 @@
       "@ahx/features/element/http/cat.js": "/examples/_http_cat.js",
       "@ahx/features/element/http/cat.ts": "/examples/_http_cat.js",
       "dompurify":
-        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs",
+        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs",
       "idiomorph":
-        "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.3/dist/idiomorph.esm.js",
+        "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
     },
   };
 
@@ -25,7 +25,7 @@
     // Yeah, I know you're not meant to do this, but this is for the purpose of a hackable demo,
     // I don't recommend doing this on a production site!
     document.writeln(
-      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.6.2/dist/es-module-shims.js"></script>`,
+      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.8.0/dist/es-module-shims.js"></script>`,
     );
     document.writeln(
       `<script type="importmap-shim">${JSON.stringify(importmap)}</script>`,
