@@ -1,6 +1,8 @@
 
 import { potentialBindings } from "@ahx/common/potential-bindings.js";
-import * as log from "@ahx/custom/log/feature.js";
+import { featureOutcome } from "@ahx/custom/log/feature.js";
+import { bindingOutcome } from "@ahx/custom/log/binding.js";
+import allowBinding from "@ahx/custom/filter.js";
 import { createFeatureLoader } from "./feature-loader.js";
 import { ACTION_NAME_REGEXP } from "./parse-pipeline.js";
 
@@ -11,6 +13,8 @@ export async function createAction(
   { actionModulePrefix },
 ) {
   const loader = createFeatureLoader({
+    allowBinding,
+    logBinding: bindingOutcome,
     toModuleSpec: (_feature, binding) =>
       `${actionModulePrefix}${binding.join("_")}${EXT}`,
   });
@@ -24,8 +28,9 @@ export async function createAction(
     ),
   });
 
-  if (outcome && "exportValue" in outcome) {
-    log.importFeature(outcome, " ");
+  featureOutcome(outcome, " ");
+
+  if (outcome.status === "loaded") {
     const { feature: { bindings: _, ...decl }, exportValue, moduleUrl } =
       outcome;
     const fn = await exportValue(...decl.args);

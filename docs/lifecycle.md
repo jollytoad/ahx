@@ -259,6 +259,10 @@ resolving and then importing the module specifiers in order:
 2. `@ahx/features/attr/on/magic`
 3. `@ahx/features/attr/on`
 
+(These binding can be filtered using an `allowBinding` function, loaded from
+[`@ahx/custom/filter`](../custom/filter.ts), avoiding attempts to load modules
+that are known to not exist)
+
 If it manages to resolve and import one of these, it then looks for an exported
 function with a name matching these bindings too, but also prioritising any name
 supplied in the hash of the resolve module url, and then falling back to the

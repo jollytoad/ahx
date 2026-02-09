@@ -4,33 +4,37 @@ import { PREFIX } from "./config.js";
 const BOLD = "font-weight: bold;";
 const RESET = "font-weight: normal;";
 
-const loggedImportCache = new Set();
+const loggedCache = new Set();
 
-export function importFeature(
+export function featureOutcome(
   outcome,
   sep = "-",
 ) {
-  const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
-  const kind = outcome.feature.kind;
+  if (outcome.status === "loaded") {
+    const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
+    const kind = outcome.feature.kind ?? "unknown";
 
-  const actionBinding =
-    (exportBinding && exportBinding.length > moduleBinding.length
-      ? exportBinding
-      : moduleBinding).join(sep);
+    const longestBinding =
+      (exportBinding && exportBinding.length > moduleBinding.length
+        ? exportBinding
+        : moduleBinding).join(sep);
 
-  if (loggedImportCache.has(actionBinding)) return;
+    const cacheKey = `${kind}:${longestBinding}`;
 
-  loggedImportCache.add(actionBinding);
+    if (loggedCache.has(cacheKey)) return;
 
-  console.debug(
-    `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
-    kind ?? "unknown",
-    BOLD,
-    actionBinding,
-    RESET,
-    BOLD,
-    exportName,
-    RESET,
-    moduleUrl,
-  );
+    loggedCache.add(cacheKey);
+
+    console.debug(
+      `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
+      kind,
+      BOLD,
+      longestBinding,
+      RESET,
+      BOLD,
+      exportName,
+      RESET,
+      moduleUrl,
+    );
+  }
 }

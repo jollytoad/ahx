@@ -4,7 +4,7 @@ import type {
   FeatureLoader,
   FeatureOutcome,
 } from "@ahx/types";
-import * as log from "@ahx/custom/log/feature.ts";
+import { featureOutcome } from "@ahx/custom/log/feature.ts";
 
 let finderPromise: Promise<FeatureFinder> | undefined;
 let loaderPromise: Promise<FeatureLoader> | undefined;
@@ -26,8 +26,17 @@ export async function initFeatures(
 
   if (!loaderPromise) {
     loaderPromise = (async () => {
-      const { createFeatureLoader } = await import("./feature-loader.ts");
-      return createFeatureLoader();
+      const [
+        { default: allowBinding },
+        { bindingOutcome },
+        { createFeatureLoader },
+      ] = await Promise
+        .all([
+          import("@ahx/custom/filter.ts"),
+          import("@ahx/custom/log/binding.ts"),
+          import("./feature-loader.ts"),
+        ]);
+      return createFeatureLoader({ allowBinding, logBinding: bindingOutcome });
     })();
   }
 
@@ -47,8 +56,9 @@ export async function initFeatures(
     const outcome = await Promise.race(loading.values());
     loading.delete(outcome.feature);
 
-    if ("exportValue" in outcome && outcome.exportValue) {
-      log.importFeature(outcome);
+    featureOutcome(outcome);
+
+    if (outcome.status === "loaded") {
       promises.push(outcome.exportValue(outcome.feature));
     }
   }
