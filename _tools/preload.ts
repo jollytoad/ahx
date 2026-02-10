@@ -3,7 +3,7 @@
 import { createGraph } from "@deno/graph";
 
 async function listPreloads() {
-  const version = "0.5.0-alpha.12";
+  const version = "0.5.0-alpha.14";
 
   const roots = [
     `jsr:@ahx/init@${version}`,

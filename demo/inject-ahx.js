@@ -11,14 +11,21 @@
       case "binding-all":
         sessionStorage.setItem("ahx-binding-mode", flag);
         break;
+      case "preload":
+        sessionStorage.removeItem("ahx-preload-mode");
+        break;
+      case "no-preload":
+        sessionStorage.setItem("ahx-preload-mode", "off");
+        break;
     }
   }
 
   const ts = sessionStorage.getItem("ahx-demo-mode") === "ts";
   const bindingMode = sessionStorage.getItem("ahx-binding-mode") ??
     "binding-all";
+  const enablePreload = sessionStorage.getItem("ahx-preload-mode") !== "off";
 
-  const ext = ts ? 'ts' : 'js';
+  const ext = ts ? "ts" : "js";
 
   const importmap = {
     "imports": {
@@ -76,7 +83,11 @@
     "/@ahx/core/update-control",
     "/@ahx/custom/config-default",
     "/@ahx/custom/config",
+    "/@ahx/custom/detectors-default",
     "/@ahx/custom/detectors",
+    "/@ahx/custom/filter-list",
+    "/@ahx/custom/filter",
+    "/@ahx/custom/log/binding",
     "/@ahx/custom/log/config",
     "/@ahx/custom/log/error",
     "/@ahx/custom/log/event",
@@ -120,8 +131,12 @@
     document.writeln(
       `<script type="importmap">${JSON.stringify(importmap)}</script>`,
     );
-    for (const href of preloads) {
-      document.writeln(`<link rel="modulepreload" href="${href}.js">`);
+    if (enablePreload) {
+      console.debug("Module preloading enabled");
+
+      for (const href of preloads) {
+        document.writeln(`<link rel="modulepreload" href="${href}.js">`);
+      }
     }
     document.writeln(
       `<script type="module">import "@ahx/init/mod.js";</script>`,

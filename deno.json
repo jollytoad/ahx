@@ -14,6 +14,7 @@
     "test": "PW_DISABLE_TS_ESM=true deno run --allow-all npm:playwright test",
     "test:ui": "deno task test --ui --ui-host=localhost",
     "build": "./_tools/build.ts",
+    "build:preload": "./_tools/preload.ts > preload.json",
     "clean": "rm -rf node_modules playwright-report test-results dist",
     "ai": "deno run --no-lock --allow-all npm:@anthropic-ai/claude-code"
   },
