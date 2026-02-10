@@ -1,6 +1,6 @@
 {
   "name": "@ahx/actions",
-  "version": "0.5.0-alpha.12",
+  "version": "0.5.0-alpha.14",
   "license": "MIT",
   "exports": {
     "./abort.ts": "./abort.ts",
@@ -40,8 +40,8 @@
     "./template.ts": "./template.ts"
   },
   "imports": {
-    "dompurify": "npm:dompurify@3.2.4",
-    "idiomorph": "npm:idiomorph@0.7.3"
+    "dompurify": "npm:dompurify@3.3.1",
+    "idiomorph": "npm:idiomorph@0.7.4"
   },
   "compilerOptions": {
     "lib": [

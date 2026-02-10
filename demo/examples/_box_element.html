@@ -4,8 +4,7 @@
     display: block !important;
   }
   :root {
-    --on-ready: select head link[rel="stylesheet"] |> clone |> swap
-      afterbegin;
+    --on-ready: select head link[rel="stylesheet"] |> clone |> swap prepend;
   }
 </style>
 <div class="box">

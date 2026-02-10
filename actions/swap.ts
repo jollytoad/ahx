@@ -43,7 +43,7 @@ export const swap: ActionConstruct = (...args) => {
         // Set targets to the nodes that have just been swapped in
         targets = tails;
         // Change the op to append further nodes after those swapped in
-        effectiveOp = "afterend";
+        effectiveOp = "after";
       }
     } else if (texts) {
       const content = texts?.join("\n");

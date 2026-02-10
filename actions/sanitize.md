@@ -20,7 +20,7 @@ DOMPurify module, eg:
 ```json
 {
   "imports": {
-    "dompurify": "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs"
+    "dompurify": "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs"
   }
 }
 ```

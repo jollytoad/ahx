@@ -3,14 +3,14 @@ import { isElement, isNode, isShadowRoot } from "./guards.ts";
 export type SwapOp =
   | "none"
   | "inner"
-  | "innerHTML"
   | "outer"
-  | "outerHTML"
   | "text"
-  | "textContent"
   | "delete"
   | "empty"
-  | InsertPosition;
+  | "before"
+  | "after"
+  | "prepend"
+  | "append";
 
 /**
  * Swap the target node for the given node, html or text string.
@@ -123,13 +123,10 @@ const swapHandlers: Record<SwapOp, SwapHandler> = {
     }
   },
   text: swapText,
-  textContent: swapText,
   inner: swapInner,
-  innerHTML: swapInner,
   outer: swapOuter,
-  outerHTML: swapOuter,
-  beforebegin: swapAdjacent("beforebegin"),
-  afterbegin: swapAdjacent("afterbegin"),
-  beforeend: swapAdjacent("beforeend"),
-  afterend: swapAdjacent("afterend"),
+  before: swapAdjacent("beforebegin"),
+  after: swapAdjacent("afterend"),
+  prepend: swapAdjacent("afterbegin"),
+  append: swapAdjacent("beforeend"),
 };

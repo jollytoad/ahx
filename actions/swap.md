@@ -10,15 +10,14 @@ you don't trust the source of the content use the `sanitize` action first.
 
 `mode` may be:
 
-- `inner`: (default) replace the content of a target element (alias:
-  `innerHTML`)
-- `outer`: replace the entire target element (alias: `outerHTML`)
-- `beforebegin`: insert before the target element as a preceding sibling
-- `afterbegin`: prepend before all other children inside the target element
-- `beforeend`: append after all other children inside the target element
-- `afterend`: insert after the target element as a following sibling
+- `inner`: (default) replace the content of a target element
+- `outer`: replace the entire target element
+- `before`: insert before the target element as a preceding sibling
+- `after`: insert after the target element as a following sibling
+- `prepend`: prepend before all other children inside the target element
+- `append`: append after all other children inside the target element
 - `text`: replace the content of the target element with the source content as
-  plain text (alias: `textContent`)
+  plain text
 - `delete`: just delete the target element, ignoring the source content
 - `empty`: empty the target element of children, ignoring the source content
 - `none`: ignore the source content, do nothing

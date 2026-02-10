@@ -1,32 +1,54 @@
 (function () {
-  if (location.hash === "#ts") {
-    sessionStorage.setItem("ahx-demo-mode", "ts");
-  } else if (location.hash === "#js") {
-    sessionStorage.setItem("ahx-demo-mode", "js");
+  const flags = location.hash.replace(/^#/, "").split(",");
+  for (const flag of flags) {
+    switch (flag) {
+      case "ts":
+      case "js":
+        sessionStorage.setItem("ahx-demo-mode", flag);
+        break;
+      case "binding-cache":
+      case "binding-list":
+      case "binding-all":
+        sessionStorage.setItem("ahx-binding-mode", flag);
+        break;
+    }
   }
 
   const ts = sessionStorage.getItem("ahx-demo-mode") === "ts";
+  const bindingMode = sessionStorage.getItem("ahx-binding-mode") ??
+    "binding-all";
+
   const ext = ts ? 'ts' : 'js';
 
   const importmap = {
     "imports": {
-//      "@ahx/": "/@ahx/",
-      "@ahx/init/": "/@ahx/init/",
-      "@ahx/core/": "/@ahx/core/",
-      "@ahx/custom/": "/@ahx/custom/",
-      "@ahx/detectors/": "/@ahx/detectors/",
-      "@ahx/common/": "/@ahx/common/",
-      "@ahx/actions/": "/@ahx/actions/",
-      "@ahx/features/observe/": "/@ahx/features/observe/",
-      [`@ahx/features/attr/on.${ext}`]: `/@ahx/features/attr/on.${ext}`,
-      [`@ahx/features/cssprop/on.${ext}`]: `/@ahx/features/cssprop/on.${ext}`,
+      "@ahx/": "/@ahx/",
       [`@ahx/features/element/http/cat.${ext}`]: `/examples/_http_cat.${ext}`,
       "dompurify":
-        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs",
+        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs",
       "idiomorph":
-        "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.3/dist/idiomorph.esm.js",
+        "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
     },
   };
+
+  switch (bindingMode) {
+    case "binding-all":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-all.${ext}`;
+      break;
+    case "binding-list":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-list.${ext}`;
+      break;
+    case "binding-cache":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-list.${ext}`;
+      importmap.imports[`@ahx/custom/log/binding.${ext}`] =
+        `/@ahx/custom/log/binding-cache.${ext}`;
+      break;
+  }
+
+  console.debug("Binding mode:", bindingMode);
 
   const preloads = [
     "/@ahx/actions/attr",
@@ -84,7 +106,7 @@
     // Yeah, I know you're not meant to do this, but this is for the purpose of a hackable demo,
     // I don't recommend doing this on a production site!
     document.writeln(
-      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.6.2/dist/es-module-shims.js"></script>`,
+      `<script async src="https://ga.jspm.io/npm:es-module-shims@2.8.0/dist/es-module-shims.js"></script>`,
     );
     document.writeln(
       `<script type="importmap-shim">${JSON.stringify(importmap)}</script>`,

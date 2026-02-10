@@ -1,36 +1,40 @@
-import type { Feature, FeatureLoaded } from "@ahx/types";
-import { PREFIX } from "./config.ts";
+import type { Feature, FeatureOutcome } from "@ahx/types";
+import { PREFIX } from "@ahx/custom/log/config.ts";
 
 const BOLD = "font-weight: bold;";
 const RESET = "font-weight: normal;";
 
-const loggedImportCache = new Set<string>();
+const loggedCache = new Set<string>();
 
-export function importFeature(
-  outcome: FeatureLoaded<Feature, unknown>,
-  sep = "-",
-) {
-  const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
-  const kind = outcome.feature.kind;
+export function featureOutcome(
+  outcome: FeatureOutcome<Feature, unknown>,
+  sep: string,
+): void {
+  if (outcome.status === "loaded") {
+    const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;
+    const kind = outcome.feature.kind ?? "unknown";
 
-  const actionBinding =
-    (exportBinding && exportBinding.length > moduleBinding.length
-      ? exportBinding
-      : moduleBinding).join(sep);
+    const longestBinding =
+      (exportBinding && exportBinding.length > moduleBinding.length
+        ? exportBinding
+        : moduleBinding).join(sep);
 
-  if (loggedImportCache.has(actionBinding)) return;
+    const cacheKey = `${kind}:${longestBinding}`;
 
-  loggedImportCache.add(actionBinding);
+    if (loggedCache.has(cacheKey)) return;
 
-  console.debug(
-    `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
-    kind ?? "unknown",
-    BOLD,
-    actionBinding,
-    RESET,
-    BOLD,
-    exportName,
-    RESET,
-    moduleUrl,
-  );
+    loggedCache.add(cacheKey);
+
+    console.debug(
+      `${PREFIX}imported %s "%c%s%c" from "%c%s()%c" in "%s"`,
+      kind,
+      BOLD,
+      longestBinding,
+      RESET,
+      BOLD,
+      exportName,
+      RESET,
+      moduleUrl,
+    );
+  }
 }

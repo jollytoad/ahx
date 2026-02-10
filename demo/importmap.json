@@ -1,7 +1,7 @@
 {
   "imports": {
     "@ahx/": "/@ahx/",
-    "dompurify": "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.2.4/dist/purify.es.mjs",
-    "idiomorph": "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.3/dist/idiomorph.esm.js"
+    "dompurify": "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs",
+    "idiomorph": "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js"
   }
 }

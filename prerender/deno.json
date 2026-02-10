@@ -1,6 +1,6 @@
 {
   "name": "@ahx/prerender",
-  "version": "0.5.0-alpha.12",
+  "version": "0.5.0-alpha.14",
   "license": "MIT",
   "exports": {
     "./detectors.ts": "./detectors.ts",
