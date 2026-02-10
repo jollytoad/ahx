@@ -5,9 +5,20 @@ import { skip } from "@http/interceptor/skip";
 import { byPattern } from "@http/route/by-pattern";
 import { dynamicRoute } from "@http/discovery/dynamic-route";
 import { setHeaders } from "@http/response/set-headers";
+import { appendHeaders } from "@http/response/append-headers";
 import { serveFile } from "@http/fs/serve-file";
 import { fromFileUrl } from "@std/path/from-file-url";
 import { prerender } from "@ahx/prerender/interceptor.ts";
+import type { ResponseInterceptor } from "@http/interceptor/types";
+
+const EXAMPLES_HTML_HEADERS: HeadersInit = [
+  ["link", `</inject-ahx.js>; rel=preload; as=script`],
+  ["link", `<https://cdn.jsdelivr.net>; rel=preconnect`],
+  [
+    "link",
+    `<https://cdn.jsdelivr.net/npm/missing.css@1.2.0/dist/missing.min.css>; rel=preload; as=style`,
+  ],
+];
 
 export default handle([
   byPattern("/huge", () => {
@@ -64,6 +75,7 @@ export default handle([
       showIndex: true,
     }),
     prerender(Deno.args.includes("--prerender")),
+    addLinkHeaders(),
   ),
   interceptResponse(
     staticRoute("/@ahx", import.meta.resolve("../dist/@ahx/")),
@@ -79,6 +91,15 @@ export default handle([
   ),
   staticRoute("/", import.meta.resolve("./")),
 ]);
+
+function addLinkHeaders(): ResponseInterceptor {
+  return (_req, res) => {
+    if (res?.headers.get("content-type")?.startsWith("text/html")) {
+      return appendHeaders(res, EXAMPLES_HTML_HEADERS);
+    }
+    return res;
+  };
+}
 
 async function* huge() {
   yield "<!DOCTYPE html>\n";
