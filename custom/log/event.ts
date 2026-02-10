@@ -1,5 +1,5 @@
 import type { Control } from "@ahx/types";
-import { PREFIX } from "./config.ts";
+import { PREFIX } from "@ahx/custom/log/config.ts";
 
 const BOLD = "font-weight: bold;";
 const CODE = "background-color: highlight;";

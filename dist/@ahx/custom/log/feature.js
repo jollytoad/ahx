@@ -1,5 +1,5 @@
 
-import { PREFIX } from "./config.js";
+import { PREFIX } from "@ahx/custom/log/config.js";
 
 const BOLD = "font-weight: bold;";
 const RESET = "font-weight: normal;";
@@ -8,7 +8,7 @@ const loggedCache = new Set();
 
 export function featureOutcome(
   outcome,
-  sep = "-",
+  sep,
 ) {
   if (outcome.status === "loaded") {
     const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;

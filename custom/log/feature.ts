@@ -1,5 +1,5 @@
 import type { Feature, FeatureOutcome } from "@ahx/types";
-import { PREFIX } from "./config.ts";
+import { PREFIX } from "@ahx/custom/log/config.ts";
 
 const BOLD = "font-weight: bold;";
 const RESET = "font-weight: normal;";
@@ -8,7 +8,7 @@ const loggedCache = new Set<string>();
 
 export function featureOutcome(
   outcome: FeatureOutcome<Feature, unknown>,
-  sep = "-",
+  sep: string,
 ): void {
   if (outcome.status === "loaded") {
     const { moduleBinding, exportBinding, exportName, moduleUrl } = outcome;

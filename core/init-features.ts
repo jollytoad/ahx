@@ -36,7 +36,10 @@ export async function initFeatures(
           import("@ahx/custom/log/binding.ts"),
           import("./feature-loader.ts"),
         ]);
-      return createFeatureLoader({ allowBinding, logBinding: bindingOutcome });
+      return createFeatureLoader({
+        allowBinding,
+        logBinding: (outcome) => bindingOutcome(outcome, " "),
+      });
     })();
   }
 
@@ -56,7 +59,7 @@ export async function initFeatures(
     const outcome = await Promise.race(loading.values());
     loading.delete(outcome.feature);
 
-    featureOutcome(outcome);
+    featureOutcome(outcome, " ");
 
     if (outcome.status === "loaded") {
       promises.push(outcome.exportValue(outcome.feature));

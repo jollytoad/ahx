@@ -20,7 +20,7 @@ export async function createAction(
 ): Promise<Action> {
   const loader = createFeatureLoader<ActionFeature, ActionConstruct>({
     allowBinding,
-    logBinding: bindingOutcome,
+    logBinding: (outcome) => bindingOutcome(outcome, "-"),
     toModuleSpec: (_feature, binding) =>
       `${actionModulePrefix}${binding.join("_")}${EXT}`,
   });

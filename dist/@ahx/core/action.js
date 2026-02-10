@@ -14,7 +14,7 @@ export async function createAction(
 ) {
   const loader = createFeatureLoader({
     allowBinding,
-    logBinding: bindingOutcome,
+    logBinding: (outcome) => bindingOutcome(outcome, "-"),
     toModuleSpec: (_feature, binding) =>
       `${actionModulePrefix}${binding.join("_")}${EXT}`,
   });

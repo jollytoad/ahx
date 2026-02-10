@@ -1,4 +1,4 @@
-import { PREFIX } from "./config.js";
+import { PREFIX } from "@ahx/custom/log/config.js";
 
 const ERROR = "font-weight: bold; color: red;";
 const RESET = "font-weight: normal; color: inherit;";

@@ -1,11 +1,24 @@
 (function () {
-  if (location.hash === "#ts") {
-    sessionStorage.setItem("ahx-demo-mode", "ts");
-  } else if (location.hash === "#js") {
-    sessionStorage.setItem("ahx-demo-mode", "js");
+  const flags = location.hash.replace(/^#/, "").split(",");
+  for (const flag of flags) {
+    switch (flag) {
+      case "ts":
+      case "js":
+        sessionStorage.setItem("ahx-demo-mode", flag);
+        break;
+      case "binding-cache":
+      case "binding-list":
+      case "binding-all":
+        sessionStorage.setItem("ahx-binding-mode", flag);
+        break;
+    }
   }
 
   const ts = sessionStorage.getItem("ahx-demo-mode") === "ts";
+  const bindingMode = sessionStorage.getItem("ahx-binding-mode") ??
+    "binding-all";
+
+  const ext = ts ? "ts" : "js";
 
   const importmap = {
     "imports": {
@@ -18,6 +31,24 @@
         "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
     },
   };
+
+  switch (bindingMode) {
+    case "binding-all":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-all.${ext}`;
+      break;
+    case "binding-list":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-list.${ext}`;
+      break;
+    case "binding-cache":
+      importmap.imports[`@ahx/custom/filter.${ext}`] =
+        `/@ahx/custom/filter-list.${ext}`;
+      importmap.imports[`@ahx/custom/log/binding.${ext}`] =
+        `/@ahx/custom/log/binding-cache.${ext}`;
+      break;
+  }
+  console.debug("Binding mode:", bindingMode);
 
   if (ts) {
     console.debug("TypeScript mode");

@@ -15,12 +15,17 @@ export const allowBindings = new Set([
 export const denyBindings = new Set([]);
 
 function allowBinding(feature, binding) {
-  return hasMatch(allowBindings, feature, binding) &&
-    !hasMatch(denyBindings, feature, binding);
+  return hasMatch(allowBindings, feature, binding, true) &&
+    !hasMatch(denyBindings, feature, binding, false);
 }
 
-function hasMatch(patterns, feature, binding) {
-    if (patterns.size === 0) return false;
+function hasMatch(
+  patterns,
+  feature,
+  binding,
+  ifEmpty,
+) {
+    if (patterns.size === 0) return ifEmpty;
 
     if (patterns.has(feature.kind + ":" + binding.join(" "))) return true;
 

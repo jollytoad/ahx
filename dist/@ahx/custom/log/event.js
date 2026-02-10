@@ -1,5 +1,5 @@
 
-import { PREFIX } from "./config.js";
+import { PREFIX } from "@ahx/custom/log/config.js";
 
 const BOLD = "font-weight: bold;";
 const CODE = "background-color: highlight;";

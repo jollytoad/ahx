@@ -20,13 +20,18 @@ export const denyBindings: Set<string> = new Set([]);
  * The default binding predicate allows all binding through
  */
 function allowBinding(feature: Feature, binding: string[]): boolean {
-  return hasMatch(allowBindings, feature, binding) &&
-    !hasMatch(denyBindings, feature, binding);
+  return hasMatch(allowBindings, feature, binding, true) &&
+    !hasMatch(denyBindings, feature, binding, false);
 }
 
-function hasMatch(patterns: Set<string>, feature: Feature, binding: string[]) {
+function hasMatch(
+  patterns: Set<string>,
+  feature: Feature,
+  binding: string[],
+  ifEmpty: boolean,
+) {
   // Shortcut when no patterns supplied
-  if (patterns.size === 0) return false;
+  if (patterns.size === 0) return ifEmpty;
 
   // Check for an exact binding match
   if (patterns.has(feature.kind + ":" + binding.join(" "))) return true;
