@@ -1,6 +1,6 @@
 
-import { allowBindings, denyBindings } from "@ahx/custom/filter-list.js";
-import { PREFIX } from "@ahx/custom/log/config.js";
+import { allowBindings, denyBindings } from "../filter-list.js";
+import { PREFIX } from "./config.js";
 import { bindingOutcome as log } from "./binding.js";
 
 export const STORAGE_KEY = "ahx-deny-bindings";

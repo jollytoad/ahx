@@ -1,5 +1,5 @@
 import type { Feature, FeatureOutcome } from "@ahx/types";
-import { PREFIX } from "@ahx/custom/log/config.ts";
+import { PREFIX } from "./config.ts";
 
 const BOLD = "font-weight: bold;";
 const RESET = "font-weight: normal;";

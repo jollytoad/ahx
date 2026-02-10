@@ -1,6 +1,6 @@
 import type { Feature, FeatureOutcome } from "@ahx/types";
-import { allowBindings, denyBindings } from "@ahx/custom/filter-list.ts";
-import { PREFIX } from "@ahx/custom/log/config.ts";
+import { allowBindings, denyBindings } from "../filter-list.ts";
+import { PREFIX } from "./config.ts";
 import { bindingOutcome as log } from "./binding.ts";
 
 export const STORAGE_KEY = "ahx-deny-bindings";

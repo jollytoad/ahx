@@ -1,5 +1,5 @@
 import type { ActionContext, ActionResult } from "@ahx/types";
-import { COLLAPSED, PREFIX, QUEUE } from "@ahx/custom/log/config.ts";
+import { COLLAPSED, PREFIX, QUEUE } from "./config.ts";
 import { isNode } from "@ahx/common/guards.ts";
 
 const BOLD = "font-weight: bold;";

@@ -1,5 +1,5 @@
 
-import { COLLAPSED, PREFIX, QUEUE } from "@ahx/custom/log/config.js";
+import { COLLAPSED, PREFIX, QUEUE } from "./config.js";
 import { isNode } from "@ahx/common/guards.js";
 
 const BOLD = "font-weight: bold;";
