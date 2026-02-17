@@ -3,9 +3,7 @@ import type { ActionConstruct } from "@ahx/types";
 /**
  * Filter key events based on the key property
  */
-export const key: ActionConstruct = (...args) => {
-  const [, ...keyNames] = args;
-
+export const key: ActionConstruct = (...keyNames) => {
   if (!keyNames.length) {
     throw new TypeError("At least one key name is required");
   }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="/inject-ahx.js"></script>
+
+    <style>
+      body {
+        --on-keydown: key Enter |> target #output-down |> class toggle hidden;
+        --on-keyup: key Enter |> target #output-up |> class toggle hidden;
+        --on-keypress: key Enter |> target #output-press |> class toggle
+          hidden;
+      }
+      .hidden {
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Action: key</h2>
+
+      <p>
+        Hit or hold the Enter key
+      </p>
+
+      <section>
+        <p id="output-down" class="hidden">Key Down</p>
+        <p id="output-press" class="hidden">Key Press</p>
+        <p id="output-up" class="hidden">Key Up</p>
+      </section>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>

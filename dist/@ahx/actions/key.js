@@ -1,8 +1,6 @@
 
 
-export const key = (...args) => {
-  const [, ...keyNames] = args;
-
+export const key = (...keyNames) => {
   if (!keyNames.length) {
     throw new TypeError("At least one key name is required");
   }
