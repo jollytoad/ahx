@@ -1,10 +1,10 @@
 #!/usr/bin/env -S deno run --allow-import --allow-env --allow-read --allow-net
 
 import { createGraph } from "@deno/graph";
+// deno-lint-ignore no-cross-package-imports/no-cross-package-imports
+import denoConfig from "../init/deno.json" with { type: "json" };
 
-async function listPreloads() {
-  const version = "0.5.0-alpha.14";
-
+async function listPreloads(version: string) {
   const roots = [
     `jsr:@ahx/init@${version}`,
     `jsr:@ahx/features@${version}/observe/html.ts`,
@@ -40,6 +40,6 @@ async function listPreloads() {
 }
 
 if (import.meta.main) {
-  const list = await listPreloads();
+  const list = await listPreloads(denoConfig.version);
   console.log(JSON.stringify(list, null, 2));
 }

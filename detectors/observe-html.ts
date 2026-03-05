@@ -5,7 +5,7 @@ export function* observeHtml(
   node: unknown,
   context?: Context,
 ): Iterable<ObserveFeature> {
-  if (isElement(node) && node.localName === "html") {
+  if (isElement(node, "html")) {
     yield {
       kind: "observe",
       context,

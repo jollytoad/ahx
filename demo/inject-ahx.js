@@ -74,12 +74,9 @@
     "/@ahx/core/ahx-event",
     "/@ahx/core/control",
     "/@ahx/core/exec-pipeline",
-    "/@ahx/core/feature-finder",
-    "/@ahx/core/feature-loader",
     "/@ahx/core/init-features",
     "/@ahx/core/parse-pipeline",
     "/@ahx/core/start-dom-observer",
-    "/@ahx/core/start",
     "/@ahx/core/update-control",
     "/@ahx/custom/config-default",
     "/@ahx/custom/config",
@@ -109,6 +106,8 @@
     "/@ahx/features/cssprop/on",
     "/@ahx/features/observe/html",
     "/@ahx/init/mod",
+    "/@ahx/loader/feature-finder",
+    "/@ahx/loader/feature-loader",
   ];
 
   if (ts) {

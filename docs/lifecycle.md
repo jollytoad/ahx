@@ -21,7 +21,7 @@ Here is an example of the head elements required for this situation:
   <script type="importmap-shim">
     {
       "imports": {
-        "@ahx/": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.13/"
+        "@ahx/": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.15/"
       }
     }
   </script>
@@ -47,19 +47,12 @@ and so we use a static import from an inline script instead to kick things off.
 This init module is very simple:
 
 ```ts
-import { start } from "@ahx/loader/start.ts";
-
-start(document);
+import("@ahx/core/init-features.ts").then(({ initFeatures }) =>
+  initFeatures(document)
+);
 ```
 
 (you could just inline this if you prefer, instead of the init module)
-
-`start()` is also incredibly simple...
-
-```ts
-const { initFeatures } = await import("./init-features.ts");
-await initFeatures(document);
-```
 
 This is where we first encounter this concept of the **_Feature_**, and here we
 are going to initialize all _Features_ found in the `document`.
@@ -569,7 +562,7 @@ _Feature Detectors_. This time we'll look at
 [`@ahx/detectors/observe-html`](../detectors/observe-html.ts):
 
 ```ts
-if (isElement(node) && node.localName === "html") {
+if (isElement(node, "html")) {
   yield {
     kind: "observe",
     context,
