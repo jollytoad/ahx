@@ -1,9 +1,10 @@
 {
-  "name": "@ahx/init",
+  "name": "@ahx/loader",
   "version": "0.5.0-alpha.15",
   "license": "MIT",
   "exports": {
-    ".": "./mod.ts"
+    "./feature-finder.ts": "./feature-finder.ts",
+    "./feature-loader.ts": "./feature-loader.ts"
   },
   "compilerOptions": {
     "lib": [
@@ -14,5 +15,8 @@
     ],
     "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true
+  },
+  "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.56"
   }
 }

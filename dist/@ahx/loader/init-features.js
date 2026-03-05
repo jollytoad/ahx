@@ -13,7 +13,7 @@ export async function initFeatures(
       const [{ default: detectors }, { createFeatureFinder }] = await Promise
         .all([
           import("@ahx/custom/detectors.js"),
-          import("@ahx/loader/feature-finder.js"),
+          import("./feature-finder.js"),
         ]);
       return await createFeatureFinder(detectors);
     })();
@@ -29,7 +29,7 @@ export async function initFeatures(
         .all([
           import("@ahx/custom/filter.js"),
           import("@ahx/custom/log/binding.js"),
-          import("@ahx/loader/feature-loader.js"),
+          import("./feature-loader.js"),
         ]);
       return createFeatureLoader({
         allowBinding,

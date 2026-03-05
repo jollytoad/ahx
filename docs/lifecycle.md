@@ -47,7 +47,7 @@ and so we use a static import from an inline script instead to kick things off.
 This init module is very simple:
 
 ```ts
-import { start } from "@ahx/core/start.ts";
+import { start } from "@ahx/loader/start.ts";
 
 start(document);
 ```
@@ -95,7 +95,7 @@ properties:
 {
   "imports": {
     ...
-    "@ahx/custom/detectors.ts": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.13/custom/detectors-no-css.ts"
+    "@ahx/custom/detectors.ts": "https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.15/custom/detectors-no-css.ts"
   }
 }
 ```
@@ -149,22 +149,22 @@ node. For that we have
 [`@ahx/detectors/recurse-document`](../detectors/recurse-document.ts)...
 
 ```ts
-if (node instanceof Document) {
+if (isDocument(node)) {
   yield {
     kind: "recurse",
-    context: document.body,
-    children: [document.documentElement],
+    context: node,
+    children: [node.documentElement],
   };
 }
 ```
 
-So this informs the finder to set the context to the `<body>` element, and
+So this informs the finder to set the context to the document element, and
 recurse into the first element of the document (ie. `<html>`), and again we need
 to hope there is a detector that can handle this element. For which we have
 [`@ahx/detectors/recurse-element`](../detectors/recurse-element.ts)...
 
 ```ts
-if (node instanceof Element) {
+if (isElement(node)) {
   yield {
     kind: "recurse",
     context,
@@ -187,7 +187,7 @@ default detectors to see most of these, but let's look at the
 [`@ahx/detectors/custom-attr`](../detectors/custom-attr.ts) detector first...
 
 ```ts
-if (node instanceof Element && node.hasAttributes()) {
+if (isElement(node)) {
   for (const attr of node.attributes) {
     if (attr.name.includes("-")) {
       yield {
@@ -372,7 +372,7 @@ action name and the rest as action arguments.
 ### Loading Actions
 
 Perform by [`createAction()`](../core/action.ts). We use our
-[`createFeatureLoader()`](../core/feature-loader.ts) from earlier, but with a
+[`createFeatureLoader()`](../loader/feature-loader.ts) from earlier, but with a
 slightly different configuration of the module pattern:
 
 `@ahx/actions/<binding>` (but where binding uses `_` as a separator)
@@ -566,20 +566,21 @@ down, so we create ours in a _Feature_.
 
 Let's back up yet again to the feature finding stage, where we employ our
 _Feature Detectors_. This time we'll look at
-[`@ahx/detectors/observe-body`](../detectors/observe-body.ts):
+[`@ahx/detectors/observe-html`](../detectors/observe-html.ts):
 
 ```ts
-if (node instanceof Element && node.localName === "body") {
+if (isElement(node) && node.localName === "html") {
   yield {
     kind: "observe",
-    context: node,
-    bindings: [[node.localName]],
+    context,
+    node,
+    bindings: [["html"]],
   };
 }
 ```
 
 Which will result in the loading of the module:
-[`@ahx/features/observe/body`](../features/observe/body.ts), which ultimately
+[`@ahx/features/observe/html`](../features/observe/html.ts), which ultimately
 creates a `MutationObserver`.
 
 This `MutationObserver` doesn't attempt to process the mutations itself,

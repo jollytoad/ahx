@@ -1,3 +1,3 @@
-import { start } from "@ahx/core/start.ts";
-
-start(document);
+import("@ahx/core/init-features.ts").then(({ initFeatures }) =>
+  initFeatures(document)
+);

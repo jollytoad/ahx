@@ -9,6 +9,21 @@ import { featureOutcome } from "@ahx/custom/log/feature.ts";
 let finderPromise: Promise<FeatureFinder> | undefined;
 let loaderPromise: Promise<FeatureLoader> | undefined;
 
+/**
+ * Find, load and initialize {@link Feature}s with the given set of _things_.
+ *
+ * Using the set of {@link FeatureDetector}s provided by the `@ahx/custom/detectors.ts` module
+ * (default export), and with the filter from `@ahx/custom/filter.ts` (default export).
+ *
+ * The outcome of each feature binding is passed to the {@link bindingOutcome} function
+ * from `@ahx/custom/log/binding.ts`.
+ *
+ * The expected way to customize these is to remap those `@ahx/custom/*` module specifiers to
+ * your own modules or to one of the provided alternatives.
+ *
+ * @param context Some contextual object for the detectors and the Features, usually a root of a tree
+ * @param things The set of things to find Features within, defaults to just the context object if not given
+ */
 export async function initFeatures(
   context: unknown,
   things: Iterable<unknown> = [context],
@@ -18,7 +33,7 @@ export async function initFeatures(
       const [{ default: detectors }, { createFeatureFinder }] = await Promise
         .all([
           import("@ahx/custom/detectors.ts"),
-          import("./feature-finder.ts"),
+          import("@ahx/loader/feature-finder.ts"),
         ]);
       return await createFeatureFinder(detectors);
     })();
@@ -34,7 +49,7 @@ export async function initFeatures(
         .all([
           import("@ahx/custom/filter.ts"),
           import("@ahx/custom/log/binding.ts"),
-          import("./feature-loader.ts"),
+          import("@ahx/loader/feature-loader.ts"),
         ]);
       return createFeatureLoader({
         allowBinding,

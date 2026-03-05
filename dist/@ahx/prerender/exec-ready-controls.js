@@ -1,5 +1,5 @@
 
-import { createFeatureFinder } from "@ahx/core/feature-finder.js";
+import { createFeatureFinder } from "@ahx/loader/feature-finder.js";
 import { createControl } from "@ahx/core/control.js";
 import { dispatchAhxEvent } from "@ahx/core/ahx-event.js";
 import { isDocument, isElement } from "@ahx/common/guards.js";

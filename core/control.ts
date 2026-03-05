@@ -30,7 +30,7 @@ function createActions(
   root: ParentNode,
 ): Promise<Action[]> {
   const config = getConfig(root, "actionModulePrefix");
-  return Promise.all(decls.map((decl) => createAction(decl, config)));
+  return Promise.all(decls.map(createAction(config)));
 }
 
 class ControlImpl implements Control {

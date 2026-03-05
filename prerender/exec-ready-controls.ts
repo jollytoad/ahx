@@ -5,7 +5,7 @@ import type {
   Feature,
   FeatureDetector,
 } from "@ahx/types";
-import { createFeatureFinder } from "@ahx/core/feature-finder.ts";
+import { createFeatureFinder } from "@ahx/loader/feature-finder.ts";
 import { createControl } from "@ahx/core/control.ts";
 import { dispatchAhxEvent } from "@ahx/core/ahx-event.ts";
 import { isDocument, isElement } from "@ahx/common/guards.ts";

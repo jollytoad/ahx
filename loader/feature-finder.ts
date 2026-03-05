@@ -4,6 +4,25 @@ import type {
   LazyFeatureDetector,
 } from "@ahx/types";
 
+/**
+ * Create a function that finds potential {@link Feature}s in a generally hierarchical
+ * structure, for example a DOM.
+ *
+ * @param lazyDetectors Array of feature detectors (functions or modules with default export,
+ *   and may be a Promise)
+ * @returns A {@link FeatureFinder} iterates over the given _things_, applying each
+ *   {@link FeatureDetector} function, which may yield interesting {@link Feature}s.
+ *
+ * @example
+ * ```ts
+ * import { createFeatureFinder } from "@ahx/loader/feature-finder.ts";
+ * import detectors from "@ahx/custom/detectors.ts";
+ *
+ * const finder = await createFeatureFinder(detectors);
+ *
+ * const features = await finder(document);
+ * ```
+ */
 export async function createFeatureFinder(
   lazyDetectors: LazyFeatureDetector[],
 ): Promise<FeatureFinder> {
