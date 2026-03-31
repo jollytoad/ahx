@@ -11,6 +11,8 @@ async function listPreloads(version: string) {
     `jsr:@ahx/features@${version}/attr/on.ts`,
     `jsr:@ahx/features@${version}/cssprop/on.ts`,
     `jsr:@ahx/actions@${version}/get.ts`,
+    `jsr:@ahx/actions@${version}/fetch.ts`,
+    `jsr:@ahx/actions@${version}/form.ts`,
     `jsr:@ahx/actions@${version}/swap.ts`,
     `jsr:@ahx/actions@${version}/attr.ts`,
     `jsr:@ahx/actions@${version}/target.ts`,

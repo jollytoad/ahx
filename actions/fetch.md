@@ -4,11 +4,21 @@
 
 Perform a HTTP request using the standard Fetch API.
 
-(TODO: consider not implicitly gathering data)
+The URL (if not supplied) and other request data will be sourced from the action
+context, ie. previous actions within the pipeline.
 
-The method, URL (if not supplied), and content will be sourced from the form
-associated with the first target in the action context. The method will default
-to `GET` if necessary.
+This does not implicitly gather data from the form or any DOM element even if
+used directly on a form element.
+
+You need to explicitly use the `form` action to push the form data into the
+action pipeline:
+
+`on-submit="form |> fetch"`
+
+This is to avoid any unintentional leaking of data.
+
+The request method will default to `GET` if not obtained from the action
+context.
 
 **Output**
 

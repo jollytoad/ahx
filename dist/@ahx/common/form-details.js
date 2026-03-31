@@ -21,6 +21,7 @@ export function getFormDetails(
     const method = submitter?.getAttribute("formmethod") ?? form.method;
     const url = submitter?.getAttribute("formaction") ?? form.action;
     const enctype = submitter?.getAttribute("formenctype") ?? form.enctype;
+    const baseURL = submitter?.baseURI ?? form.baseURI;
 
     const formData = new FormData(form);
     let body = formData;
@@ -32,6 +33,6 @@ export function getFormDetails(
       headers["content-type"] = enctype;
     }
 
-    return { formData, request: { url, method, headers, body } };
+    return { formData, request: { url, method, headers, body }, baseURL };
   }
 }

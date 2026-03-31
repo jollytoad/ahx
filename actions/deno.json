@@ -1,11 +1,12 @@
 {
   "name": "@ahx/actions",
-  "version": "0.5.0-alpha.15",
+  "version": "0.5.0-alpha.16",
   "license": "MIT",
   "exports": {
     "./abort.ts": "./abort.ts",
     "./attach-shadow.ts": "./attach-shadow.ts",
     "./attr.ts": "./attr.ts",
+    "./base-url.ts": "./base-url.ts",
     "./class.ts": "./class.ts",
     "./clone.ts": "./clone.ts",
     "./delete.ts": "./delete.ts",
@@ -21,6 +22,7 @@
     "./key.ts": "./key.ts",
     "./key_dispatch.ts": "./key_dispatch.ts",
     "./matches.ts": "./matches.ts",
+    "./method.ts": "./method.ts",
     "./morph.ts": "./morph.ts",
     "./once.ts": "./once.ts",
     "./patch.ts": "./patch.ts",
@@ -37,7 +39,8 @@
     "./target_attr.ts": "./target_attr.ts",
     "./target_xpath-class.ts": "./target_xpath-class.ts",
     "./target_xpath.ts": "./target_xpath.ts",
-    "./template.ts": "./template.ts"
+    "./template.ts": "./template.ts",
+    "./url.ts": "./url.ts"
   },
   "imports": {
     "dompurify": "npm:dompurify@3.3.1",

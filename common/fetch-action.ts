@@ -1,64 +1,36 @@
 import type { ActionConstruct, ActionResult } from "@ahx/types";
-import { getFormDetails } from "./form-details.ts";
-import { isNode } from "./guards.ts";
+import { getBaseURL } from "./base-url.ts";
 
 const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
-// TODO: this should probably not implicitly gather any data itself,
-// to allow a before to check the data passed to a request.
-// Alternatively dispatch a dedicated pre-request event that can be cancelled.
-
 export const fetchAction =
-  (method?: string): ActionConstruct =>
+  (methodArg?: string): ActionConstruct =>
   (urlArg?: string) =>
-  async (
-    {
-      event,
+  async (context): Promise<ActionResult> => {
+    const {
       control,
       action,
       index,
       signal,
-      targets,
       request: requestInit,
       jsonData,
       formData,
       trace,
-    },
-  ): Promise<ActionResult> => {
+    } = context;
+
+    const method = methodArg ?? requestInit?.method ?? "get";
     let url: string | URL | undefined = urlArg ?? requestInit?.url;
     const headers = new Headers(requestInit?.headers);
     let body: BodyInit | ReadableStream<Uint8Array> | null | undefined =
       requestInit?.body;
 
-    const target = targets?.[0];
-    if (
-      jsonData === undefined && formData === undefined && body === undefined
-    ) {
-      const result = getFormDetails(target, event);
-
-      if (result) {
-        formData ??= result.formData;
-        url ??= result.request.url;
-        method ??= result.request.method;
-        body ??= result.request.body;
-        if (result.request.headers) {
-          Object.entries(result.request.headers).forEach(([key, value]) =>
-            headers.append(key, value)
-          );
-        }
-      }
-    }
-
     if (!url) {
       throw new Error("No URL available for request");
     }
 
-    method ??= "get";
-
     const isBodyMethod = bodyMethods.has(method.toLowerCase());
 
-    const base = isNode(target) ? target.baseURI : control.root?.baseURI;
-    url = new URL(url, base);
+    url = new URL(url, getBaseURL(context));
 
     headers.set("ahx-pipeline", control.toString());
     headers.set("ahx-action", action!.toString());

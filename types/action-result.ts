@@ -42,4 +42,8 @@ export interface ActionResult {
    * Things to be initialized.
    */
   init?: unknown[];
+  /**
+   * Base URL for relative URLs to be resolved against
+   */
+  baseURL?: string | URL | "@control" | "@target";
 }

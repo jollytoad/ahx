@@ -7,17 +7,17 @@
 
     <style>
       [role="tab"]:not([aria-selected]) {
-        --on-click: target closest [role="tablist"] |> target scope
-          [role="tab"] |> attr remove aria-selected |> target attr
-          aria-controls |> attr add hidden |> target this |> attr add
-          aria-selected |> target attr aria-controls |> attr remove hidden;
+        --on-click: target closest [role="tablist"] |> target scope [role="tab"]
+          |> attr remove aria-selected |> target attr aria-controls |> attr add
+          hidden |> target this |> attr add aria-selected |> target attr
+          aria-controls |> attr remove hidden;
       }
       [role="tab"] {
         --on-keyup: key dispatch ArrowLeft ArrowRight;
-        --on-keyup-ArrowLeft: target xpath
-          preceding-sibling::*[@role="tab"][1] |> focus |> dispatch click;
-        --on-keyup-ArrowRight: target xpath
-          following-sibling::*[@role="tab"][1] |> focus |> dispatch click;
+        --on-keyup-ArrowLeft: target xpath preceding-sibling::*[@role="tab"][1]
+          |> focus |> dispatch click;
+        --on-keyup-ArrowRight: target xpath following-sibling::*[@role="tab"][1]
+          |> focus |> dispatch click;
       }
     </style>
   </head>
@@ -53,8 +53,8 @@
         <template shadowrootmode="open">
           <style>
             :root {
-              --on-ready: select head link[rel="stylesheet"], style |> clone
-                |> swap prepend;
+              --on-ready: select head link[rel="stylesheet"], style |> clone |>
+                swap prepend;
             }
           </style>
 

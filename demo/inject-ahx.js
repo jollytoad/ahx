@@ -59,9 +59,12 @@
 
   const preloads = [
     "/@ahx/actions/attr",
+    "/@ahx/actions/fetch",
+    "/@ahx/actions/form",
     "/@ahx/actions/get",
     "/@ahx/actions/swap",
     "/@ahx/actions/target",
+    "/@ahx/common/base-url",
     "/@ahx/common/controls",
     "/@ahx/common/extended-selector",
     "/@ahx/common/fetch-action",

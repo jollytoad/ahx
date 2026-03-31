@@ -1,8 +1,9 @@
 {
   "name": "@ahx/common",
-  "version": "0.5.0-alpha.15",
+  "version": "0.5.0-alpha.16",
   "license": "MIT",
   "exports": {
+    "./base-url.ts": "./base-url.ts",
     "./controls.ts": "./controls.ts",
     "./dispatch-to-all.ts": "./dispatch-to-all.ts",
     "./extended-selector.ts": "./extended-selector.ts",

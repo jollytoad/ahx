@@ -16,17 +16,17 @@
         vertical-align: middle !important;
       }
       :root {
-        --on-after-swap: matches .todo-item |> target input[autofocus] |>
-          focus |> attr remove autofocus;
+        --on-after-swap: matches .todo-item |> target input[autofocus] |> focus
+          |> attr remove autofocus;
       }
       .todo-list {
         --on-ready: once |> get todos |> swap inner;
       }
       .todo-item form {
-        --on-submit: prevent-default |> fetch |> target closest .todo-item |>
-          swap outer;
-        --on-delete: delete |> target closest .todo-item |> swap outer;
-        --on-toggle: fetch |> target closest .todo-item |> swap outer;
+        --on-submit: prevent-default |> form |> fetch |> target closest
+          .todo-item |> swap outer;
+        --on-delete: form |> delete |> target closest .todo-item |> swap outer;
+        --on-toggle: form |> fetch |> target closest .todo-item |> swap outer;
       }
       .todo-item:has(input[name="id"]) form input[type="checkbox"] {
         --on-change: target closest form |> dispatch toggle;
@@ -36,15 +36,15 @@
       }
       .todo-item form input[type="text"] {
         --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
-        --on-keydown-ArrowUp: target xpath preceding::input[@type="text"][1]
-          |> focus;
+        --on-keydown-ArrowUp: target xpath preceding::input[@type="text"][1] |>
+          focus;
         --on-keydown-ArrowDown: target xpath following::input[@type="text"][1]
           |> focus;
       }
       .todo-item form input[type="checkbox"] {
         --on-keydown: key dispatch ArrowUp ArrowDown |> prevent-default;
-        --on-keydown-ArrowUp: target xpath
-          preceding::input[@type="checkbox"][1] |> focus;
+        --on-keydown-ArrowUp: target xpath preceding::input[@type="checkbox"][1]
+          |> focus;
         --on-keydown-ArrowDown: target xpath
           following::input[@type="checkbox"][1] |> focus;
       }

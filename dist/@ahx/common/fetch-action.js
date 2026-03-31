@@ -1,60 +1,36 @@
 
-import { getFormDetails } from "./form-details.js";
-import { isNode } from "./guards.js";
+import { getBaseURL } from "./base-url.js";
 
 const bodyMethods = new Set(["query", "put", "post", "patch"]);
 
 export const fetchAction =
-  (method) =>
+  (methodArg) =>
   (urlArg) =>
-  async (
-    {
-      event,
+  async (context) => {
+    const {
       control,
       action,
       index,
       signal,
-      targets,
       request: requestInit,
       jsonData,
       formData,
       trace,
-    },
-  ) => {
+    } = context;
+
+    const method = methodArg ?? requestInit?.method ?? "get";
     let url = urlArg ?? requestInit?.url;
     const headers = new Headers(requestInit?.headers);
     let body =
       requestInit?.body;
 
-    const target = targets?.[0];
-    if (
-      jsonData === undefined && formData === undefined && body === undefined
-    ) {
-      const result = getFormDetails(target, event);
-
-      if (result) {
-        formData ??= result.formData;
-        url ??= result.request.url;
-        method ??= result.request.method;
-        body ??= result.request.body;
-        if (result.request.headers) {
-          Object.entries(result.request.headers).forEach(([key, value]) =>
-            headers.append(key, value)
-          );
-        }
-      }
-    }
-
     if (!url) {
       throw new Error("No URL available for request");
     }
 
-    method ??= "get";
-
     const isBodyMethod = bodyMethods.has(method.toLowerCase());
 
-    const base = isNode(target) ? target.baseURI : control.root?.baseURI;
-    url = new URL(url, base);
+    url = new URL(url, getBaseURL(context));
 
     headers.set("ahx-pipeline", control.toString());
     headers.set("ahx-action", action.toString());
