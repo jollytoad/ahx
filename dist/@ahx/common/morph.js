@@ -1,5 +1,5 @@
 
-import { isElement } from "@ahx/common/guards.js";
+import { isElement } from "./guards.js";
 
 export async function getMorphContent(
   { nodes, texts, response, initialTarget, control },
