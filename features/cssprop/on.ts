@@ -22,6 +22,7 @@ export default function (feature: CSSPropertyFeature): void {
         eventType,
         pipelineStr,
         ...selectorTextRule,
+        baseURL: feature.rule.parentStyleSheet?.href ?? feature.context.baseURI,
       });
     }
   }

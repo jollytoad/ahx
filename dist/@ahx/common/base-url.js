@@ -2,24 +2,20 @@
 import { isNode } from "./guards.js";
 
 export function getBaseURL(context) {
-  const { baseURL, control, targets } = context;
+  const { baseURL, control, targets, initialTarget } = context;
 
   if (baseURL instanceof URL) return baseURL;
-
-  function controlURL() {
-    return control.root?.baseURI;
-  }
-
-  function targetURL() {
-    return targets?.find(isNode)?.baseURI;
-  }
 
   switch (baseURL) {
     case undefined:
     case "@control":
-      return controlURL();
+      return control.baseURL;
+    case "@root":
+      return control.root?.baseURI;
     case "@target":
-      return targetURL();
+      return targets?.find(isNode)?.baseURI;
+    case "@this":
+      return isNode(initialTarget) ? initialTarget.baseURI : undefined;
     default:
       return baseURL;
   }

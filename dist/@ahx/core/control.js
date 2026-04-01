@@ -33,6 +33,7 @@ class ControlImpl {
 
   isRule;
   eventType;
+  baseURL;
   actions;
 
   constructor(
@@ -43,6 +44,7 @@ class ControlImpl {
     this.#source = new WeakRef(decl.source);
     this.actions = actions;
     this.eventType = decl.eventType;
+    this.baseURL = decl.baseURL;
 
     this.#ruleNodes = "ruleNodes" in decl ? decl.ruleNodes : undefined;
     this.#ruleApplies = "ruleApplies" in decl ? decl.ruleApplies : undefined;

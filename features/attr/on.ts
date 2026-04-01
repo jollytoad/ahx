@@ -15,6 +15,7 @@ export default function (feature: AttrFeature): void {
       source: feature.element,
       eventType,
       pipelineStr: feature.value ?? "",
+      baseURL: feature.element.baseURI,
     });
   }
 }

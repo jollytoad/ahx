@@ -38,6 +38,7 @@ export async function execReadyControls(
         source: feature.element,
         eventType: "ready",
         pipelineStr: feature.value ?? "",
+        baseURL: feature.context.baseURI,
       };
 
       const control = await createControl(decl);

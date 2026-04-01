@@ -38,6 +38,10 @@ export interface ElementControlDecl {
    * The raw pipeline string.
    */
   pipelineStr: string;
+  /**
+   * The base URL of this control.
+   */
+  baseURL: string;
 }
 
 export type FindRuleNodes = (this: Control) => Iterable<Node>;
@@ -91,6 +95,10 @@ export interface Control extends AbortController, EventListenerObject {
    * The pipeline of actions for this control
    */
   readonly actions: ReadonlyArray<Action>;
+  /**
+   * The base URL of this control
+   */
+  readonly baseURL: string;
   /**
    * Return the nodes that this Control applies to.
    */
