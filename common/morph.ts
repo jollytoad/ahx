@@ -1,5 +1,5 @@
 import type { ActionContext } from "@ahx/types";
-import { isElement } from "@ahx/common/guards.ts";
+import { isElement } from "./guards.ts";
 
 /**
  * Get content to morphed into the target.
