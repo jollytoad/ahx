@@ -24,6 +24,8 @@
     "./matches.ts": "./matches.ts",
     "./method.ts": "./method.ts",
     "./morph.ts": "./morph.ts",
+    "./morph_idiomorph.ts": "./morph_idiomorph.ts",
+    "./morph_morphlex.ts": "./morph_morphlex.ts",
     "./once.ts": "./once.ts",
     "./patch.ts": "./patch.ts",
     "./post.ts": "./post.ts",
@@ -44,7 +46,8 @@
   },
   "imports": {
     "dompurify": "npm:dompurify@3.3.1",
-    "idiomorph": "npm:idiomorph@0.7.4"
+    "idiomorph": "npm:idiomorph@0.7.4",
+    "morphlex": "npm:morphlex@^1.4.0"
   },
   "compilerOptions": {
     "lib": [

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <body>
-  <article>
+  <article on-oob="target form.buttons |> attr set action _morph_2.html">
     <div>
       <h3>Above...</h3>
       <input id="input" type="text" name="input" autofocus />
@@ -18,11 +18,4 @@
       ></iframe>
     </div>
   </article>
-  <button
-    type="button"
-    on-oob="target .button-slot |> swap inner"
-    on-click="get _morph_2.html |> sanitize |> target article |> morph outer"
-  >
-    Morph
-  </button>
 </body>

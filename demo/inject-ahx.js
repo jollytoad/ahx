@@ -35,6 +35,7 @@
         "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs",
       "idiomorph":
         "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
+      "morphlex": "https://cdn.jsdelivr.net/npm/morphlex@1.4.0/+esm",
     },
   };
 
