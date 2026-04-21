@@ -4,9 +4,11 @@
   "license": "MIT",
   "exports": {
     "./attr/on.ts": "./attr/on.ts",
+    "./attr/on/ready.ts": "./attr/on/ready.ts",
     "./cssprop/on.ts": "./cssprop/on.ts",
     "./observe/html.ts": "./observe/html.ts",
-    "./observe/shadow.ts": "./observe/shadow.ts"
+    "./observe/shadow.ts": "./observe/shadow.ts",
+    "./ready/dispatch.ts": "./ready/dispatch.ts"
   },
   "compilerOptions": {
     "lib": [

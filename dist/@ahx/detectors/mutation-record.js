@@ -1,6 +1,6 @@
 
 import { potentialBindings } from "@ahx/common/potential-bindings.js";
-import { isElement } from "@ahx/common/guards.js";
+import { isElement, isMutationRecord } from "@ahx/common/guards.js";
 
 export function* mutationRecordDetector(
   node,
@@ -48,7 +48,3 @@ export function* mutationRecordDetector(
 }
 
 export default mutationRecordDetector;
-
-function isMutationRecord(node) {
-  return globalThis.MutationRecord && node instanceof globalThis.MutationRecord;
-}

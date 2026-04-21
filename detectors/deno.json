@@ -10,6 +10,7 @@
     "./mutation-record.ts": "./mutation-record.ts",
     "./observe-html.ts": "./observe-html.ts",
     "./observe-shadow-root.ts": "./observe-shadow-root.ts",
+    "./ready.ts": "./ready.ts",
     "./recurse-css-rules.ts": "./recurse-css-rules.ts",
     "./recurse-document.ts": "./recurse-document.ts",
     "./recurse-element.ts": "./recurse-element.ts",

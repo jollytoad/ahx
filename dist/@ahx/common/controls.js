@@ -2,6 +2,8 @@
 
 const indexed = new WeakMap();
 
+const rules = new Set();
+
 export async function getControl(
   source,
   eventType,
@@ -20,13 +22,20 @@ export function storeControl(
   eventType,
   control,
 ) {
-  let controls = indexed.get(source);
-  if (!controls) {
-    indexed.set(source, controls = new Map());
-  }
-  controls.set(
+  indexed.getOrInsertComputed(source, () => new Map()).set(
     eventType,
     control.then((control) => control ? new WeakRef(control) : undefined),
   );
+  control.then((control) => control && control.isRule && rules.add(control));
   return control;
+}
+
+export function* getRules(eventType) {
+  for (const control of rules) {
+    if (control.isDead()) {
+      rules.delete(control);
+    } else if (control.eventType === eventType) {
+      yield control;
+    }
+  }
 }

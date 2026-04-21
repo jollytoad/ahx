@@ -5,39 +5,15 @@ import { dispatchAhxEvent } from "./ahx-event.ts";
 import { createControl } from "./control.ts";
 import { normalizePipeline } from "./parse-pipeline.ts";
 
-export async function updateControl(
+export function updateControl(
   decl: ControlDecl,
-): Promise<Set<Node>> {
-  let newControl: Control | undefined;
-  const register = (control: Control) => {
-    newControl = control;
-  };
-
-  const controlPromise = doUpdateControl(decl, register);
-  storeControl(decl.source, decl.eventType, controlPromise);
-
-  await controlPromise;
-
-  const ready = new Set<Node>();
-
-  for (const node of newControl?.nodes() ?? []) {
-    if (!ready.has(node)) {
-      ready.add(node);
-      setTimeout(() => {
-        dispatchAhxEvent("ready", node, {
-          control: newControl,
-          composed: false,
-        });
-      });
-    }
-  }
-
-  return ready;
+): Promise<Control | undefined> {
+  const controlPromise = doUpdateControl(decl);
+  return storeControl(decl.source, decl.eventType, controlPromise);
 }
 
 async function doUpdateControl(
   decl: ControlDecl,
-  register: (control: Control) => void,
 ): Promise<Control | undefined> {
   const { source, eventType } = decl;
   const pipelineStr = normalizePipeline(decl.pipelineStr);
@@ -63,7 +39,6 @@ async function doUpdateControl(
 
   try {
     control = await createControl(decl);
-    register(control);
   } catch (error: unknown) {
     log.error(`Invalid pipeline "${pipelineStr}"`, error);
     return;

@@ -6,9 +6,8 @@
     <script src="/inject-ahx.js"></script>
 
     <style>
-      body [on-oob] {
+      #tmp {
         display: none;
-        --on-ready: dispatch oob |> attr remove on-oob;
       }
     </style>
   </head>
@@ -23,22 +22,22 @@
       <h2>Streaming into out-of-band slots</h2>
 
       <button
-        on-click="get slots_selector?even |> target #oob |> stream |> swap inner"
+        on-click="get slots_selector?even |> target #tmp |> stream |> swap inner"
       >
         Load even slots
       </button>
       <button
-        on-click="get slots_selector?odd |> target #oob |> stream |> swap inner"
+        on-click="get slots_selector?odd |> target #tmp |> stream |> swap inner"
       >
         Load odd slots
       </button>
       <button
-        on-click="get slots_selector?even&odd |> target #oob |> stream |> swap inner"
+        on-click="get slots_selector?even&odd |> target #tmp |> stream |> swap inner"
       >
         Load all slots
       </button>
       <button
-        on-click="get slots_selector |> target #oob |> stream |> swap inner"
+        on-click="get slots_selector |> target #tmp |> stream |> swap inner"
       >
         Load no slots
       </button>
@@ -59,7 +58,7 @@
         </ol>
       </section>
 
-      <div id="oob"></div>
+      <div id="tmp"></div>
 
       <footer>
         <a href="/examples">back</a>

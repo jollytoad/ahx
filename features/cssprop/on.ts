@@ -3,7 +3,7 @@ import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
 import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.ts";
 
-export default function (feature: CSSPropertyFeature): void {
+export default async function (feature: CSSPropertyFeature): Promise<void> {
   if (!isParentNode(feature.context)) return;
 
   const { onCssPropPrefix } = getConfig(
@@ -16,7 +16,7 @@ export default function (feature: CSSPropertyFeature): void {
     const pipelineStr = feature.value;
 
     if (eventType && pipelineStr) {
-      updateControl({
+      await updateControl({
         root: feature.context,
         source: feature.rule,
         eventType,

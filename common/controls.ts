@@ -14,6 +14,8 @@ const indexed = new WeakMap<
   Map<EventType, Promise<WeakRef<Control> | undefined>>
 >();
 
+const rules = new Set<Control>();
+
 /**
  * Get the Hypermedia Control cached for the given control source
  * and event type.
@@ -51,15 +53,25 @@ export function getEventTypes(
 export function storeControl(
   source: ControlSource,
   eventType: EventType,
-  control: Promise<Control | void>,
-): Promise<Control | void> {
-  let controls = indexed.get(source);
-  if (!controls) {
-    indexed.set(source, controls = new Map());
-  }
-  controls.set(
+  control: Promise<Control | undefined>,
+): Promise<Control | undefined> {
+  indexed.getOrInsertComputed(source, () => new Map()).set(
     eventType,
     control.then((control) => control ? new WeakRef(control) : undefined),
   );
+  control.then((control) => control && control.isRule && rules.add(control));
   return control;
+}
+
+/**
+ * Get all registered rule controls for a given event type
+ */
+export function* getRules(eventType: EventType): Iterable<Control> {
+  for (const control of rules) {
+    if (control.isDead()) {
+      rules.delete(control);
+    } else if (control.eventType === eventType) {
+      yield control;
+    }
+  }
 }

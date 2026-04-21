@@ -3,14 +3,14 @@ import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
 import { isParentNode } from "@ahx/common/guards.ts";
 
-export default function (feature: AttrFeature): void {
+export default async function (feature: AttrFeature): Promise<void> {
   if (!isParentNode(feature.context)) return;
 
   const { onAttrPrefix } = getConfig(feature.element, "onAttrPrefix");
 
   if (onAttrPrefix && feature.name.startsWith(onAttrPrefix)) {
     const eventType = feature.name.slice(onAttrPrefix.length);
-    updateControl({
+    await updateControl({
       root: feature.context,
       source: feature.element,
       eventType,

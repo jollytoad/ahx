@@ -13,6 +13,7 @@ const detectors = [
   import("@ahx/detectors/recurse-css-rules.js"),
   import("@ahx/detectors/recurse-shadow-root.js"),
   import("@ahx/detectors/recurse-element.js"),
+  import("@ahx/detectors/ready.js"),
 ];
 
 export default detectors;

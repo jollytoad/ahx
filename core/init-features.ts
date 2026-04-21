@@ -1,6 +1,7 @@
 import type {
   Feature,
   FeatureFinder,
+  FeatureLoaded,
   FeatureLoader,
   FeatureOutcome,
 } from "@ahx/types";
@@ -65,10 +66,13 @@ export async function initFeatures(
 
   const loader = await loaderPromise;
   for (const feature of features) {
+    // Load the module for the feature
     loading.set(feature, loader(feature));
   }
 
   const promises: unknown[] = [];
+
+  const after: FeatureLoaded[] = [];
 
   while (loading.size) {
     const outcome = await Promise.race(loading.values());
@@ -77,9 +81,22 @@ export async function initFeatures(
     featureOutcome(outcome, " ");
 
     if (outcome.status === "loaded") {
-      promises.push(outcome.exportValue(outcome.feature));
+      if (outcome.feature.after) {
+        // Feature has indicated that it should be initialize after others
+        after.push(outcome);
+      } else {
+        // Initialize the feature by calling the exported function from the
+        // loaded module, passing in the feature data
+        promises.push(outcome.exportValue(outcome.feature));
+      }
     }
   }
 
   await Promise.allSettled(promises);
+
+  if (after.length) {
+    await Promise.allSettled(
+      after.map((outcome) => outcome.exportValue(outcome.feature)),
+    );
+  }
 }

@@ -38,3 +38,8 @@ export function isShadowRoot(node: unknown): node is ShadowRoot {
 export function isCSSStyleRule(node: unknown): node is CSSStyleRule {
   return typeof (node as CSSStyleRule)?.style === "object";
 }
+
+export function isMutationRecord(node: unknown): node is MutationRecord {
+  return "MutationRecord" in globalThis &&
+    node instanceof globalThis.MutationRecord;
+}

@@ -9,10 +9,6 @@
       article {
         --on-ready: once |> get _morph_1.html |> sanitize |> swap outer;
       }
-
-      body [on-oob] {
-        --on-ready: dispatch oob |> attr remove on-oob;
-      }
     </style>
   </head>
   <body>

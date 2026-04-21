@@ -16,9 +16,9 @@
       #stop {
         --on-click: target #start |> dispatch stop;
       }
-      body [on-oob] {
+      #progress-container progress + progress {
         display: none;
-        --on-ready: dispatch oob |> attr remove on-oob;
+        --on-ready: target previous progress |> swap delete;
       }
     </style>
   </head>

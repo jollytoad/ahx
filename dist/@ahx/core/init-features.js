@@ -45,10 +45,12 @@ export async function initFeatures(
 
   const loader = await loaderPromise;
   for (const feature of features) {
-    loading.set(feature, loader(feature));
+        loading.set(feature, loader(feature));
   }
 
   const promises = [];
+
+  const after = [];
 
   while (loading.size) {
     const outcome = await Promise.race(loading.values());
@@ -57,9 +59,19 @@ export async function initFeatures(
     featureOutcome(outcome, " ");
 
     if (outcome.status === "loaded") {
-      promises.push(outcome.exportValue(outcome.feature));
+      if (outcome.feature.after) {
+                after.push(outcome);
+      } else {
+                        promises.push(outcome.exportValue(outcome.feature));
+      }
     }
   }
 
   await Promise.allSettled(promises);
+
+  if (after.length) {
+    await Promise.allSettled(
+      after.map((outcome) => outcome.exportValue(outcome.feature)),
+    );
+  }
 }

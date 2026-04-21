@@ -10,6 +10,7 @@
     "./exec-pipeline.ts": "./exec-pipeline.ts",
     "./init-features.ts": "./init-features.ts",
     "./parse-pipeline.ts": "./parse-pipeline.ts",
+    "./ready.ts": "./ready.ts",
     "./start-dom-observer.ts": "./start-dom-observer.ts",
     "./update-control.ts": "./update-control.ts"
   },

@@ -1,6 +1,6 @@
 import type { AttrFeature, Context, RecurseFeature } from "@ahx/types";
 import { potentialBindings } from "@ahx/common/potential-bindings.ts";
-import { isElement } from "@ahx/common/guards.ts";
+import { isElement, isMutationRecord } from "@ahx/common/guards.ts";
 
 export function* mutationRecordDetector(
   node: unknown,
@@ -48,7 +48,3 @@ export function* mutationRecordDetector(
 }
 
 export default mutationRecordDetector;
-
-function isMutationRecord(node: unknown): node is MutationRecord {
-  return globalThis.MutationRecord && node instanceof globalThis.MutationRecord;
-}

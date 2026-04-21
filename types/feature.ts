@@ -37,6 +37,10 @@ export interface Feature {
   children?: Iterable<unknown>;
   bindings?: string[][];
   ignore?: boolean;
+  /**
+   * Indicate the feature should be delayed until after all other features
+   */
+  after?: boolean;
 }
 
 /**
@@ -112,6 +116,17 @@ export interface CSSPropertyFeature {
   name: string;
   value: string;
   bindings?: string[][];
+}
+
+/**
+ * A feature that triggers the processing of ready events,
+ * following the initial page load or after a mutation.
+ */
+export interface ReadyFeature {
+  kind: "ready";
+  context?: Context;
+  bindings?: string[][];
+  after?: boolean;
 }
 
 /**

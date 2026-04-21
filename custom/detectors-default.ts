@@ -13,6 +13,7 @@ const detectors: LazyFeatureDetector[] = [
   import("@ahx/detectors/recurse-css-rules.ts"),
   import("@ahx/detectors/recurse-shadow-root.ts"),
   import("@ahx/detectors/recurse-element.ts"),
+  import("@ahx/detectors/ready.ts"),
 ];
 
 export default detectors;

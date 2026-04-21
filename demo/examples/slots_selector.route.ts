@@ -15,13 +15,13 @@ async function* slots(req: Request) {
   yield `<!DOCTYPE html>`;
 
   // Display the current slot 'mode' (either 'Odd' or 'Even')
-  yield `<span on-oob="target .mode |> swap inner">${mode}</span>`;
+  yield `<span on-ready="target .mode |> swap inner">${mode}</span>`;
 
   // Fill all slots with a loading indicator ('...')
-  yield `<span on-oob="target .thing |> swap inner" class="loading">...</span>`;
+  yield `<span on-ready="target .thing |> swap inner" class="loading">...</span>`;
 
   // Ensure the above is swapped whilst waiting
-  yield `<span on-oob="swap delete">flush</span>`;
+  yield `<span on-ready="swap delete">flush</span>`;
 
   // Simulate an initial delay for a data query
   await new Promise((resolve) => setTimeout(resolve, 300));
@@ -31,10 +31,10 @@ async function* slots(req: Request) {
 
     if (show) {
       // Fill a specific slot
-      yield `<span on-oob="target .thing-${i} |> swap inner">Thing ${i}</span>`;
+      yield `<span on-ready="target .thing-${i} |> swap inner">Thing ${i}</span>`;
 
       // Ensure the slot is swapped whilst waiting for the next
-      yield `<span on-oob="swap delete">flush</span>`;
+      yield `<span on-ready="swap delete">flush</span>`;
 
       // Simulate a slow stream of data from the query with a small delay
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -42,5 +42,5 @@ async function* slots(req: Request) {
   }
 
   // Clear all remaining loading indicators
-  yield `<span on-oob="target .thing :has(.loading) |> swap inner"></span>`;
+  yield `<span on-ready="target .thing :has(.loading) |> swap inner"></span>`;
 }
