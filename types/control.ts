@@ -33,11 +33,11 @@ export interface ElementControlDecl {
   /**
    * The event type that trigger this pipeline.
    */
-  eventType: string;
+  eventType: EventType;
   /**
    * The raw pipeline string.
    */
-  pipelineStr: string;
+  pipelineStr: PipelineString;
   /**
    * The base URL of this control.
    */
@@ -86,7 +86,7 @@ export interface Control extends AbortController, EventListenerObject {
   /**
    * The event type that trigger this pipeline.
    */
-  readonly eventType: string;
+  readonly eventType: EventType;
   /**
    * The target on which the event listener should be registered for this control.
    */
