@@ -4,7 +4,7 @@
     "jsr:@b-fuze/deno-dom@*": "0.1.49",
     "jsr:@b-fuze/deno-dom@~0.1.49": "0.1.56",
     "jsr:@b-fuze/deno-dom@~0.1.56": "0.1.56",
-    "jsr:@deno/graph@~0.107.1": "0.107.1",
+    "jsr:@deno/graph@~0.107.2": "0.107.2",
     "jsr:@denosaurs/plug@1.0.3": "1.0.3",
     "jsr:@denosaurs/plug@1.1.0": "1.1.0",
     "jsr:@fcrozatier/type-strip@^1.4.1": "1.4.1",
@@ -63,8 +63,8 @@
         "jsr:@denosaurs/plug@1.1.0"
       ]
     },
-    "@deno/graph@0.107.1": {
-      "integrity": "a1abc9902676ca0127f310a6a947c50410fc9d4db8f809f8e2b5198df0f08a69"
+    "@deno/graph@0.107.2": {
+      "integrity": "83d7da88062342b7ce5c86e7131706a07fea0c29ece07217d1c63b97e1ee7669"
     },
     "@denosaurs/plug@1.0.3": {
       "integrity": "b010544e386bea0ff3a1d05e0c88f704ea28cbd4d753439c2f1ee021a85d4640",
@@ -293,7 +293,7 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@deno/graph@~0.107.1",
+      "jsr:@deno/graph@~0.107.2",
       "jsr:@fcrozatier/type-strip@^1.4.1",
       "jsr:@std/assert@^1.0.19",
       "npm:@playwright/test@1.56.1",

@@ -4,8 +4,10 @@ import type { Feature } from "@ahx/types";
 // by looking for bindings that include args.
 export const allowBindings: Set<string> = new Set([
   "attr:on",
+  "attr:on ready",
   "cssprop:on",
   "observe:*",
+  "ready:dispatch",
   "action:*",
   "action:import css",
   "action:key dispatch",

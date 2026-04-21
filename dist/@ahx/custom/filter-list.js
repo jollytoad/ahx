@@ -2,8 +2,10 @@
 
 export const allowBindings = new Set([
   "attr:on",
+  "attr:on ready",
   "cssprop:on",
   "observe:*",
+  "ready:dispatch",
   "action:*",
   "action:import css",
   "action:key dispatch",

@@ -55,13 +55,13 @@ function renderTodo(todo: Todo): string {
   const text = escape(todo.text);
   return /*html*/ `
 <li class="todo-item">
-  <form class="row" method="post" action="todos">
+  <form class="flex-row" method="post" action="todos">
     <input name="done" type="checkbox" value="true" ${
     todo.done ? "checked" : ""
   }>
     <input name="text" type="text" value="${text}">
     <input type="hidden" name="id" value="${id}">
-    <button type="button" class="delete">Delete</button>
+    <button type="button" class="delete bad color">Delete</button>
   </form>
 </li>
 `;
@@ -70,10 +70,10 @@ function renderTodo(todo: Todo): string {
 function renderBlankTodo(): string {
   return /*html*/ `
 <li class="todo-item">
-  <form class="row" method="post" action="todos">
+  <form class="flex-row" method="post" action="todos">
     <input name="done" type="checkbox" value="true">
     <input name="text" type="text" value="" autofocus>
-    <button type="submit" class="add">Add</button>
+    <button type="submit" class="add ok color">Add</button>
   </form>
 </li>
 `;

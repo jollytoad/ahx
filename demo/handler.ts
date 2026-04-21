@@ -16,7 +16,7 @@ const EXAMPLES_HTML_HEADERS: HeadersInit = [
   ["link", `<https://cdn.jsdelivr.net>; rel=preconnect`],
   [
     "link",
-    `<https://cdn.jsdelivr.net/npm/missing.css@1.2.0/dist/missing.min.css>; rel=preload; as=style`,
+    `<https://cdn.jsdelivr.net/npm/missing.css@1.3.0/dist/missing.min.css>; rel=preload; as=style`,
   ],
 ];
 

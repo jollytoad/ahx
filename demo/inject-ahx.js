@@ -32,7 +32,7 @@
       "@ahx/": "/@ahx/",
       [`@ahx/features/element/http/cat.${ext}`]: `/examples/_http_cat.${ext}`,
       "dompurify":
-        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.3.1/dist/purify.es.mjs",
+        "https://cdn.jsdelivr.net/gh/cure53/dompurify@3.4.1/dist/purify.es.mjs",
       "idiomorph":
         "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
       "morphlex": "https://cdn.jsdelivr.net/npm/morphlex@1.4.0/+esm",
@@ -80,6 +80,7 @@
     "/@ahx/core/exec-pipeline",
     "/@ahx/core/init-features",
     "/@ahx/core/parse-pipeline",
+    "/@ahx/core/ready",
     "/@ahx/core/start-dom-observer",
     "/@ahx/core/update-control",
     "/@ahx/custom/config-default",
@@ -101,14 +102,17 @@
     "/@ahx/detectors/mutation-record",
     "/@ahx/detectors/observe-html",
     "/@ahx/detectors/observe-shadow-root",
+    "/@ahx/detectors/ready",
     "/@ahx/detectors/recurse-css-rules",
     "/@ahx/detectors/recurse-document",
     "/@ahx/detectors/recurse-element",
     "/@ahx/detectors/recurse-feature",
     "/@ahx/detectors/recurse-shadow-root",
     "/@ahx/features/attr/on",
+    "/@ahx/features/attr/on/ready",
     "/@ahx/features/cssprop/on",
     "/@ahx/features/observe/html",
+    "/@ahx/features/ready/dispatch",
     "/@ahx/init/mod",
     "/@ahx/loader/feature-finder",
     "/@ahx/loader/feature-loader",
@@ -147,6 +151,6 @@
   }
 
   document.writeln(
-    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.2.0/dist/missing.min.css" ahx-ignore>`,
+    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.3.0/dist/missing.min.css" ahx-ignore>`,
   );
 })();
