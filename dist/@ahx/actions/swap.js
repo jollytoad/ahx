@@ -21,26 +21,22 @@ export const swap = (...args) => {
       nodes = [initialTarget];
     }
 
-    if (nodes) {
-      let effectiveOp = op;
+    if (isAsyncIterable(nodes)) {
+                        
+            const cursors = [...swapToTargets(op, targets, createCursorNode)];
 
       for await (const node of nodes) {
-        const tails = [];
-
-        let clone = false;
-        for (const target of targets) {
-          const swapped = doSwap(
-            effectiveOp,
-            target,
-            clone ? node.cloneNode(true) : node,
-          );
-          if (swapped) {
-            tails.push(swapped);
-          }
-          clone = true;
+                for (const _ of swapToTargets("before", cursors, clonesOf(node))) {
+          // ignore the swapped node
         }
+      }
+    } else if (nodes) {
+                  
+      let effectiveOp = op;
 
-                targets = tails;
+      for (const node of nodes) {
+                        targets = [...swapToTargets(effectiveOp, targets, clonesOf(node))];
+
                 effectiveOp = "after";
       }
     } else if (texts) {
@@ -52,3 +48,37 @@ export const swap = (...args) => {
     }
   };
 };
+
+function isAsyncIterable(nodes) {
+  return !!nodes && Symbol.asyncIterator in nodes &&
+    typeof nodes[Symbol.asyncIterator] === "function";
+}
+
+function* swapToTargets(
+  op,
+  targets,
+  source,
+) {
+  for (const target of targets) {
+    const node = source(target);
+    if (node) {
+      doSwap(op, target, node);
+      yield node;
+    }
+  }
+}
+
+function createCursorNode(target) {
+  return target.ownerDocument?.createTextNode("");
+}
+
+function clonesOf(node) {
+  let clone = false;
+  return () => {
+    try {
+      return clone ? node.cloneNode(true) : node;
+    } finally {
+      clone = true;
+    }
+  };
+}
