@@ -7,6 +7,10 @@ export function isNode<T extends Node = Node>(
     : !!(node as Node)?.nodeType;
 }
 
+export function isParentNode(node: unknown): node is ParentNode {
+  return isNode(node) && "children" in node;
+}
+
 export function isElement<T extends Element = Element>(
   node: unknown,
   elementName?: string,

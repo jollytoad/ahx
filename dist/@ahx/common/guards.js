@@ -7,6 +7,10 @@ export function isNode(
     : !!(node)?.nodeType;
 }
 
+export function isParentNode(node) {
+  return isNode(node) && "children" in node;
+}
+
 export function isElement(
   node,
   elementName,

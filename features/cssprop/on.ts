@@ -1,7 +1,7 @@
 import type { Control, ControlSource, CSSPropertyFeature } from "@ahx/types";
 import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
-import { isElement, isNode, isShadowRoot } from "@ahx/common/guards.ts";
+import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.ts";
 
 export default function (feature: CSSPropertyFeature): void {
   if (!isParentNode(feature.context)) return;
@@ -26,10 +26,6 @@ export default function (feature: CSSPropertyFeature): void {
       });
     }
   }
-}
-
-function isParentNode(node: unknown): node is ParentNode {
-  return isNode(node) && "children" in node;
 }
 
 const selectorTextRule = {

@@ -1,7 +1,7 @@
 import type { AttrFeature } from "@ahx/types";
 import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
-import { isNode } from "@ahx/common/guards.ts";
+import { isParentNode } from "@ahx/common/guards.ts";
 
 export default function (feature: AttrFeature): void {
   if (!isParentNode(feature.context)) return;
@@ -18,8 +18,4 @@ export default function (feature: AttrFeature): void {
       baseURL: feature.element.baseURI,
     });
   }
-}
-
-function isParentNode(node: unknown): node is ParentNode {
-  return isNode(node) && "children" in node;
 }

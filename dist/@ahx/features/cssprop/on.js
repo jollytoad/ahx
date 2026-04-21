@@ -1,7 +1,7 @@
 
 import { getConfig } from "@ahx/custom/config.js";
 import { updateControl } from "@ahx/core/update-control.js";
-import { isElement, isNode, isShadowRoot } from "@ahx/common/guards.js";
+import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.js";
 
 export default function (feature) {
   if (!isParentNode(feature.context)) return;
@@ -26,10 +26,6 @@ export default function (feature) {
       });
     }
   }
-}
-
-function isParentNode(node) {
-  return isNode(node) && "children" in node;
 }
 
 const selectorTextRule = {

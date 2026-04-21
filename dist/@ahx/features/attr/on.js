@@ -1,7 +1,7 @@
 
 import { getConfig } from "@ahx/custom/config.js";
 import { updateControl } from "@ahx/core/update-control.js";
-import { isNode } from "@ahx/common/guards.js";
+import { isParentNode } from "@ahx/common/guards.js";
 
 export default function (feature) {
   if (!isParentNode(feature.context)) return;
@@ -18,8 +18,4 @@ export default function (feature) {
       baseURL: feature.element.baseURI,
     });
   }
-}
-
-function isParentNode(node) {
-  return isNode(node) && "children" in node;
 }
