@@ -9,6 +9,7 @@
     "./base-url.ts": "./base-url.ts",
     "./class.ts": "./class.ts",
     "./clone.ts": "./clone.ts",
+    "./credentials.ts": "./credentials.ts",
     "./delete.ts": "./delete.ts",
     "./dispatch.ts": "./dispatch.ts",
     "./fetch.ts": "./fetch.ts",
@@ -45,7 +46,7 @@
     "./url.ts": "./url.ts"
   },
   "imports": {
-    "dompurify": "npm:dompurify@3.3.1",
+    "dompurify": "npm:dompurify@3.4.1",
     "idiomorph": "npm:idiomorph@0.7.4",
     "morphlex": "npm:morphlex@^1.4.0"
   },

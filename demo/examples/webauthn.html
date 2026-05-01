@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="/inject-ahx.js"></script>
+
+    <style>
+      button {
+        --on-click: target #debug |> swap empty;
+      }
+      #register {
+        --on-click: get webauthn-register |> credentials create publickey |>
+          post webauthn-register |> target #debug |> swap inner;
+      }
+      #authenticate {
+        --on-click: get webauthn-authenticate |> credentials get publickey |>
+          post webauthn-authenticate |> target #debug |> swap inner;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Web Authentication</h2>
+
+      <button id="register">Register</button>
+      <button id="authenticate">Authenticate</button>
+
+      <pre id="debug"></pre>
+
+      <footer>
+        <a href="/examples">back</a>
+      </footer>
+    </main>
+  </body>
+</html>

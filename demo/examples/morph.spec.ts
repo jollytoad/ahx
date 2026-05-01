@@ -8,7 +8,7 @@ test("video continues to play", async ({ page }) => {
   const heading = page.locator("h3");
   const frame = page.frameLocator("#video");
   const video = frame.locator("video");
-  const playButton = frame.getByLabel("Play", { exact: true });
+  const playButton = frame.getByLabel("Play video");
   const morphButton = page.getByText("Morph", { exact: true });
 
   // Ensure the initial content has loaded

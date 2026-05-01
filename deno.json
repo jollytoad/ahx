@@ -6,7 +6,7 @@
     "start:gh": "AHX_URL=https://raw.githubusercontent.com/jollytoad/ahx/v0.5.0-alpha.15/ deno run --allow-all --watch demo/dev.ts",
     "start:jsd": "AHX_URL=https://cdn.jsdelivr.net/gh/jollytoad/ahx@0.5.0-alpha.15/ deno run --allow-all --watch demo/dev.ts",
     "start:esm": "AHX_URL=https://esm.sh/jsr/@ahx/ deno run --allow-all --watch demo/dev.ts",
-    "ok": "deno fmt && deno lint && deno task check && deno task build && deno publish --dry-run --allow-dirty && deno task test:unit --reporter=dot",
+    "ok": "deno task packages && deno fmt && deno lint && deno task check && deno task build && deno publish --dry-run --allow-dirty && deno task test:unit --reporter=dot",
     "check": "deno check common/**/*.ts actions/**/*.ts core/**/*.ts demo/**/*.ts init/**/*.ts",
     "mkcert": "mkcert -install -key-file localhost-key.pem -cert-file localhost-cert.pem localhost",
     "packages": "./_tools/packages.ts",
@@ -47,9 +47,9 @@
   "imports": {
     "@deno/graph": "jsr:@deno/graph@^0.107.2",
     "@fcrozatier/type-strip": "jsr:@fcrozatier/type-strip@^1.4.1",
-    "@playwright/test": "npm:@playwright/test@1.56.1",
+    "@playwright/test": "npm:@playwright/test@1.59.1",
     "@std/assert": "jsr:@std/assert@^1.0.19",
-    "typescript": "npm:typescript@^5.9.3"
+    "typescript": "npm:typescript@^6.0.3"
   },
   "test": {
     "permissions": {
