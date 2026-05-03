@@ -18,6 +18,13 @@ const EXAMPLES_HTML_HEADERS: HeadersInit = [
   ],
 ];
 
+const DEVTOOLS = {
+  workspace: {
+    root: import.meta.dirname,
+    uuid: "7c04cabd-59e6-42b7-9557-e18d1ca765f9",
+  },
+};
+
 export default handle([
   byPattern("/huge", () => {
     return new Response(
@@ -29,6 +36,10 @@ export default handle([
       },
     );
   }),
+  byPattern(
+    "/.well-known/appspecific/com.chrome.devtools.json",
+    () => Response.json(DEVTOOLS),
+  ),
   byPattern(
     "/importmap.json",
     async () => {
