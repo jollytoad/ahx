@@ -22,7 +22,7 @@
 
   const ts = sessionStorage.getItem("ahx-demo-mode") === "ts";
   const bindingMode = sessionStorage.getItem("ahx-binding-mode") ??
-    "binding-all";
+    "binding-list";
   const enablePreload = sessionStorage.getItem("ahx-preload-mode") !== "off";
 
   const ext = ts ? "ts" : "js";

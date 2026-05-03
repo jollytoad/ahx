@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="/inject-ahx.js"></script>
+    <style>
+      .load-on-click {
+        --on-click: get /more.html |> swap outer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>
+          <strong>ahx</strong> examples
+        </h1>
+      </header>
+
+      <h2>Some examples</h2>
+
+      <a id="one" on-click="get _more.html |> swap outer">Load me</a>
+
+      <br />
+
+      <a class="load-on-click">Load me (via CSS rule)</a>
+
+      <br />
+
+      <span on-ready="once |> get _more.html |> swap outer"
+      >Load me on load</span>
+
+      <br />
+
+      <a on-click="template #more |> swap outer"><span>Replace me</span></a>
+
+      <br />
+
+      <span on-click="attr get data-hello |> swap text" data-hello="Hello"
+      >Replace text</span>
+
+      <br />
+
+      <a on-click="swap delete">Delete me</a>
+
+      <br />
+
+      <a on-click="target a |> attr remove on-click"
+      >Remove on-click from links</a>
+
+      <footer>
+        <a href="..">back</a>
+      </footer>
+    </main>
+
+    <template id="more">
+      <span on-click="get _loaded.html |> swap outer">Click me again!</span>
+    </template>
+  </body>
+</html>

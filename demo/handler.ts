@@ -6,8 +6,6 @@ import { byPattern } from "@http/route/by-pattern";
 import { dynamicRoute } from "@http/discovery/dynamic-route";
 import { setHeaders } from "@http/response/set-headers";
 import { appendHeaders } from "@http/response/append-headers";
-import { serveFile } from "@http/fs/serve-file";
-import { fromFileUrl } from "@std/path/from-file-url";
 import { prerender } from "@ahx/prerender/interceptor.ts";
 import type { ResponseInterceptor } from "@http/interceptor/types";
 
@@ -42,14 +40,6 @@ export default handle([
       }
       return Response.json(importmap);
     },
-  ),
-  byPattern(
-    "/examples",
-    (req) =>
-      serveFile(
-        req,
-        fromFileUrl(import.meta.resolve("./examples/index.html")),
-      ),
   ),
   dynamicRoute({
     pattern: "/examples",
