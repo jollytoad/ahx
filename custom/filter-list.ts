@@ -11,6 +11,7 @@ export const allowBindings: Set<string> = new Set([
   "action:*",
   "action:import css",
   "action:key dispatch",
+  "action:sort children",
   "action:target attr",
   "action:target xpath-class",
   "action:target xpath",
