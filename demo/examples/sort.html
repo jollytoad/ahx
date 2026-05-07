@@ -6,25 +6,33 @@
     <script src="/inject-ahx.js"></script>
 
     <style>
-      th:nth-child(1) {
-        --on-click: target closest table |> target tbody |> sort children
-          td:nth-child(1) |> target this |> dispatch sorted;
-      }
-      th:nth-child(2) {
-        --on-click: target closest table |> target tbody |> sort children
-          td:nth-child(2) |> target this |> dispatch sorted;
-      }
-      th:nth-child(3) {
-        --on-click: target closest table |> target tbody |> sort children
-          td:nth-child(3) |> target this |> dispatch sorted;
-      }
-      th:nth-child(4) {
-        --on-click: target closest table |> target tbody |> sort children
-          td:nth-child(4) |> target this |> dispatch sorted;
-      }
       th {
-        --on-sorted: target closest thead |> target th |> attr remove
-          aria-sorted |> target this |> attr set aria-sorted ascending;
+        --on-ready: attr set role button |> attr set tabindex 0;
+        --on-click: dispatch sort;
+        --on-keyup: key dispatch Enter ArrowLeft ArrowRight;
+        --on-keyup-Enter: dispatch sort;
+        --on-keyup-ArrowLeft: target previous th |> focus;
+        --on-keyup-ArrowRight: target next th |> focus;
+        --on-sort: sort column;
+      }
+      th[role="button"] {
+        cursor: pointer;
+        background: var(--interactive-bg);
+      }
+      th[role="button"]:hover {
+        filter: brightness(1.1);
+      }
+      th::after {
+        width: 1em;
+        margin: 0 0.5ex;
+        content: "♢";
+        display: inline-block;
+      }
+      th[aria-sort="ascending"]::after {
+        content: "▲";
+      }
+      th[aria-sort="descending"]::after {
+        content: "▼";
       }
     </style>
   </head>

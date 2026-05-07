@@ -2,18 +2,64 @@ import type { ActionConstruct, ActionResult } from "@ahx/types";
 import { isElement } from "@ahx/common/guards.ts";
 
 export const sort_children: ActionConstruct = (_op, ...args) => {
+  let reverse = false;
+
+  switch (args[0]) {
+    case "descending":
+      reverse = true;
+      // fallthrough
+    case "ascending":
+      args.shift();
+      break;
+  }
+
   const selector = args.join(" ");
 
   return ({ targets }): ActionResult | undefined => {
     if (!targets) return;
 
     for (const target of targets) {
-      sortChildren(target, selector);
+      sortChildren(target, selector, reverse);
     }
   };
 };
 
-function sortChildren(parent: Node, selector: string) {
+export const sort_column: ActionConstruct = (_op, direction) => {
+  return ({ targets }): ActionResult | undefined => {
+    if (!targets) return;
+
+    const [target] = targets;
+
+    if (!target || !isElement(target) || !target.parentElement) return;
+
+    const targetIndex = Array.from(target.parentElement.children).indexOf(
+      target,
+    );
+
+    if (targetIndex === -1) return;
+
+    const reverse = (!direction || direction === "toggle")
+      ? target.ariaSort === "ascending"
+      : direction === "descending";
+
+    // TODO: look for table-like roles if table/tbody is not found
+    const parent = target.closest("table")?.querySelector("tbody");
+
+    if (!parent) return;
+
+    // TODO: deal with colspan's
+
+    sortChildren(parent, `td:nth-child(${targetIndex + 1})`, reverse);
+
+    for (const heading of target.parentElement.children) {
+      heading.ariaSort = heading === target
+        ? (reverse ? "descending" : "ascending")
+        : null;
+    }
+  };
+};
+
+function sortChildren(parent: Node, selector: string, reverse: boolean) {
   const children = parent.childNodes;
 
   if (children.length > 1) {
@@ -22,7 +68,7 @@ function sortChildren(parent: Node, selector: string) {
       : parent.insertBefore.bind(parent);
 
     Array.from(children)
-      .sort(nodeComparator(children, selector))
+      .sort(nodeComparator(children, selector, reverse))
       .forEach((child, i) => {
         if (child !== children[i]) {
           moveBefore(child, children[i] ?? null);
@@ -31,8 +77,14 @@ function sortChildren(parent: Node, selector: string) {
   }
 }
 
-function nodeComparator(children: Iterable<Node>, selector: string) {
+function nodeComparator(
+  children: Iterable<Node>,
+  selector: string,
+  reverse: boolean,
+) {
   const values = getNodeValues(children, selector);
+  const less = reverse ? 1 : -1;
+  const more = reverse ? -1 : 1;
 
   return (nodeA: Node, nodeB: Node) => {
     const valueA = values.get(nodeA);
@@ -40,8 +92,8 @@ function nodeComparator(children: Iterable<Node>, selector: string) {
     return valueA == valueB
       ? 0
       : (valueA ?? false) < (valueB ?? false)
-      ? -1
-      : 1;
+      ? less
+      : more;
   };
 }
 

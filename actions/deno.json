@@ -36,7 +36,7 @@
     "./sanitize.ts": "./sanitize.ts",
     "./select.ts": "./select.ts",
     "./sleep.ts": "./sleep.ts",
-    "./sort_children.ts": "./sort_children.ts",
+    "./sort.ts": "./sort.ts",
     "./stream.ts": "./stream.ts",
     "./swap.ts": "./swap.ts",
     "./target.ts": "./target.ts",
