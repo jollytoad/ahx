@@ -2,6 +2,7 @@
 import { getConfig } from "@ahx/custom/config.js";
 import { updateControl } from "@ahx/core/update-control.js";
 import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.js";
+import { resolveNestedSelector } from "@ahx/common/resolve-nested-selector.js";
 
 export default async function (feature) {
   if (!isParentNode(feature.context)) return;
@@ -38,7 +39,7 @@ const selectorTextRule = {
         case ":host":
           return isShadowRoot(root) ? [root.host] : [];
         default:
-          return root.querySelectorAll(source.selectorText);
+          return root.querySelectorAll(resolveNestedSelector(source));
       }
     }
     return [];
@@ -52,7 +53,7 @@ const selectorTextRule = {
         case ":host":
           return isShadowRoot(root) && node === root.host;
         default:
-          return isElement(node) && node.matches(source.selectorText);
+          return isElement(node) && node.matches(resolveNestedSelector(source));
       }
     }
     return false;

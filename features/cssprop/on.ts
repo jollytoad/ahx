@@ -1,7 +1,13 @@
-import type { Control, ControlSource, CSSPropertyFeature } from "@ahx/types";
+import type {
+  Control,
+  ControlSource,
+  CSSNode,
+  CSSPropertyFeature,
+} from "@ahx/types";
 import { getConfig } from "@ahx/custom/config.ts";
 import { updateControl } from "@ahx/core/update-control.ts";
 import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.ts";
+import { resolveNestedSelector } from "@ahx/common/resolve-nested-selector.ts";
 
 export default async function (feature: CSSPropertyFeature): Promise<void> {
   if (!isParentNode(feature.context)) return;
@@ -38,7 +44,7 @@ const selectorTextRule = {
         case ":host":
           return isShadowRoot(root) ? [root.host] : [];
         default:
-          return root.querySelectorAll(source.selectorText);
+          return root.querySelectorAll(resolveNestedSelector(source));
       }
     }
     return [];
@@ -52,7 +58,7 @@ const selectorTextRule = {
         case ":host":
           return isShadowRoot(root) && node === root.host;
         default:
-          return isElement(node) && node.matches(source.selectorText);
+          return isElement(node) && node.matches(resolveNestedSelector(source));
       }
     }
     return false;
@@ -61,6 +67,6 @@ const selectorTextRule = {
 
 function hasSelectorText(
   source?: ControlSource,
-): source is { selectorText: string } {
+): source is CSSNode {
   return !!source && "selectorText" in source && !!source.selectorText;
 }

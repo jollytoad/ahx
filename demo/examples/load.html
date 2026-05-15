@@ -6,14 +6,50 @@
     <script src="/inject-ahx.js"></script>
 
     <style>
+      /* NOTE: These rules are deliberately convoluted to test expectations,
+         that all boxes will eventually contain 'LOADED' with a green tick. */
+
       .load-via-rule {
-        --on-ready: get _loaded.html |> swap inner;
+        --on-ready: get _loaded.html |> swap inner |> class add
+          load-via-rule-works;
       }
 
-      .container {
+      .container, .non-existent {
         & .load-via-nested-rule {
-          --on-ready: get _loaded.html |> swap inner;
+          main & {
+            & {
+              --on-ready: get _loaded.html |> swap inner;
+            }
+            & {
+              --on-ready: class add load-via-nested-rule-works;
+            }
+          }
         }
+      }
+
+      .loading::after {
+        content: "◷";
+        color: red;
+      }
+      :has(> .loaded)::after {
+        color: green;
+      }
+
+      .load-via-attr-works,
+      .load-via-rule-works,
+      .load-via-nested-rule-works,
+      .load-via-sibling-rule-works,
+      .load-delayed-works {
+        &::after {
+          content: "✔";
+        }
+        & {
+          --on-ready: class remove loading;
+        }
+      }
+
+      button.abort {
+        float: right;
       }
     </style>
   </head>
@@ -30,32 +66,33 @@
       <section class="box">
         <strong class="block titlebar">Loaded via an inline attribute</strong>
         <div
-          class="load-via-attr"
-          on-ready="get _loaded.html |> swap inner"
+          class="load-via-attr loading"
+          on-ready="get _loaded.html |> swap inner |> class add load-via-attr-works"
         >
         </div>
       </section>
 
       <section class="box">
         <strong class="block titlebar">Loaded via a CSS rule</strong>
-        <div class="load-via-rule"></div>
+        <div class="load-via-rule loading"></div>
       </section>
 
       <section class="box">
         <strong class="block titlebar">Loaded via a nested CSS rule</strong>
 
         <div class="container">
-          <div class="load-via-nested-rule"></div>
+          <div class="load-via-nested-rule loading"></div>
         </div>
       </section>
 
       <section class="box">
         <strong class="block titlebar"
         >Loaded via a CSS rule in a sibling stylesheet</strong>
-        <div class="load-via-sibling-rule"></div>
+        <div class="load-via-sibling-rule loading"></div>
         <style>
           .load-via-sibling-rule {
-            --on-ready: get _loaded.html |> swap inner;
+            --on-ready: get _loaded.html |> swap inner |> class add
+              load-via-sibling-rule-works;
           }
         </style>
       </section>
@@ -64,9 +101,15 @@
         <strong class="block titlebar"
         >Load and delay swapping in the content</strong>
 
-        <button on-click="target body [on-ready] |> abort ready">Abort</button>
+        <button class="abort" on-click="target .load-delayed |> abort ready">
+          Abort
+        </button>
 
-        <div on-ready="get _loaded.html |> sleep 2000 |> swap inner"></div>
+        <div
+          class="load-delayed loading"
+          on-ready="get _loaded.html |> sleep 2000 |> swap inner |> class add load-delayed-works"
+        >
+        </div>
       </section>
     </main>
 
