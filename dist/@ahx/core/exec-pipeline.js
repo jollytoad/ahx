@@ -48,12 +48,21 @@ export async function execPipeline(
       log.beforeAction(context);
     }
 
-        result = await action.fn(context);
+        try {
+      result = await action.fn(context);
+    } catch (error) {
+      result = { error };
+    }
 
     context = { ...context, ...result, ...immutable };
     log.afterAction(context, result);
 
     signal.throwIfAborted();
+
+    if (result?.error) {
+      log.errorAction(context);
+      break;
+    }
 
     if (result?.break) {
       log.cancelAction(context);

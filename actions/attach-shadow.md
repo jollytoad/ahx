@@ -14,6 +14,25 @@ If at least one shadow root was created:
 
 If no shadow roots could be created, the pipeline is stopped.
 
+### Example
+
+```html
+<div>
+  <style>
+    example-box {
+      display: none;
+      --on-ready: attach-shadow |> get /examples/_box_element.html |> swap
+        inner;
+    }
+  </style>
+
+  <example-box>
+    <span slot="title">attach-shadow example</span>
+    Create web components purely with ahx using `attach-shadow`.
+  </example-box>
+</div>
+```
+
 ## References
 
 - [`attachShadow()`](https://developer.mozilla.org/docs/Web/API/Element/attachShadow)

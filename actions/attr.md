@@ -19,6 +19,15 @@ Retrieve the values of the named attribute from all target elements.
 - `nodes`: the actual [Attr](https://developer.mozilla.org/docs/Web/API/Attr)
   nodes
 
+### `attr url <attribute-name>`
+
+Get the first value from the named attribute of the target elements, and set the
+URL within the action context, for later fetch request actions.
+
+**Output**
+
+- `request.url`: the URL retreived from the attribute
+
 ### `attr remove <attribute-name>`
 
 Remove the named attribute from all target elements.
@@ -52,6 +61,28 @@ Add the value to the existing attribute, if it doesn't contain it. Acts like
 ### `attr exclude <attribute-name> [...<value>]`
 
 Remove the given value from an existing attribute.
+
+## Examples
+
+```html
+<div>
+  <button
+    on-click="attr get data-clicked |> swap inner"
+    data-clicked="You clicked me!"
+  >
+    attr get
+  </button>
+  <button
+    on-click="attr url data-url |> get |> swap inner"
+    data-url="/examples/_loaded"
+  >
+    attr url
+  </button>
+  <button on-click="attr remove class" class="bold">attr remove</button>
+  <button on-click="attr set class bold" class="italic">attr set</button>
+  <button on-click="attr append class bold" class="italic">attr append</button>
+</div>
+```
 
 ## References
 

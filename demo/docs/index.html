@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <title>ahx examples</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="/inject-ahx.js"></script>
+    <style>
+      body, body > div {
+        min-height: 100vh;
+      }
+      #actions {
+        --on-ready: get /docs/actions |> swap inner |> sort children;
+        & a {
+          --on-click: prevent-default |> attr get href |> target #content |>
+            attr set data-src |> dispatch ready;
+        }
+      }
+      #content[data-src] {
+        --on-ready: prevent-default |> attr url data-src |> get |> markdown gfm
+          |> swap inner;
+      }
+      #content h1:first-of-type {
+        display: none;
+        --on-ready: target #content-header |> swap inner;
+      }
+      #content code.language-html {
+        --on-ready: template #example |> target closest pre |> clone |> swap
+          after |> select this |> as text |> target next section.example |> swap
+          inner;
+      }
+      #content-header {
+        &, h1 {
+          margin-top: 0;
+        }
+        h1 {
+          max-inline-size: var(--eff-line-length);
+          inline-size: 100%;
+          margin-inline: auto;
+        }
+      }
+      nav > details {
+        padding: 0;
+        border: none;
+
+        & > summary {
+          list-style: none;
+
+          &::after {
+            float: right;
+            content: "＋";
+          }
+          [open] &::after {
+            content: "－";
+          }
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar-layout">
+      <header>
+        <h1>
+          <strong>ahx</strong> docs
+        </h1>
+
+        <nav>
+          <details open>
+            <summary>Actions</summary>
+            <ul role="list" id="actions"></ul>
+          </details>
+        </nav>
+      </header>
+
+      <div>
+        <header id="content-header">
+          <h1>Actions</h1>
+        </header>
+        <main>
+          <article id="content"></article>
+        </main>
+      </div>
+    </div>
+    <template id="example">
+      <section class="example box"></section>
+    </template>
+  </body>
+</html>

@@ -12,7 +12,7 @@ export async function createControl(decl) {
   const actionDecls = parsePipeline(pipelineStr);
   const actions = Object.freeze(await createActions(actionDecls, root));
 
-  return Object.freeze(new ControlImpl(decl, actions));
+  return Object.freeze(new Control(decl, actions));
 }
 
 function createActions(
@@ -23,7 +23,7 @@ function createActions(
   return Promise.all(decls.map(createAction(config)));
 }
 
-class ControlImpl {
+class Control {
   #root;
   #source;
   #abortController;

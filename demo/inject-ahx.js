@@ -36,6 +36,11 @@
       "idiomorph":
         "https://cdn.jsdelivr.net/gh/bigskysoftware/idiomorph@0.7.4/dist/idiomorph.esm.js",
       "morphlex": "https://cdn.jsdelivr.net/npm/morphlex@1.4.0/+esm",
+      "micromark": "https://cdn.jsdelivr.net/npm/micromark@4.0.2/+esm",
+      "micromark-extension-gfm":
+        "https://cdn.jsdelivr.net/npm/micromark-extension-gfm@3.0.0/+esm",
+      "micromark-extension-math":
+        "https://cdn.jsdelivr.net/npm/micromark-extension-math@3.1.0/+esm",
     },
   };
 
@@ -152,5 +157,18 @@
 
   document.writeln(
     `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.3.0/dist/missing.min.css" ahx-ignore>`,
+  );
+  document.writeln(
+    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/missing.css@1.3.0/dist/missing-prism.min.css" ahx-ignore>`,
+  );
+  document.writeln(
+    `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism.min.css" ahx-ignore>`,
+  );
+
+  document.writeln(
+    `<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/prism.min.js" defer></script>`,
+  );
+  document.writeln(
+    `<script src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js" defer></script>`,
   );
 })();

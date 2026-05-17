@@ -46,4 +46,8 @@ export interface ActionResult {
    * Base URL for relative URLs to be resolved against
    */
   baseURL?: string | URL | "@control" | "@target";
+  /**
+   * An error thrown by the action.
+   */
+  error?: unknown;
 }

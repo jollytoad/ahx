@@ -4,6 +4,7 @@
   "license": "MIT",
   "exports": {
     "./abort.ts": "./abort.ts",
+    "./as.ts": "./as.ts",
     "./attach-shadow.ts": "./attach-shadow.ts",
     "./attr.ts": "./attr.ts",
     "./base-url.ts": "./base-url.ts",
@@ -22,6 +23,7 @@
     "./input.ts": "./input.ts",
     "./key.ts": "./key.ts",
     "./key_dispatch.ts": "./key_dispatch.ts",
+    "./markdown.ts": "./markdown.ts",
     "./matches.ts": "./matches.ts",
     "./method.ts": "./method.ts",
     "./morph.ts": "./morph.ts",

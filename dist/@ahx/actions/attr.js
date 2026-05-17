@@ -21,6 +21,30 @@ export const attr_get = (...args) => {
   };
 };
 
+export const attr_url = (...args) => {
+  const [_op, name] = validate(args);
+
+  return ({ targets, request }) => {
+    if (!targets) return;
+
+    const result = { nodes: [], texts: [] };
+    for (const target of targets) {
+      if (isElement(target)) {
+        const attr = target.getAttributeNode(name);
+        if (attr) {
+          if (request instanceof Request) {
+            request = undefined;
+          }
+          request ??= {};
+          request.url = attr.value;
+          return { request };
+        }
+      }
+    }
+    return result;
+  };
+};
+
 export const attr_remove = (...args) => {
   const [_op, name] = validate(args);
 

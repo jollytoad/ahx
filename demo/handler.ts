@@ -8,8 +8,9 @@ import { setHeaders } from "@http/response/set-headers";
 import { appendHeaders } from "@http/response/append-headers";
 import { prerender } from "@ahx/prerender/interceptor.ts";
 import type { ResponseInterceptor } from "@http/interceptor/types";
+import type { RequestHandler } from "@http/route/types";
 
-const EXAMPLES_HTML_HEADERS: HeadersInit = [
+const HTML_HEADERS: HeadersInit = [
   ["link", `</inject-ahx.js>; rel=preload; as=script`],
   ["link", `<https://cdn.jsdelivr.net>; rel=preconnect`],
   [
@@ -26,16 +27,6 @@ const DEVTOOLS = {
 };
 
 export default handle([
-  byPattern("/huge", () => {
-    return new Response(
-      ReadableStream.from(huge()).pipeThrough(new TextEncoderStream()),
-      {
-        headers: {
-          "Content-Type": "text/html",
-        },
-      },
-    );
-  }),
   byPattern(
     "/.well-known/appspecific/com.chrome.devtools.json",
     () => Response.json(DEVTOOLS),
@@ -52,32 +43,12 @@ export default handle([
       return Response.json(importmap);
     },
   ),
-  dynamicRoute({
-    pattern: "/examples",
-    fileRootUrl: import.meta.resolve("./examples"),
-    eagerness: "request",
-    routeMapper({ ext, pattern, module }) {
-      if (pattern.endsWith(".route") && (ext === ".ts" || ext === ".tsx")) {
-        switch (ext) {
-          case ".ts":
-          case ".tsx":
-            return [{
-              pattern: pattern.replace(/\.route$/, ""),
-              module,
-            }];
-        }
-      }
-      return [];
-    },
-    verbose: true,
-  }),
+  ...addFolder("/examples", import.meta.resolve("./examples/")),
   interceptResponse(
-    staticRoute("/examples", import.meta.resolve("./examples"), {
-      showIndex: true,
-    }),
-    prerender(Deno.args.includes("--prerender")),
-    addLinkHeaders(),
+    staticRoute("/docs/action", import.meta.resolve("../actions/")),
+    skip(404),
   ),
+  ...addFolder("/docs", import.meta.resolve("./docs/")),
   interceptResponse(
     staticRoute("/@ahx", import.meta.resolve("../dist/@ahx/")),
     skip(404),
@@ -93,21 +64,42 @@ export default handle([
   staticRoute("/", import.meta.resolve("./")),
 ]);
 
+function addFolder(pattern: string, fileRootUrl: string): RequestHandler[] {
+  return [
+    dynamicRoute({
+      pattern,
+      fileRootUrl,
+      eagerness: "request",
+      routeMapper({ ext, pattern, module }) {
+        if (pattern.endsWith(".route") && (ext === ".ts" || ext === ".tsx")) {
+          switch (ext) {
+            case ".ts":
+            case ".tsx":
+              return [{
+                pattern: pattern.replace(/\.route$/, ""),
+                module,
+              }];
+          }
+        }
+        return [];
+      },
+      verbose: true,
+    }),
+    interceptResponse(
+      staticRoute(pattern, fileRootUrl, {
+        showIndex: true,
+      }),
+      prerender(Deno.args.includes("--prerender")),
+      addLinkHeaders(),
+    ),
+  ];
+}
+
 function addLinkHeaders(): ResponseInterceptor {
   return (_req, res) => {
     if (res?.headers.get("content-type")?.startsWith("text/html")) {
-      return appendHeaders(res, EXAMPLES_HTML_HEADERS);
+      return appendHeaders(res, HTML_HEADERS);
     }
     return res;
   };
-}
-
-async function* huge() {
-  yield "<!DOCTYPE html>\n";
-  for (let count = 1; count < 100; count += 2) {
-    yield `<div>This is line <b>${count}</b></div><div>This is line <b>${
-      count + 1
-    }</b></div>\n`;
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
 }

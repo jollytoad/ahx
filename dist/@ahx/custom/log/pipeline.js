@@ -8,6 +8,7 @@ const RESET = "font-weight: normal; color: inherit; background-color: inherit;";
 const PIPELINE = "color: light-dark(blue,skyblue);" + BOLD;
 const ACTION_BEFORE = "color: light-dark(purple,hotpink);" + BOLD;
 const ACTION_CANCEL = "color: red;" + BOLD;
+const ACTION_ERROR = "color: yellow; background-color: red;" + BOLD;
 const ACTION_AFTER = "color: light-dark(green,lime);" + BOLD;
 
 const traces = new Map();
@@ -19,14 +20,19 @@ function log(trace, ...line) {
   }
   queue.push(line);
   if (!QUEUE || line[0] === "groupEnd") {
-    dump(trace);
+    const forceExpand = line[0] === "groupEnd" && !!line[1] &&
+      typeof line[1] === "object" && "error" in line[1];
+    dump(trace, forceExpand);
   }
 }
 
-function dump(trace) {
+function dump(trace, forceExpand) {
   const queue = traces.get(trace) ?? [];
   traces.delete(trace);
-  for (const [method, ...args] of queue) {
+  for (let [method, ...args] of queue) {
+    if (forceExpand && method === "groupCollapsed") {
+      method = "group";
+    }
         (console[method])(...args);
   }
 }
@@ -46,15 +52,15 @@ export function beforePipeline(context) {
     context.control,
     RESET,
     source,
-    context,
+    wrapContext(context),
   );
 }
 
 export function afterPipeline(
-  _context,
-  _result,
+  context,
+  result,
 ) {
-  log(_context.trace, "groupEnd");
+  log(context.trace, "groupEnd", result);
 }
 
 export function beforeAction(context) {
@@ -68,7 +74,7 @@ export function beforeAction(context) {
     BOLD + CODE,
     context.action,
     RESET,
-    context,
+    wrapContext(context),
   );
 }
 
@@ -83,7 +89,22 @@ export function cancelAction(context) {
     BOLD + CODE,
     context.action?.name,
     RESET,
-    context,
+    wrapContext(context),
+  );
+}
+
+export function errorAction(context) {
+  log(
+    context.trace,
+    "debug",
+    `${PREFIX}%c%s%c %c%s%c %O`,
+    ACTION_ERROR,
+    "error!",
+    RESET,
+    BOLD + CODE,
+    context.action?.name,
+    RESET,
+    wrapContext(context),
   );
 }
 
@@ -101,6 +122,16 @@ export function afterAction(
     BOLD + CODE,
     context.action?.name,
     RESET,
-    result,
+    wrapResult(result),
   );
+}
+
+function wrapContext(context) {
+  return Object.assign(new class ActionContext {}(), context);
+}
+
+function wrapResult(result) {
+  return result
+    ? Object.assign(new class ActionResult {}(), result)
+    : undefined;
 }

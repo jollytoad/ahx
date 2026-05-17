@@ -3,7 +3,7 @@ import type {
   ActionContext,
   ActionDecl,
   ActionResult,
-  Control,
+  Control as ControlType,
   ControlDecl,
   ControlSource,
   FindRuleNodes,
@@ -16,13 +16,13 @@ import { createAction } from "./action.ts";
 import { getConfig } from "@ahx/custom/config.ts";
 import { isDocument, isNode, isShadowRoot } from "@ahx/common/guards.ts";
 
-export async function createControl(decl: ControlDecl): Promise<Control> {
+export async function createControl(decl: ControlDecl): Promise<ControlType> {
   const { root, pipelineStr } = decl;
 
   const actionDecls = parsePipeline(pipelineStr);
   const actions = Object.freeze(await createActions(actionDecls, root));
 
-  return Object.freeze(new ControlImpl(decl, actions));
+  return Object.freeze(new Control(decl, actions));
 }
 
 function createActions(
@@ -33,7 +33,7 @@ function createActions(
   return Promise.all(decls.map(createAction(config)));
 }
 
-class ControlImpl implements Control {
+class Control implements ControlType {
   #root: WeakRef<ParentNode>;
   #source: WeakRef<ControlSource>;
   #abortController!: AbortController;

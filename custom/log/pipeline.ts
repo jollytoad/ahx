@@ -8,6 +8,7 @@ const RESET = "font-weight: normal; color: inherit; background-color: inherit;";
 const PIPELINE = "color: light-dark(blue,skyblue);" + BOLD;
 const ACTION_BEFORE = "color: light-dark(purple,hotpink);" + BOLD;
 const ACTION_CANCEL = "color: red;" + BOLD;
+const ACTION_ERROR = "color: yellow; background-color: red;" + BOLD;
 const ACTION_AFTER = "color: light-dark(green,lime);" + BOLD;
 
 type LogLine = [keyof typeof console, ...unknown[]];
@@ -21,14 +22,19 @@ function log(trace: string, ...line: LogLine) {
   }
   queue.push(line);
   if (!QUEUE || line[0] === "groupEnd") {
-    dump(trace);
+    const forceExpand = line[0] === "groupEnd" && !!line[1] &&
+      typeof line[1] === "object" && "error" in line[1];
+    dump(trace, forceExpand);
   }
 }
 
-function dump(trace: string) {
+function dump(trace: string, forceExpand?: boolean) {
   const queue = traces.get(trace) ?? [];
   traces.delete(trace);
-  for (const [method, ...args] of queue) {
+  for (let [method, ...args] of queue) {
+    if (forceExpand && method === "groupCollapsed") {
+      method = "group";
+    }
     // deno-lint-ignore no-explicit-any
     (console[method] as any)(...args);
   }
@@ -49,15 +55,15 @@ export function beforePipeline(context: ActionContext): void {
     context.control,
     RESET,
     source,
-    context,
+    wrapContext(context),
   );
 }
 
 export function afterPipeline(
-  _context: ActionContext,
-  _result: ActionResult | void,
+  context: ActionContext,
+  result: ActionResult | void,
 ): void {
-  log(_context.trace, "groupEnd");
+  log(context.trace, "groupEnd", result);
 }
 
 export function beforeAction(context: ActionContext): void {
@@ -71,7 +77,7 @@ export function beforeAction(context: ActionContext): void {
     BOLD + CODE,
     context.action,
     RESET,
-    context,
+    wrapContext(context),
   );
 }
 
@@ -86,7 +92,22 @@ export function cancelAction(context: ActionContext): void {
     BOLD + CODE,
     context.action?.name,
     RESET,
-    context,
+    wrapContext(context),
+  );
+}
+
+export function errorAction(context: ActionContext): void {
+  log(
+    context.trace,
+    "debug",
+    `${PREFIX}%c%s%c %c%s%c %O`,
+    ACTION_ERROR,
+    "error!",
+    RESET,
+    BOLD + CODE,
+    context.action?.name,
+    RESET,
+    wrapContext(context),
   );
 }
 
@@ -104,6 +125,18 @@ export function afterAction(
     BOLD + CODE,
     context.action?.name,
     RESET,
-    result,
+    wrapResult(result),
   );
+}
+
+// This is just so the object appears with the name 'ActionContext' in the console
+function wrapContext(context: ActionContext): ActionContext {
+  return Object.assign(new class ActionContext {}(), context);
+}
+
+// This is just so the object appears with the name 'ActionResult' in the console
+function wrapResult(result: ActionResult | void): ActionResult | undefined {
+  return result
+    ? Object.assign(new class ActionResult {}(), result)
+    : undefined;
 }
