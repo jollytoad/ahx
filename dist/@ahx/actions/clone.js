@@ -1,5 +1,3 @@
-
-
 export const clone = () => {
   return ({ nodes }) => {
     if (nodes) {

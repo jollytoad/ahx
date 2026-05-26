@@ -1,22 +1,16 @@
-
-
 const indexed = new WeakMap();
-
 const rules = new Set();
-
 export async function getControl(
   source,
   eventType,
 ) {
   return (await indexed.get(source)?.get(eventType))?.deref();
 }
-
 export function getEventTypes(
   source,
 ) {
   return indexed.get(source)?.keys() ?? [];
 }
-
 export function storeControl(
   source,
   eventType,
@@ -29,7 +23,6 @@ export function storeControl(
   control.then((control) => control && control.isRule && rules.add(control));
   return control;
 }
-
 export function* getRules(eventType) {
   for (const control of rules) {
     if (control.isDead()) {

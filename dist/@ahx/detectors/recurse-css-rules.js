@@ -1,6 +1,4 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export function* recurseCSSRules(
   node,
   context,
@@ -12,7 +10,6 @@ export function* recurseCSSRules(
     : hasStyleSheet(node)
     ? node.styleSheet
     : undefined;
-
   if (ruleGroup) {
     const groupRef = new WeakRef(ruleGroup);
     yield {
@@ -29,17 +26,13 @@ export function* recurseCSSRules(
     };
   }
 }
-
 export default recurseCSSRules;
-
 function hasCssRules(node) {
   return !!node && typeof node === "object" && "cssRules" in node;
 }
-
 function hasStyleSheet(node) {
   return !!node && typeof node === "object" && "styleSheet" in node;
 }
-
 function isStyleElement(
   node,
 ) {

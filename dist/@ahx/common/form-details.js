@@ -1,5 +1,4 @@
 import { isElement } from "./guards.js";
-
 export function getFormDetails(
   node,
   event,
@@ -11,7 +10,6 @@ export function getFormDetails(
     : isElement(node)
     ? node.closest("form")
     : null;
-
   if (form) {
     const submitter = event instanceof SubmitEvent && event.submitter
       ? event.submitter
@@ -22,17 +20,13 @@ export function getFormDetails(
     const url = submitter?.getAttribute("formaction") ?? form.action;
     const enctype = submitter?.getAttribute("formenctype") ?? form.enctype;
     const baseURL = submitter?.baseURI ?? form.baseURI;
-
     const formData = new FormData(form);
     let body = formData;
-
     const headers = {};
-
     if (enctype === "application/x-www-form-urlencoded") {
             body = new URLSearchParams(formData);
       headers["content-type"] = enctype;
     }
-
     return { formData, request: { url, method, headers, body }, baseURL };
   }
 }

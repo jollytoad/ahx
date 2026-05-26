@@ -1,7 +1,5 @@
-
 import { COLLAPSED, PREFIX, QUEUE } from "./config.js";
 import { isNode } from "@ahx/common/guards.js";
-
 const BOLD = "font-weight: bold;";
 const CODE = "background-color: highlight;";
 const RESET = "font-weight: normal; color: inherit; background-color: inherit;";
@@ -10,9 +8,7 @@ const ACTION_BEFORE = "color: light-dark(purple,hotpink);" + BOLD;
 const ACTION_CANCEL = "color: red;" + BOLD;
 const ACTION_ERROR = "color: yellow; background-color: red;" + BOLD;
 const ACTION_AFTER = "color: light-dark(green,lime);" + BOLD;
-
 const traces = new Map();
-
 function log(trace, ...line) {
   let queue = traces.get(trace);
   if (!queue) {
@@ -25,7 +21,6 @@ function log(trace, ...line) {
     dump(trace, forceExpand);
   }
 }
-
 function dump(trace, forceExpand) {
   const queue = traces.get(trace) ?? [];
   traces.delete(trace);
@@ -36,11 +31,9 @@ function dump(trace, forceExpand) {
         (console[method])(...args);
   }
 }
-
 export function beforePipeline(context) {
   const source = context.control.source;
   const s = isNode(source) ? "%o" : "%O";
-
   log(
     context.trace,
     COLLAPSED ? "groupCollapsed" : "group",
@@ -55,14 +48,12 @@ export function beforePipeline(context) {
     wrapContext(context),
   );
 }
-
 export function afterPipeline(
   context,
   result,
 ) {
   log(context.trace, "groupEnd", result);
 }
-
 export function beforeAction(context) {
   log(
     context.trace,
@@ -77,7 +68,6 @@ export function beforeAction(context) {
     wrapContext(context),
   );
 }
-
 export function cancelAction(context) {
   log(
     context.trace,
@@ -92,7 +82,6 @@ export function cancelAction(context) {
     wrapContext(context),
   );
 }
-
 export function errorAction(context) {
   log(
     context.trace,
@@ -107,7 +96,6 @@ export function errorAction(context) {
     wrapContext(context),
   );
 }
-
 export function afterAction(
   context,
   result,
@@ -125,11 +113,9 @@ export function afterAction(
     wrapResult(result),
   );
 }
-
 function wrapContext(context) {
   return Object.assign(new class ActionContext {}(), context);
 }
-
 function wrapResult(result) {
   return result
     ? Object.assign(new class ActionResult {}(), result)

@@ -1,7 +1,5 @@
-
 import { potentialBindings } from "@ahx/common/potential-bindings.js";
 import { isElement } from "@ahx/common/guards.js";
-
 export function* customAttrDetector(
   node,
   context,
@@ -22,5 +20,4 @@ export function* customAttrDetector(
     }
   }
 }
-
 export default customAttrDetector;

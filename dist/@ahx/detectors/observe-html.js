@@ -1,6 +1,4 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export function* observeHtml(
   node,
   context,
@@ -14,5 +12,4 @@ export function* observeHtml(
     };
   }
 }
-
 export default observeHtml;

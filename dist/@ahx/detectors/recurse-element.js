@@ -1,6 +1,4 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export function* recurseElement(
   node,
   context,
@@ -13,5 +11,4 @@ export function* recurseElement(
     };
   }
 }
-
 export default recurseElement;

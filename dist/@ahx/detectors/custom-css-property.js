@@ -1,7 +1,5 @@
-
 import { potentialBindings } from "@ahx/common/potential-bindings.js";
 import { isCSSStyleRule } from "@ahx/common/guards.js";
-
 export function* customCSSPropertyDetector(
   rule,
   context,
@@ -23,5 +21,4 @@ export function* customCSSPropertyDetector(
     }
   }
 }
-
 export default customCSSPropertyDetector;

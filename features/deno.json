@@ -18,6 +18,7 @@
       "esnext"
     ],
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true
   }
 }

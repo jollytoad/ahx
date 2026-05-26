@@ -1,26 +1,20 @@
-
 import { createFeatureFinder } from "@ahx/loader/feature-finder.js";
 import { createControl } from "@ahx/core/control.js";
 import { dispatchAhxEvent } from "@ahx/core/ahx-event.js";
 import { isDocument, isElement } from "@ahx/common/guards.js";
 import { parsePipeline } from "@ahx/core/parse-pipeline.js";
-
 const permittedActions = new Set([
   "get",
   "swap",
 ]);
-
 export async function execReadyControls(
   root,
   detectors,
   baseURI,
 ) {
   const finder = await createFeatureFinder(detectors);
-
   const features = finder([root], root);
-
   const promises = new Set();
-
   features:
   for (const feature of features) {
     if (
@@ -28,11 +22,9 @@ export async function execReadyControls(
       (isElement(feature.context) || isDocument(feature.context))
     ) {
       const pipeline = parsePipeline(feature.value ?? "");
-
       for (const actionDecl of pipeline) {
         if (!permittedActions.has(actionDecl.name)) break features;
       }
-
       const decl = {
         root: feature.context,
         source: feature.element,
@@ -40,15 +32,11 @@ export async function execReadyControls(
         pipelineStr: feature.value ?? "",
         baseURL: feature.context.baseURI,
       };
-
       const control = await createControl(decl);
-
       if (control.eventTarget) {
         const readyDone = Promise.withResolvers();
         promises.add(readyDone.promise);
-
                         (control.eventTarget).baseURI = baseURI;
-
         control.eventTarget.addEventListener(
           control.eventType,
           async (event) => {
@@ -66,7 +54,6 @@ export async function execReadyControls(
           },
           { once: true },
         );
-
         dispatchAhxEvent("ready", control.eventTarget, {
           control,
           bubbles: false,
@@ -75,10 +62,8 @@ export async function execReadyControls(
       }
     }
   }
-
   await Promise.all(promises);
 }
-
 function isAttrFeature(feature) {
   return feature.kind === "attr";
 }

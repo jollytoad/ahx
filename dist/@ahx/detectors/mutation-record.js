@@ -1,7 +1,5 @@
-
 import { potentialBindings } from "@ahx/common/potential-bindings.js";
 import { isElement, isMutationRecord } from "@ahx/common/guards.js";
-
 export function* mutationRecordDetector(
   node,
   context,
@@ -46,5 +44,4 @@ export function* mutationRecordDetector(
     }
   }
 }
-
 export default mutationRecordDetector;

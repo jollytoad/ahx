@@ -1,6 +1,4 @@
-
 import { isNode } from "./guards.js";
-
 export async function getSourceNodes(
   context,
 ) {
@@ -19,7 +17,6 @@ export async function getSourceNodes(
   }
   return;
 }
-
 function isHtmlResponse(response) {
   return !!response && response.ok &&
     !!response.headers.get("content-type")?.includes("text/html");

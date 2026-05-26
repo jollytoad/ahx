@@ -1,5 +1,3 @@
-
-
 export function* recurseFeature(
   node,
   context,
@@ -15,10 +13,8 @@ export function* recurseFeature(
     }
   }
 }
-
 function isRecurseFeature(node) {
   return (node)?.kind === "recurse" &&
     typeof (node)?.children?.[Symbol.iterator] === "function";
 }
-
 export default recurseFeature;

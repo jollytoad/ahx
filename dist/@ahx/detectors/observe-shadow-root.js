@@ -1,6 +1,4 @@
-
 import { isElement, isShadowRoot } from "@ahx/common/guards.js";
-
 export function* observeShadowRoot(
   node,
   _context,
@@ -10,7 +8,6 @@ export function* observeShadowRoot(
     : isElement(node) && node.shadowRoot
     ? node.shadowRoot
     : null;
-
   if (shadow) {
     yield {
       kind: "observe",
@@ -20,5 +17,4 @@ export function* observeShadowRoot(
     };
   }
 }
-
 export default observeShadowRoot;

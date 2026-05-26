@@ -1,7 +1,5 @@
-
 import * as log from "@ahx/custom/log/error.js";
 import { isElement } from "@ahx/common/guards.js";
-
 export const attachShadow = () => {
   return ({ targets }) => {
     const shadows = [];
@@ -18,11 +16,9 @@ export const attachShadow = () => {
         }
       }
     }
-
     return shadows.length
       ? { targets: shadows, init: shadows }
       : { break: true };
   };
 };
-
 export default attachShadow;

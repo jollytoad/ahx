@@ -1,7 +1,4 @@
-
-
 export const META_PREFIX = "ahx:";
-
 export const DEFAULT_CONFIG = {
   metaPrefix: META_PREFIX,
   onAttrPrefix: "on-",
@@ -9,7 +6,6 @@ export const DEFAULT_CONFIG = {
   eventPrefix: "",
   actionModulePrefix: "@ahx/actions/",
 };
-
 export function getConfig(
   _node,
   ..._keys

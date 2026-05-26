@@ -1,21 +1,16 @@
-
 import { getConfig } from "@ahx/custom/config.js";
 import { updateControl } from "@ahx/core/update-control.js";
 import { isElement, isParentNode, isShadowRoot } from "@ahx/common/guards.js";
 import { resolveNestedSelector } from "@ahx/common/resolve-nested-selector.js";
-
 export default async function (feature) {
   if (!isParentNode(feature.context)) return;
-
   const { onCssPropPrefix } = getConfig(
     feature.context,
     "onCssPropPrefix",
   );
-
   if (onCssPropPrefix && feature.name.startsWith(onCssPropPrefix)) {
     const eventType = feature.name.slice(onCssPropPrefix.length);
     const pipelineStr = feature.value;
-
     if (eventType && pipelineStr) {
       await updateControl({
         root: feature.context,
@@ -28,7 +23,6 @@ export default async function (feature) {
     }
   }
 }
-
 const selectorTextRule = {
   ruleNodes() {
     const { root, source } = this;
@@ -59,7 +53,6 @@ const selectorTextRule = {
     return false;
   },
 };
-
 function hasSelectorText(
   source,
 ) {

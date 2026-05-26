@@ -1,6 +1,4 @@
-
 import { isCSSStyleRule, isElement } from "@ahx/common/guards.js";
-
 export function* ahxIgnoreDetector(
   node,
 ) {
@@ -14,5 +12,4 @@ export function* ahxIgnoreDetector(
     }
   }
 }
-
 export default ahxIgnoreDetector;

@@ -1,6 +1,4 @@
-
 import { isElement, isShadowRoot } from "@ahx/common/guards.js";
-
 export function* recurseShadowRoot(
   node,
   _context,
@@ -10,7 +8,6 @@ export function* recurseShadowRoot(
     : isElement(node) && node.shadowRoot
     ? node.shadowRoot
     : null;
-
   if (shadow) {
     yield {
       kind: "recurse",
@@ -19,5 +16,4 @@ export function* recurseShadowRoot(
     };
   }
 }
-
 export default recurseShadowRoot;

@@ -48,11 +48,6 @@
     "./template.ts": "./template.ts",
     "./url.ts": "./url.ts"
   },
-  "imports": {
-    "dompurify": "npm:dompurify@3.4.1",
-    "idiomorph": "npm:idiomorph@0.7.4",
-    "morphlex": "npm:morphlex@^1.4.0"
-  },
   "compilerOptions": {
     "lib": [
       "dom",
@@ -61,6 +56,7 @@
       "esnext"
     ],
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true
   }
 }

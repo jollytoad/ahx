@@ -16,10 +16,7 @@
       "esnext"
     ],
     "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true
-  },
-  "imports": {
-    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.49",
-    "@http/interceptor": "jsr:@http/interceptor@^0.26.0"
   }
 }

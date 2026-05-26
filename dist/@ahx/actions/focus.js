@@ -1,6 +1,4 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export const focus = () => ({ targets }) => {
   if (targets) {
     for (const target of targets) {
@@ -16,7 +14,6 @@ export const focus = () => ({ targets }) => {
     }
   }
 };
-
 function isFocusable(node) {
   return typeof (node).focus === "function";
 }

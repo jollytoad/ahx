@@ -1,5 +1,4 @@
 import { isElement, isNode, isShadowRoot } from "./guards.js";
-
 export function swap(
   op,
   target,
@@ -8,7 +7,6 @@ export function swap(
   return (isNode(target) && swapHandlers[op]?.(target, node ?? null)) ||
     undefined;
 }
-
 const swapAdjacent = (pos) => (target, node) => {
   if (isElement(target) && typeof node === "string") {
     target.insertAdjacentHTML(pos, node);
@@ -32,7 +30,6 @@ const swapAdjacent = (pos) => (target, node) => {
     }
   }
 };
-
 const swapInner = (target, node) => {
   if (
     (isElement(target) || isShadowRoot(target)) && node !== null
@@ -52,7 +49,6 @@ const swapInner = (target, node) => {
     return node;
   }
 };
-
 const swapOuter = (target, node) => {
   if (isElement(target)) {
     const { parentNode, nextSibling } = target;
@@ -70,7 +66,6 @@ const swapOuter = (target, node) => {
     return node;
   }
 };
-
 const swapText = (target, node) => {
   const text = typeof node === "string"
     ? node
@@ -80,13 +75,11 @@ const swapText = (target, node) => {
     : node
     ? node.textContent
     : null;
-
   if (text !== null) {
     target.textContent = text;
     return target.lastChild ?? undefined;
   }
 };
-
 const swapHandlers = {
   none() {
     // no-op

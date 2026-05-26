@@ -1,5 +1,3 @@
-
-
 const detectors = [
   import("@ahx/detectors/ahx-ignore.js"),
   import("@ahx/detectors/recurse-feature.js"),
@@ -15,5 +13,4 @@ const detectors = [
   import("@ahx/detectors/recurse-element.js"),
   import("@ahx/detectors/ready.js"),
 ];
-
 export default detectors;

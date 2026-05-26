@@ -1,13 +1,9 @@
-
 import { dispatchToAll } from "@ahx/common/dispatch-to-all.js";
-
 export const key_dispatch = (...args) => {
   const [, ...keyNames] = args;
-
   if (!keyNames.length) {
     throw new TypeError("At least one key name is required");
   }
-
   return ({ event, targets }) => {
     if (event instanceof KeyboardEvent && keyNames.includes(event.key)) {
       return dispatchToAll(
@@ -30,7 +26,6 @@ export const key_dispatch = (...args) => {
           }),
       );
     }
-
     return { break: true };
   };
 };

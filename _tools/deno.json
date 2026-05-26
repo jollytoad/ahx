@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "verbatimModuleSyntax": true
-  },
-  "imports": {
-    "@fcrozatier/type-strip": "jsr:@fcrozatier/type-strip@^1.4.1",
-    "@std/fs": "jsr:@std/fs@^1.0.21",
-    "@std/path": "jsr:@std/path@^1.1.4"
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true
   }
 }

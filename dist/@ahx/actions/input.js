@@ -1,17 +1,12 @@
-
 import { isElement, isNode } from "@ahx/common/guards.js";
-
 export const input = (...args) => {
   const [op, name, ...rest] = args;
   const argsValue = rest.length ? rest.join(" ") : undefined;
-
   if (!op || !name) {
     throw new TypeError("An operation and form input name are required");
   }
-
   return ({ targets, texts }) => {
     if (!targets) return;
-
     switch (op) {
       case "remove":
                 for (const target of targets) {
@@ -53,12 +48,10 @@ export const input = (...args) => {
         return result;
       }
     }
-
     for (const target of targets) {
       if (isFormElement(target)) {
         const input = target.elements.namedItem(name);
         const newValues = (argsValue ? [argsValue] : texts) ?? [];
-
         switch (op) {
           case "join": {
             if (hasValue(input)) {
@@ -82,7 +75,6 @@ export const input = (...args) => {
     }
   };
 };
-
 function createInput(name, value, document) {
   const input = document.createElement("input");
   input.type = "hidden";
@@ -90,11 +82,9 @@ function createInput(name, value, document) {
   input.value = value;
   return input;
 }
-
 function isFormElement(node) {
   return isElement(node, "form");
 }
-
 function hasValue(node) {
   return !!node && typeof node === "object" && "value" in node;
 }

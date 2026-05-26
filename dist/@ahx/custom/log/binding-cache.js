@@ -1,13 +1,9 @@
-
 import { allowBindings, denyBindings } from "../filter-list.js";
 import { PREFIX } from "./config.js";
 import { bindingOutcome as log } from "./binding.js";
-
 export const STORAGE_KEY = "ahx-deny-bindings";
-
 allowBindings.clear();
 denyBindings.clear();
-
 try {
   const bindings = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "[]");
   if (Array.isArray(bindings)) {
@@ -24,22 +20,17 @@ try {
 } catch {
   // ignore
 }
-
 let handle;
-
 export function bindingOutcome(
   outcome,
   _sep,
 ) {
   log(outcome, _sep);
-
   if (outcome.status === "notFound") {
     const kind = outcome.feature.kind ?? "unknown";
     const binding = outcome.moduleBinding?.join(" ");
-
     if (binding) {
       denyBindings.add(`${kind}:${binding}`);
-
       clearTimeout(handle);
       handle = setTimeout(() => {
         const json = JSON.stringify([...denyBindings]);
@@ -49,7 +40,6 @@ export function bindingOutcome(
     }
   }
 }
-
 export function clearBindingsCache() {
   sessionStorage.removeItem(STORAGE_KEY);
 }

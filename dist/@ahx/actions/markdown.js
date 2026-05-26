@@ -1,37 +1,27 @@
-
-
 export const markdown = async (...args) => {
   const micromark = await importMicromark();
-
   const options = {};
-
   const promises = [];
   for (const arg of args) {
     promises.push(importExtension(arg, options));
   }
-
   if (promises.length) {
     await Promise.all(promises);
   }
-
   return async ({ texts, response }) => {
     if (!texts && response) {
       texts = [await response.text()];
     }
-
     if (!texts) return;
-
     return {
       texts: texts.map((text) => micromark(text, options)),
       nodes: undefined,
     };
   };
 };
-
 async function importMicromark() {
   return (await import("micromark")).micromark;
 }
-
 async function importExtension(ext, options) {
   switch (ext) {
     case "gfm": {

@@ -7,7 +7,6 @@ export function expandClassSyntax(xpath) {
       ).join(""),
   );
 }
-
 export function createExpression(
   args,
   preprocess,
@@ -15,13 +14,10 @@ export function createExpression(
   if (!args.length) {
     throw new TypeError("An XPath expression is required");
   }
-
   let xpath = args.join(" ");
   xpath = preprocess?.(xpath) ?? xpath;
-
   return new XPathEvaluator().createExpression(xpath);
 }
-
 export function evaluateXPath(
   scope,
   expression,

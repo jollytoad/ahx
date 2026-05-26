@@ -1,16 +1,10 @@
-
-
 export function prerender(enabled = true) {
   if (!enabled) return () => undefined;
-
   return async (req, res) => {
     if (req.headers.has("ahx-pipeline")) return;
-
     const contentType = res?.headers.get("content-type");
-
     if (res?.body && contentType?.includes("text/html")) {
       console.debug("PRERENDER");
-
       const [
         { DOMParser },
         { execReadyControls },
@@ -22,15 +16,12 @@ export function prerender(enabled = true) {
         await import("./detectors.js"),
         await res.text(),
       ]);
-
       const doc = new DOMParser().parseFromString(html, "text/html");
-
       try {
         await execReadyControls(doc, detectors, req.url);
       } catch (e) {
         console.error(e);
       }
-
       return new Response(
         `<!DOCTYPE html>\n` + doc.documentElement?.outerHTML,
         {

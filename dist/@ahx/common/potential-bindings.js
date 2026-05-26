@@ -1,5 +1,4 @@
 const DEFAULT_RE = /^[a-zA-Z][a-zA-Z0-9]*$/;
-
 export function potentialBindings(
   parts,
   validPart = DEFAULT_RE,

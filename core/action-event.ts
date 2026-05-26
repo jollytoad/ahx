@@ -1,38 +1,39 @@
+/**
+ * NOTE: `ActionEvent` used to be a class extending `Event`, but this causes
+ * problems when used within a content script in a Firefox browser extension,
+ * so it was changed to a CustomEvent with the ActionContext as detail, and
+ * using a WeakMap to cache results against the event.
+ *
+ * @module
+ */
 import type { ActionContext, ActionResult } from "@ahx/types";
 
-export interface ActionEventInit extends EventInit {
-  context: ActionContext;
+export type ActionEvent = CustomEvent<ActionContext>;
+
+const eventResultsMap = new WeakMap<
+  ActionEvent,
+  Promise<ActionResult | void>[]
+>();
+
+export function addActionEventResult(
+  event: ActionEvent,
+  result: Promise<ActionResult | void>,
+) {
+  const results = eventResultsMap.get(event);
+  results?.push(result);
 }
 
-export class ActionEvent extends Event {
-  context: ActionContext;
-  #results?: Promise<ActionResult | void>[];
-
-  constructor(type: string, { context, ...init }: ActionEventInit) {
-    super(type, {
-      bubbles: false,
-      cancelable: true,
-      composed: false,
-      ...init,
-    });
-    this.context = context;
+async function getResults(event: ActionEvent): Promise<ActionResult[]> {
+  const promises = eventResultsMap.get(event);
+  if (promises) {
+    const results = await Promise.all(promises);
+    return results.filter((v) => !!v);
   }
-
-  addResult(result: Promise<ActionResult | void>): void {
-    (this.#results ??= []).push(result);
-  }
-
-  async getResults(): Promise<ActionResult[] | void> {
-    if (this.#results) {
-      const results = await Promise.all(this.#results);
-      return results.filter((v) => !!v);
-    }
-    return;
-  }
+  return [];
 }
 
 export function isActionEvent(event: unknown): event is ActionEvent {
-  return event instanceof ActionEvent;
+  return eventResultsMap.has(event as ActionEvent);
 }
 
 export async function dispatchActionEvent(
@@ -48,14 +49,38 @@ export async function dispatchActionEvent(
     !eventType.startsWith(`${eventPrefix}after-`)
   ) {
     const eventType = `${eventPrefix}${phase}-${context.action?.name}`;
-    const event = new ActionEvent(eventType, { context });
-    const cancelled = !root.dispatchEvent(event);
-    if (cancelled) {
-      return { break: true };
-    }
-    const results = await event.getResults();
-    if (results?.length) {
-      return Object.assign({}, ...results);
+
+    // NOTE: cloneInto of context is required in Firefox browser extensions only, otherwise the detail becomes inaccessible to us!
+    const detail: ActionContext = "cloneInto" in globalThis
+      // @ts-ignore: for Firefox browser ext only
+      ? cloneInto(context, window, {
+        wrapReflectors: true,
+        cloneFunctions: true,
+      })
+      : context;
+
+    const event = new CustomEvent<ActionContext>(eventType, {
+      bubbles: false,
+      cancelable: true,
+      composed: false,
+      detail,
+    });
+
+    eventResultsMap.set(event, []);
+
+    try {
+      const cancelled = !root.dispatchEvent(event);
+      if (cancelled) {
+        return { break: true };
+      }
+
+      const results = await getResults(event);
+
+      if (results?.length) {
+        return Object.assign({}, ...results);
+      }
+    } finally {
+      eventResultsMap.delete(event);
     }
   }
   return;

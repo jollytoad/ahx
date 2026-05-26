@@ -1,6 +1,4 @@
-
 import { isDocument, isMutationRecord } from "@ahx/common/guards.js";
-
 export function* ready(
   node,
   context,
@@ -14,5 +12,4 @@ export function* ready(
     };
   }
 }
-
 export default ready;

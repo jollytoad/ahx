@@ -1,12 +1,8 @@
-
 import { isNode } from "@ahx/common/guards.js";
-
 const validOps = new Set(["fragment", "node", "html"]);
 const defaultOp = "fragment";
-
 export const sanitize = async (...args) => {
   const [op = defaultOp] = args;
-
   if (!validOps.has(op)) {
     throw new TypeError(
       `Invalid sanitize mode: "${op}", may be one of: ${
@@ -14,15 +10,12 @@ export const sanitize = async (...args) => {
       } (default: "${defaultOp}")`,
     );
   }
-
   const DOMPurify = (await importDOMPurify())(window);
-
   DOMPurify.setConfig({
     ADD_TAGS: ["iframe"],
     RETURN_DOM: op === "node",
     RETURN_DOM_FRAGMENT: op === "frag",
   });
-
   DOMPurify.addHook(
     "uponSanitizeAttribute",
     function (_currentNode, hookEvent, _config) {
@@ -31,14 +24,10 @@ export const sanitize = async (...args) => {
       }
     },
   );
-
   return async ({ response }) => {
     if (!response?.body) return;
-
     const content = await response.text();
-
     const sanitized = DOMPurify.sanitize(content);
-
     if (isNode(sanitized)) {
       return { nodes: [sanitized], texts: undefined };
     } else if (typeof sanitized === "string") {
@@ -48,7 +37,6 @@ export const sanitize = async (...args) => {
     }
   };
 };
-
 async function importDOMPurify() {
   if ("DOMPurify" in window) {
     return window.DOMPurify;

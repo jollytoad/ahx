@@ -1,5 +1,4 @@
 import { isDocument, isShadowRoot } from "./guards.js";
-
 export function getRoots(nodes) {
   const roots = new Set();
   for (const node of nodes) {

@@ -11,7 +11,7 @@ import type {
 } from "@ahx/types";
 import { parsePipeline, stringifyPipeline } from "./parse-pipeline.ts";
 import { execPipeline } from "./exec-pipeline.ts";
-import { isActionEvent } from "./action-event.ts";
+import { addActionEventResult, isActionEvent } from "./action-event.ts";
 import { createAction } from "./action.ts";
 import { getConfig } from "@ahx/custom/config.ts";
 import { isDocument, isNode, isShadowRoot } from "@ahx/common/guards.ts";
@@ -90,8 +90,8 @@ class Control implements ControlType {
     return this.isDead() ||
       !isNode(event.target) ||
       (isActionEvent(event) &&
-        (event.eventPhase !== Event.AT_TARGET || event.context.break ||
-          event.context.signal.aborted)) ||
+        (event.eventPhase !== Event.AT_TARGET || event.detail.break ||
+          event.detail.signal.aborted)) ||
       (this.isRule && !this.#ruleApplies?.call(this, event.target));
   }
 
@@ -112,7 +112,7 @@ class Control implements ControlType {
       initialTarget: target,
       targets: [target],
       signal: this.signal,
-      ...isActionEvent(event) ? event.context : undefined,
+      ...isActionEvent(event) ? event.detail : undefined,
       control: this,
       index: 0,
     };
@@ -127,7 +127,8 @@ class Control implements ControlType {
     const resultPromise = this.execPipeline(event);
 
     if (isActionEvent(event)) {
-      event.addResult(resultPromise);
+      addActionEventResult(event, resultPromise);
+      // event.addResult(resultPromise);
     }
   }
 

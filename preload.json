@@ -12,6 +12,7 @@
   "/@ahx/common/form-details",
   "/@ahx/common/guards",
   "/@ahx/common/potential-bindings",
+  "/@ahx/common/resolve-nested-selector",
   "/@ahx/common/swap",
   "/@ahx/core/action-event",
   "/@ahx/core/action",

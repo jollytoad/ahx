@@ -1,5 +1,3 @@
-
-
 export function createFeatureLoader(
   options = {},
 ) {
@@ -12,10 +10,8 @@ export function createFeatureLoader(
     allowBinding,
     logBinding,
   } = options;
-
   return async (feature) => {
     if (!hasBindings(feature)) return { status: "static", feature };
-
         const promises = feature.bindings.map(async (moduleBinding) => {
       const outcome = await loadBinding(feature, moduleBinding);
       if (logBinding) {
@@ -23,15 +19,12 @@ export function createFeatureLoader(
       }
       return outcome;
     });
-
         for (const featurePromise of promises) {
       const outcome = await featurePromise;
       if (outcome.status === "loaded") return outcome;
     }
-
         return { status: "notFound", feature };
   };
-
   async function loadBinding(
     feature,
     moduleBinding,
@@ -39,7 +32,6 @@ export function createFeatureLoader(
     if (allowBinding && !await allowBinding(feature, moduleBinding)) {
       return { status: "ignored", feature, moduleBinding };
     }
-
     let moduleUrl = undefined;
     try {
       const moduleSpec = toModuleSpec(feature, moduleBinding);
@@ -47,9 +39,7 @@ export function createFeatureLoader(
       const hash = url.hash.replace(/^#/, "");
       url.hash = "";
       moduleUrl = url.href;
-
       const mod = await importModule(url.href);
-
       if (mod) {
         const partialLoaded = {
           status: "loaded",
@@ -57,7 +47,6 @@ export function createFeatureLoader(
           moduleUrl,
           moduleBinding,
         };
-
         if (hash) {
                     const loaded = {
             ...partialLoaded,
@@ -96,30 +85,25 @@ export function createFeatureLoader(
     return { status: "notFound", feature, moduleUrl, moduleBinding };
   }
 }
-
 function hasBindings(
   feature,
 ) {
   return "bindings" in feature && !!feature.bindings &&
     !!feature.bindings.length;
 }
-
 const EXT = import.meta.url.slice(import.meta.url.lastIndexOf("."));
-
 export function defaultFeatureModuleSpec(
   feature,
   binding,
 ) {
   return `@ahx/features/${feature.kind}/${binding.join("/")}${EXT}`;
 }
-
 export function defaultFeatureExportName(
   _feature,
   binding,
 ) {
   return binding.join("_");
 }
-
 export function defaultImportModule(
   url,
 ) {

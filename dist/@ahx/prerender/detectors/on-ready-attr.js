@@ -1,6 +1,4 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export function* onReadyAttrDetector(
   node,
   context,
@@ -19,5 +17,4 @@ export function* onReadyAttrDetector(
     }
   }
 }
-
 export default onReadyAttrDetector;

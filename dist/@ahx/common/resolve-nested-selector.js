@@ -1,8 +1,5 @@
-
-
 export function resolveNestedSelector(source) {
   if (!source.selectorText.includes("&")) return source.selectorText;
-
   let parent = source.parentRule;
   while (parent) {
     if (parent.selectorText) {
@@ -11,6 +8,5 @@ export function resolveNestedSelector(source) {
     }
     parent = parent.parentRule;
   }
-
   return source.selectorText;
 }

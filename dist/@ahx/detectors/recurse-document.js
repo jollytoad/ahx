@@ -1,6 +1,4 @@
-
 import { isDocument } from "@ahx/common/guards.js";
-
 export function* recurseDocument(
   node,
   _context,
@@ -13,5 +11,4 @@ export function* recurseDocument(
     };
   }
 }
-
 export default recurseDocument;

@@ -1,5 +1,3 @@
-
-
 export async function createFeatureFinder(
   lazyDetectors,
 ) {
@@ -20,7 +18,6 @@ export async function createFeatureFinder(
   };
   return finder;
 }
-
 async function resolveFns(
   lazyFns,
 ) {

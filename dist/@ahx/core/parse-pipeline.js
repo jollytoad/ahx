@@ -1,7 +1,4 @@
-
-
 export const ACTION_NAME_REGEXP = /^[a-z][a-z0-9\-]*$/;
-
 export function parsePipeline(source) {
   return source.trim().split(/\s+\|\>\s+/).map((actionString) => {
     const [name, ...args] = actionString.split(/\s+/);
@@ -21,11 +18,9 @@ export function parsePipeline(source) {
     };
   });
 }
-
 export function stringifyPipeline(actions) {
   return actions.map((action) => action.toString()).join(" |> ");
 }
-
 export function normalizePipeline(source) {
   return source.replaceAll(/\s+/g, " ").trim();
 }

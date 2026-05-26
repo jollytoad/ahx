@@ -1,13 +1,10 @@
-
 import { getControl } from "@ahx/common/controls.js";
 import { isElement } from "@ahx/common/guards.js";
-
 export const abort = (...args) => {
   const [eventType] = args;
   return async (context) => {
     const { control, targets, event, initialTarget } = context;
     const source = control.source;
-
             if (
       control.isRule && targets?.length === 1 && targets[0] === initialTarget
     ) {

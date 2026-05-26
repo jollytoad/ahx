@@ -1,9 +1,6 @@
-
 import { isElement } from "@ahx/common/guards.js";
-
 export const filter_nodes = (...args) => {
   const [, cssPropName, ...values] = validate(args);
-
   return ({ nodes }) => {
     if (nodes) {
       return {
@@ -13,10 +10,8 @@ export const filter_nodes = (...args) => {
     }
   };
 };
-
 export const filter_targets = (...args) => {
   const [, cssPropName, ...values] = validate(args);
-
   return ({ targets }) => {
     if (targets) {
       return {
@@ -25,7 +20,6 @@ export const filter_targets = (...args) => {
     }
   };
 };
-
 const hasStylePropValue =
   (cssPropName, values) => (node) => {
     if (!(isElement(node))) return false;
@@ -36,7 +30,6 @@ const hasStylePropValue =
       return value.includes(values[0]);
     }
   };
-
 async function* filterAsync(
   nodes,
   fn,
@@ -48,15 +41,12 @@ async function* filterAsync(
     }
   }
 }
-
 function validate(args) {
   const [contextPropName, cssPropName] = args;
-
   if (!contextPropName && !cssPropName) {
     throw new TypeError(
       "A context property name and a CSS property name is required",
     );
   }
-
   return args;
 }

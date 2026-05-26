@@ -1,36 +1,22 @@
-
-
-export class ActionEvent extends Event {
-  context;
-  #results;
-
-  constructor(type, { context, ...init }) {
-    super(type, {
-      bubbles: false,
-      cancelable: true,
-      composed: false,
-      ...init,
-    });
-    this.context = context;
-  }
-
-  addResult(result) {
-    (this.#results ??= []).push(result);
-  }
-
-  async getResults() {
-    if (this.#results) {
-      const results = await Promise.all(this.#results);
-      return results.filter((v) => !!v);
-    }
-    return;
-  }
+const eventResultsMap = new WeakMap();
+export function addActionEventResult(
+  event,
+  result,
+) {
+  const results = eventResultsMap.get(event);
+  results?.push(result);
 }
-
+async function getResults(event) {
+  const promises = eventResultsMap.get(event);
+  if (promises) {
+    const results = await Promise.all(promises);
+    return results.filter((v) => !!v);
+  }
+  return [];
+}
 export function isActionEvent(event) {
-  return event instanceof ActionEvent;
+  return eventResultsMap.has(event);
 }
-
 export async function dispatchActionEvent(
   phase,
   context,
@@ -44,14 +30,31 @@ export async function dispatchActionEvent(
     !eventType.startsWith(`${eventPrefix}after-`)
   ) {
     const eventType = `${eventPrefix}${phase}-${context.action?.name}`;
-    const event = new ActionEvent(eventType, { context });
-    const cancelled = !root.dispatchEvent(event);
-    if (cancelled) {
-      return { break: true };
-    }
-    const results = await event.getResults();
-    if (results?.length) {
-      return Object.assign({}, ...results);
+        const detail = "cloneInto" in globalThis
+      // @ts-ignore: for Firefox browser ext only
+      ? cloneInto(context, window, {
+        wrapReflectors: true,
+        cloneFunctions: true,
+      })
+      : context;
+    const event = new CustomEvent(eventType, {
+      bubbles: false,
+      cancelable: true,
+      composed: false,
+      detail,
+    });
+    eventResultsMap.set(event, []);
+    try {
+      const cancelled = !root.dispatchEvent(event);
+      if (cancelled) {
+        return { break: true };
+      }
+      const results = await getResults(event);
+      if (results?.length) {
+        return Object.assign({}, ...results);
+      }
+    } finally {
+      eventResultsMap.delete(event);
     }
   }
   return;

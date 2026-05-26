@@ -6,11 +6,9 @@ export function isNode(
     ? (node)?.nodeType === nodeType
     : !!(node)?.nodeType;
 }
-
 export function isParentNode(node) {
   return isNode(node) && "children" in node;
 }
-
 export function isElement(
   node,
   elementName,
@@ -18,27 +16,21 @@ export function isElement(
   return isNode(node, 1) &&
     (elementName ? (node).localName === elementName : true);
 }
-
 export function isAttr(node) {
   return isNode(node, 2);
 }
-
 export function isDocument(node) {
   return isNode(node, 9);
 }
-
 export function isDocumentFragment(node) {
   return isNode(node, 11);
 }
-
 export function isShadowRoot(node) {
   return isDocumentFragment(node) && "mode" in node && "host" in node;
 }
-
 export function isCSSStyleRule(node) {
   return typeof (node)?.style === "object";
 }
-
 export function isMutationRecord(node) {
   return "MutationRecord" in globalThis &&
     node instanceof globalThis.MutationRecord;
