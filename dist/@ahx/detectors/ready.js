@@ -3,7 +3,7 @@ export function* ready(
   node,
   context,
 ) {
-  if (isDocument(node) || isMutationRecord(node)) {
+  if (isDocument(node) || isMutationRecord(node) || node === "ready") {
     yield {
       kind: "ready",
       context,

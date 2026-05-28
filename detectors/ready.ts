@@ -5,7 +5,7 @@ export function* ready(
   node: unknown,
   context?: Context,
 ): Iterable<ReadyFeature> {
-  if (isDocument(node) || isMutationRecord(node)) {
+  if (isDocument(node) || isMutationRecord(node) || node === "ready") {
     yield {
       kind: "ready",
       context,

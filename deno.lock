@@ -3,7 +3,7 @@
   "specifiers": {
     "jsr:@b-fuze/deno-dom@~0.1.56": "0.1.56",
     "jsr:@deno/graph@~0.108.2": "0.108.2",
-    "jsr:@fcrozatier/type-strip@^1.4.1": "1.4.1",
+    "jsr:@fcrozatier/type-strip@^1.5.0": "1.5.0",
     "jsr:@http/discovery@0.27": "0.27.0",
     "jsr:@http/fs@0.27": "0.27.0",
     "jsr:@http/host-deno-local@0.27": "0.27.0",
@@ -38,6 +38,7 @@
     "npm:@peculiar/asn1-x509@^2.6.1": "2.7.0",
     "npm:@peculiar/x509@^1.14.3": "1.14.3",
     "npm:@playwright/test@1.59.1": "1.59.1",
+    "npm:@sec-ant/readable-stream@0.7": "0.7.0",
     "npm:dompurify@^3.4.6": "3.4.6",
     "npm:idiomorph@~0.7.4": "0.7.4",
     "npm:micromark-extension-gfm@3": "3.0.0",
@@ -54,8 +55,8 @@
     "@deno/graph@0.108.2": {
       "integrity": "b273a0d33dc42cbed5bead5a0593c10c2ebcd9b02939c648647ed238db5438a6"
     },
-    "@fcrozatier/type-strip@1.4.1": {
-      "integrity": "4081f88fce0e4396c19b67112161af9abdfe3efa0c67a3bf25cc0358e202c9ac",
+    "@fcrozatier/type-strip@1.5.0": {
+      "integrity": "858e4ea6357718429dbe933231e34ec837864fd1508ef6d25c42c64f0cb4b11b",
       "dependencies": [
         "jsr:@std/path@^1.1.1",
         "npm:typescript@^5.8.3"
@@ -308,6 +309,9 @@
         "playwright"
       ],
       "bin": true
+    },
+    "@sec-ant/readable-stream@0.7.0": {
+      "integrity": "sha512-eeflyrQR+jQaliaTcC2R+EG+JkPZpCHbpTN8w0K5LhhXzrI0XmES9CPt6uF4u/Gc4PUafaBzq4dj5WLvQ/YnsA=="
     },
     "@types/debug@4.1.13": {
       "integrity": "sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==",
@@ -681,7 +685,7 @@
     "dependencies": [
       "jsr:@b-fuze/deno-dom@~0.1.56",
       "jsr:@deno/graph@~0.108.2",
-      "jsr:@fcrozatier/type-strip@^1.4.1",
+      "jsr:@fcrozatier/type-strip@^1.5.0",
       "jsr:@http/discovery@0.27",
       "jsr:@http/fs@0.27",
       "jsr:@http/host-deno-local@0.27",
@@ -697,6 +701,7 @@
       "jsr:@std/http@^1.1.1",
       "jsr:@std/path@^1.1.5",
       "npm:@playwright/test@1.59.1",
+      "npm:@sec-ant/readable-stream@0.7",
       "npm:dompurify@^3.4.6",
       "npm:idiomorph@~0.7.4",
       "npm:micromark-extension-gfm@3",

@@ -54,7 +54,9 @@
   "/@ahx/features/cssprop/on",
   "/@ahx/features/observe/html",
   "/@ahx/features/ready/dispatch",
+  "/@ahx/init/init",
   "/@ahx/init/mod",
+  "/@ahx/init/shim",
   "/@ahx/loader/feature-finder",
   "/@ahx/loader/feature-loader"
 ]

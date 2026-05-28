@@ -5,6 +5,7 @@ export const allowBindings = new Set([
   "observe:*",
   "ready:dispatch",
   "action:*",
+  "action:attr spread location",
   "action:import css",
   "action:key dispatch",
   "action:target attr",

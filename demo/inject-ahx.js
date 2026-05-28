@@ -41,6 +41,8 @@
         "https://cdn.jsdelivr.net/npm/micromark-extension-gfm@3.0.0/+esm",
       "micromark-extension-math":
         "https://cdn.jsdelivr.net/npm/micromark-extension-math@3.1.0/+esm",
+      "@sec-ant/readable-stream/polyfill/asyncIterator":
+        "https://cdn.jsdelivr.net/npm/@sec-ant/readable-stream@0.7.0/dist/polyfill/asyncIterator.js",
     },
   };
 
@@ -77,6 +79,7 @@
     "/@ahx/common/form-details",
     "/@ahx/common/guards",
     "/@ahx/common/potential-bindings",
+    "/@ahx/common/resolve-nested-selector",
     "/@ahx/common/swap",
     "/@ahx/core/action-event",
     "/@ahx/core/action",
@@ -118,7 +121,9 @@
     "/@ahx/features/cssprop/on",
     "/@ahx/features/observe/html",
     "/@ahx/features/ready/dispatch",
+    "/@ahx/init/init",
     "/@ahx/init/mod",
+    "/@ahx/init/shim",
     "/@ahx/loader/feature-finder",
     "/@ahx/loader/feature-loader",
   ];

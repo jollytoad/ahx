@@ -1,0 +1,5 @@
+html {
+  --on-ready: attr spread location;
+  --on-hashchange: attr spread location;
+  --on-popstate: attr spread location;
+}

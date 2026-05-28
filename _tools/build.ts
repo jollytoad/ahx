@@ -84,13 +84,15 @@ async function buildJs({ dest, remap, skip }: BuildJsOptions) {
                     filePath: entry.path,
                     imports: {
                       "@ahx/": "./",
+                      "@sec-ant/readable-stream/polyfill/asyncIterator":
+                        "https://cdn.jsdelivr.net/npm/@sec-ant/readable-stream@0.7.0/dist/polyfill/asyncIterator.js",
                     },
                   }
                   : undefined,
               });
 
               if (remap) {
-                // hack to deal with dynamic imports and expressions
+                // hack to deal with module names in expressions
                 newContent = newContent.replaceAll("@ahx/", "../");
               }
 

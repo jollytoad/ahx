@@ -3,7 +3,7 @@
 ## `attr <op> <attribute-name> [...<value>]`
 
 This action will perform an operation for the named attribute on all target
-elements with the current action context.
+elements.
 
 Operations that mutate the attribute will obtain the value from the remaining
 args of the action (joined by space), or from the first `texts` value of the
@@ -84,8 +84,25 @@ Remove the given value from an existing attribute.
 </div>
 ```
 
+## `attr spread location [<attribute-prefix> [...<props>]]`
+
+Spread the properties of the location object as attributes on the target
+elements. An attribute name prefix can be supplied (defaults to
+`ahx-location-`), and a list of the properties to spread (default to
+`origin pathname search hash`).
+
+```html
+<div>
+  <button on-click="target html |> attr spread location">
+    attr spread location
+  </button>
+  <p>Open the dev console and inspect the html element</p>
+</div>
+```
+
 ## References
 
 - [`getAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/getAttribute)
 - [`setAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/setAttribute)
 - [`removeAttribute()`](https://developer.mozilla.org/docs/Web/API/Element/removeAttribute)
+- [`Location`](https://developer.mozilla.org/en-US/docs/Web/API/Location)

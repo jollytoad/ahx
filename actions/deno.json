@@ -7,6 +7,7 @@
     "./as.ts": "./as.ts",
     "./attach-shadow.ts": "./attach-shadow.ts",
     "./attr.ts": "./attr.ts",
+    "./attr_spread_location.ts": "./attr_spread_location.ts",
     "./base-url.ts": "./base-url.ts",
     "./class.ts": "./class.ts",
     "./clone.ts": "./clone.ts",

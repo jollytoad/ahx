@@ -35,7 +35,10 @@ async function listPreloads(version: string) {
   return graph.modules.flatMap((m) => {
     if (m.specifier.startsWith(root)) {
       const path = m.specifier.slice(root.length, -3);
-      if (!path.startsWith("types/")) {
+      if (
+        !path.startsWith("types/") && !path.includes("shim-") &&
+        !path.includes("node_modules")
+      ) {
         return [`/@ahx/${path}`];
       }
     }
