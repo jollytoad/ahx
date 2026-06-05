@@ -6,7 +6,6 @@
     "./config-default.ts": "./config-default.ts",
     "./config-meta.ts": "./config-meta.ts",
     "./config.ts": "./config.ts",
-    "./detectors-browser-ext.ts": "./detectors-browser-ext.ts",
     "./detectors-default.ts": "./detectors-default.ts",
     "./detectors-no-css.ts": "./detectors-no-css.ts",
     "./detectors.ts": "./detectors.ts",
